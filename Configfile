@@ -1,0 +1,35 @@
+GIT_REMOTE_URL = $(shell git config --get remote.origin.url)
+DOCKER_SERVER ?= 
+DOCKER_USERNAME ?= token
+IMAGE_DESCRIPTION =
+IMAGE_NAME = search-api
+IMAGE_REPO ?= 
+RELEASE_TAG ?= latest
+HOST ?= 127.0.0.1
+APP_PORT ?= 4000
+CONTAINER_PORT ?= 4000
+ARCH = $(shell uname -m)
+DOCKER_FLAG =
+MAX_IMAGE_SIZE=1000000000
+
+ifeq ($(ARCH), x86_64)
+	IMAGE_NAME_ARCH = $(IMAGE_NAME)-amd64
+else
+	IMAGE_NAME_ARCH = $(IMAGE_NAME)-$(ARCH)
+endif
+MANIFEST_VERSION ?= v0.7.0
+DEFAULT_S390X_IMAGE ?= ibmcom/pause-s390x:3.0
+IMAGE_NAME_S390X ?= ${IMAGE_REPO}/${IMAGE_NAME}-s390x:${RELEASE_TAG}
+
+#new additions for the UBI image
+#Variables for redhat required labels
+IMAGE_DISPLAY_NAME=Search API
+IMAGE_MAINTAINER=zack.layne1@ibm.com
+IMAGE_VENDOR=IBM
+IMAGE_VERSION=3.2.0
+IMAGE_SUMMARY=$(IMAGE_DESCRIPTION)
+IMAGE_OPENSHIFT_TAGS=search api
+
+
+DOCKER_SCRATCH_REGISTRY ?= hyc-cloud-private-scratch-docker-local.artifactory.swg-devops.com
+DOCKER_EDGE_REGISTRY ?= hyc-cloud-private-edge-docker-local.artifactory.swg-devops.com 

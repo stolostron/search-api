@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Auth Middleware Caches token on first authorization 1`] = `
+Array [
+  "ng-for-auth",
+  "test-id-token",
+]
+`;
+
+exports[`Auth Middleware Retrieves token from cache if present 1`] = `
+Array [
+  "ng-for-auth",
+]
+`;

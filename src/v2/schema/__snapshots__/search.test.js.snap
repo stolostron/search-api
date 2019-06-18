@@ -1,0 +1,168 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Search Resolver Correctly Resolves Search Query 1`] = `
+Object {
+  "data": Object {
+    "searchResult": Array [
+      Object {
+        "count": 10,
+        "items": Array [
+          Object {
+            "cpu": "30%",
+            "endpoint": "",
+            "kind": "cluster",
+            "memory": "20%",
+            "name": "mock-cluster",
+            "namespace": "mock-mcm-cluster",
+            "nodes": 10,
+            "status": "ok",
+            "storage": "10%",
+          },
+          Object {
+            "cpu": "30%",
+            "endpoint": "",
+            "kind": "cluster",
+            "memory": "20%",
+            "name": "mock-cluster-1",
+            "namespace": "mock-mcm-cluster",
+            "nodes": 10,
+            "status": "ok",
+            "storage": "10%",
+          },
+          Object {
+            "cpus": 10,
+            "kind": "node",
+            "name": "mock-1.1.1.0",
+            "role": "master",
+          },
+          Object {
+            "cpus": 10,
+            "kind": "node",
+            "name": "mock-1.1.1.1",
+            "role": "master",
+          },
+          Object {
+            "cpus": 10,
+            "kind": "node",
+            "name": "mock-1.1.1.2",
+            "role": "master",
+          },
+          Object {
+            "creationTimestamp": "2018-09-27 16:52:20 -0400 EDT",
+            "hostIP": "179.160.35.59",
+            "kind": "pod",
+            "name": "mock-cluster",
+            "namespace": "kube-system",
+            "podIP": "179.160.35.59",
+            "restarts": 20,
+            "status": "Running",
+          },
+          Object {
+            "creationTimestamp": "2018-09-27 16:52:20 -0400 EDT",
+            "hostIP": "179.160.35.59",
+            "kind": "pod",
+            "name": "mock-cluster-1",
+            "namespace": "kube-system",
+            "podIP": "179.160.35.59",
+            "restarts": 20,
+            "status": "Running",
+          },
+          Object {
+            "creationTimestamp": "2018-09-27 16:52:20 -0400 EDT",
+            "hostIP": "179.160.35.59",
+            "kind": "pod",
+            "name": "mock-cluster-2",
+            "namespace": "kube-system",
+            "podIP": "179.160.35.59",
+            "restarts": 20,
+            "status": "Running",
+          },
+          Object {
+            "creationTimestamp": "2018-09-27 16:52:20 -0400 EDT",
+            "hostIP": "179.160.35.59",
+            "kind": "pod",
+            "name": "mock-cluster-3",
+            "namespace": "kube-system",
+            "podIP": "179.160.35.59",
+            "restarts": 20,
+            "status": "Running",
+          },
+          Object {
+            "creationTimestamp": "2018-09-27 16:52:20 -0400 EDT",
+            "hostIP": "179.160.35.59",
+            "kind": "pod",
+            "name": "mock-cluster-4",
+            "namespace": "kube-system",
+            "podIP": "179.160.35.59",
+            "restarts": 20,
+            "status": "Running",
+          },
+        ],
+        "related": Array [
+          Object {
+            "count": 1,
+            "items": Array [
+              Object {
+                "count": 1,
+                "items": Array [
+                  Object {
+                    "_uid": "123",
+                    "kind": "cluster",
+                    "name": "mockCluster",
+                    "namespace": "mockCluster-ns",
+                  },
+                ],
+                "kind": "cluster",
+              },
+            ],
+            "kind": "cluster",
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
+
+exports[`Search Resolver Correctly Resolves SearchComplete Query 1`] = `
+Object {
+  "data": Object {
+    "searchComplete": Array [
+      "cluster",
+      "application",
+      "deployable",
+      "compliance",
+    ],
+  },
+}
+`;
+
+exports[`Search Resolver Correctly Resolves SearchComplete Query With Filters 1`] = `
+Object {
+  "data": Object {
+    "searchComplete": Array [
+      "kind",
+      "name",
+      "namespace",
+      "cpu",
+      "created",
+    ],
+  },
+}
+`;
+
+exports[`Search Resolver Correctly Resolves SearchSchema Query 1`] = `
+Object {
+  "data": Object {
+    "searchSchema": Object {
+      "allProperties": Array [
+        "kind",
+        "name",
+        "namespace",
+        "cpu",
+        "created",
+      ],
+    },
+  },
+}
+`;

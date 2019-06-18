@@ -1,0 +1,16 @@
+{
+	"appenders": {
+		"console": {
+			"type": "console",
+			"layout": {
+				"type": "pattern",
+				"pattern": "[%d] [%p] [search-api] [%c] %m"
+			}
+		}
+	},
+	"categories": {
+		"default": { "appenders": ["console"], "level": "info" },
+		"request": { "appenders": ["console"], "level": "error" },
+		"search-client": { "appenders": ["console"], "level": "debug" }
+	}
+}

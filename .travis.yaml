@@ -1,0 +1,72 @@
+sudo: required
+language: node_js
+
+os:
+  - linux
+  - linux-ppc64le
+
+
+cache:
+  apt: true
+  directories:
+    - "$TRAVIS_CACHE_DIR"
+
+branches:
+  only:
+    - master
+    - development
+    - /^[0-9]+\..*$/
+    - /^v[0-9]+\..*$/
+    - /^release-[0-9]+\..*$/
+
+services:
+  - docker
+
+before_install:
+  # - "export DISPLAY=:99.0"
+  # - "sh -e /etc/init.d/xvfb start"
+  - make init
+  - make cicd-log-init
+  - source travis-env.sh
+  - make docker-logins
+  - chmod +x copyright-check.sh
+
+install:
+  - make install
+
+before_script:
+  - make test
+
+script:
+  - make copyright-check
+  - make docker:build
+
+after_success:
+  - test "$TRAVIS_EVENT_TYPE" = "pull_request" && make push
+  - test "$TRAVIS_EVENT_TYPE" != "pull_request" && make release || echo "success"
+  - |
+      if [[ "$TRAVIS_EVENT_TYPE" != "pull_request" && "$TRAVIS_BRANCH" != "development"]]; then
+        curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
+        python travis_after_all.py https://travis.ibm.com/api
+        export $(cat .to_export_back)
+        if [[ "$BUILD_LEADER" == "YES" ]]; then
+          if [[ "$BUILD_AGGREGATE_STATUS" == "others_succeeded" ]]; then
+            echo "All jobs succeeded! Creating multi arch image..."
+            make docker:manifest-tool
+            make docker:multi-arch
+          else
+            echo "Some jobs failed" && exit 1
+          fi
+        fi
+      fi
+  - make cicd-log-success
+
+after_failure:
+  - make cicd-log-fail
+
+# notifications:
+#   slack:
+#     secure: eaVst90jDSComa6ciuoXLdSdbU52mvBvZIkFLNDr4ngG9eVvA/RPPsoVuOaM8QhoZ8G70mk5sl+7qSdQ3cX0pyRsQZWtG2Vtsh00CQQ1e//ggI9c4XtXF92byQXT77RPLmN29bjzEdZ4wiZ/8iM9iM3u/VfAaamRyUgBuQq7WolqJl5Sgl1Bwlx4i4WMTEovwbCPghZUzHNhpa0aw+Pbq8e6IRTtiws9zRCSlZotZnAAxlc0kB4nUOZAi0fAmpZz/9S4QAyiIte/4jQMKG/Oarb5XOlb2la/788RrPXOHCdSvjWl0Da0eKhTtai/0N8e0dJvbXU2TGMrn/WK5vLFvGMn7zzokNhnxjQP3ZH9uRIx2qHMJa51LM0xzbtUJusgXB2gaqCUKTN2Np9tFf10xW9Owy+hD+NZuOa7Es/xigtbO0sUw4gG/wp4W4KwsqokYDwVA82hOhMunsoVOosWUREhj/+VaKAKX/NU1X39+NcTwVM7OGpbxhDZyrdIQ75CfVFpMeD9ld4lPRYOJnktu5XEc/DrxErr5YJfoCHJ+MH9a4d4xowKXyksPPgQ9jy/bKeQbxJ+UKIN88iLqr/VTblNFYqXJQgN4hU9fUGiJZLqO8MtLLzUVG8m+r966POKZmdV+Cl6c9PqopqpKwQVHYPb/Pc0Q3aWtb9XrgtpskM=
+#     on_pull_requests: false
+#     on_success: change
+#     on_failure: always

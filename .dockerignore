@@ -1,0 +1,10 @@
+**
+!/jest.config.js
+!/LICENSE 
+!/.babelrc
+!/build
+!/config
+!/jest.setup.js
+!/node_modules
+!/sslcert
+!license.txt

@@ -1,0 +1,35 @@
+###############################################################################
+# Licensed Materials - Property of IBM Copyright IBM Corporation 2018. All Rights Reserved.
+# U.S. Government Users Restricted Rights - Use, duplication or disclosure restricted by GSA ADP
+# Schedule Contract with IBM Corp.
+#
+# Contributors:
+#  IBM Corporation - initial API and implementation
+###############################################################################
+
+SHELL := /bin/bash
+
+.PHONY: cicd-log-init
+cicd-log-init:
+	source ~/virtualenv/python3.6/bin/activate; \
+	pip3 install --upgrade pip; \
+	python3 -V; \
+	pip3 -V; \
+	git clone https://${CICD_FUNC_TOKEN}@github.ibm.com/ICP-DevOps/cicd-travis-logger; \
+	pip3 install -r ./cicd-travis-logger/requirements.txt; \
+	python3 ./cicd-travis-logger/logrunner.py begin;
+
+.PHONY: cicd-log-test
+cicd-log-test:
+	source ~/virtualenv/python3.6/bin/activate; \
+	python3 ./cicd-travis-logger/logrunner.py tests -d test-output;
+
+.PHONY: cicd-log-success
+cicd-log-success:
+	source ~/virtualenv/python3.6/bin/activate; \
+	python3 ./cicd-travis-logger/logrunner.py end --success;
+
+.PHONY: cicd-log-fail
+cicd-log-fail:
+	source ~/virtualenv/python3.6/bin/activate; \
+	python3 ./cicd-travis-logger/logrunner.py end --fail;

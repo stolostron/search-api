@@ -1,0 +1,10 @@
+{
+  "contextPath": "/searchapi",
+  "searchPollInterval": 100,
+  "searchPollTimeout": 50000,
+  "httpPort": 4000,
+  "localKubeToken": "",
+  "redisEndpoint": "//localhost:6379",
+  "redisSSLEndpoint": "",
+  "redisPassword": ""
+}
