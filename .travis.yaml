@@ -64,9 +64,13 @@ after_success:
 after_failure:
   - make cicd-log-fail
 
-# notifications:
-#   slack:
-#     secure: eaVst90jDSComa6ciuoXLdSdbU52mvBvZIkFLNDr4ngG9eVvA/RPPsoVuOaM8QhoZ8G70mk5sl+7qSdQ3cX0pyRsQZWtG2Vtsh00CQQ1e//ggI9c4XtXF92byQXT77RPLmN29bjzEdZ4wiZ/8iM9iM3u/VfAaamRyUgBuQq7WolqJl5Sgl1Bwlx4i4WMTEovwbCPghZUzHNhpa0aw+Pbq8e6IRTtiws9zRCSlZotZnAAxlc0kB4nUOZAi0fAmpZz/9S4QAyiIte/4jQMKG/Oarb5XOlb2la/788RrPXOHCdSvjWl0Da0eKhTtai/0N8e0dJvbXU2TGMrn/WK5vLFvGMn7zzokNhnxjQP3ZH9uRIx2qHMJa51LM0xzbtUJusgXB2gaqCUKTN2Np9tFf10xW9Owy+hD+NZuOa7Es/xigtbO0sUw4gG/wp4W4KwsqokYDwVA82hOhMunsoVOosWUREhj/+VaKAKX/NU1X39+NcTwVM7OGpbxhDZyrdIQ75CfVFpMeD9ld4lPRYOJnktu5XEc/DrxErr5YJfoCHJ+MH9a4d4xowKXyksPPgQ9jy/bKeQbxJ+UKIN88iLqr/VTblNFYqXJQgN4hU9fUGiJZLqO8MtLLzUVG8m+r966POKZmdV+Cl6c9PqopqpKwQVHYPb/Pc0Q3aWtb9XrgtpskM=
-#     on_pull_requests: false
-#     on_success: change
-#     on_failure: always
+notifications:
+  slack:
+    on_failure: always
+    on_success: change
+    on_pull_request: false
+    rooms:
+      - secure: uJhSvxCfppPv9Ux5r0bgbOVz8u4vxWYhitgpuvBiQt4OGpGUb6GHkzZKl3E1Y27R4NyawULW18csRXfUJQ6hyh1hGjlU5Sh4iztArxqUC1w16VC9vSZaPvseLXulFmv3pcFPFLMJI1iJRBDWNXMvhFjHlXBfK2uD11tbBsf3Kf7L4v1DnU72aDZDPkwRPZiW3TTQpAx9ebdgbdHg+aFhyQPblzo/SHsFyrkALXrpGWI8/XHM+HeLm10SSQ5hMn0ahdwIv97KYo6Z/iVzOy9yoZLTCT7LkXe3lw5WAE+rGpxMy2nXi1vTZp8sJIsbAe/ywhgFor9t7g8qf8fTDptrF+sf5zA173e6RCAYboVG9IuHW0E6Pm5Ip8rBhaQf/JfVYltHsb9yU9kqc1oYGS2e+RpKSIGvx+r6elSNBu+2F3MgtQsSzU3TkuDG90RCxNfEQikDjPNRx7Xc/1AsemMj9/6eETlzODhQDJH/wUfWf7O1r/H7whmPbwm30Od4CO0NowXWoNT8lweSqm+OXYtgySjCj36O30C7ucdZZFHBo3S6zC8KjAIfe1/w9jw/jZ48SP/tvM2QrR0n1MT1gvV06xykRMoDVLZdDwHT3vKQZ5eJzhvn6c8gS2JHZRM6xPOpkzLrsLMpKQiyj11B7svyn79cxiUxrvkN67pAWb2uolo=
+    template:
+      - "Search API"
+      - "Build <%{build_url}|#%{build_number}> (<%{compare_url}|%{commit}>) of %{repository_slug}@%{branch} %{result} in %{duration}"
