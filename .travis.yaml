@@ -5,7 +5,6 @@ os:
   - linux
   - linux-ppc64le
 
-
 cache:
   apt: true
   directories:
