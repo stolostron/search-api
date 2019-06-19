@@ -15,7 +15,7 @@ cicd-log-init:
 	pip3 install --upgrade pip; \
 	python3 -V; \
 	pip3 -V; \
-	git clone https://${CICD_FUNC_TOKEN}@github.ibm.com/ICP-DevOps/cicd-travis-logger; \
+	git clone https://${GITHUB_TOKEN}@github.ibm.com/ICP-DevOps/cicd-travis-logger; \
 	pip3 install -r ./cicd-travis-logger/requirements.txt; \
 	python3 ./cicd-travis-logger/logrunner.py begin;
 
