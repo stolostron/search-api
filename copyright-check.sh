@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Licensed Materials - Property of IBM
-# (c) Copyright IBM Corporation 2018, 2019. All Rights Reserved.
+# (c) Copyright IBM Corporation 2019. All Rights Reserved.
 # Note to U.S. Government Users Restricted Rights:
 # Use, duplication or disclosure restricted by GSA ADP Schedule
 # Contract with IBM Corp.
 
-YEAR=2018
+YEAR=2019
 
 #LINE1="${COMMENT_PREFIX}Licensed Materials - Property of IBM"
 CHECK1=" Licensed Materials - Property of IBM"

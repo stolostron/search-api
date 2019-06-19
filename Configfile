@@ -1,9 +1,9 @@
 GIT_REMOTE_URL = $(shell git config --get remote.origin.url)
-DOCKER_SERVER ?= 
+DOCKER_SERVER ?=
 DOCKER_USERNAME ?= token
 IMAGE_DESCRIPTION =
 IMAGE_NAME = search-api
-IMAGE_REPO ?= 
+IMAGE_REPO ?=
 RELEASE_TAG ?= latest
 HOST ?= 127.0.0.1
 APP_PORT ?= 4000
@@ -32,4 +32,5 @@ IMAGE_OPENSHIFT_TAGS=search api
 
 
 DOCKER_SCRATCH_REGISTRY ?= hyc-cloud-private-scratch-docker-local.artifactory.swg-devops.com
-DOCKER_EDGE_REGISTRY ?= hyc-cloud-private-edge-docker-local.artifactory.swg-devops.com 
+DOCKER_EDGE_REGISTRY ?= hyc-cloud-private-edge-docker-local.artifactory.swg-devops.com
+DOCKER_INTEGRATION_REGISTRY ?= hyc-cloud-private-integration-docker-local.artifactory.swg-devops.com
