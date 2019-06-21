@@ -28,8 +28,8 @@ import schema from './schema/';
 import config from '../../config';
 import authMiddleware from './lib/auth-middleware';
 
-export const GRAPHQL_PATH = `${config.get('contextPath')}/graphql`;
-export const GRAPHIQL_PATH = `${config.get('contextPath')}/graphiql`;
+export const GRAPHQL_PATH = `${config.get('contextPath')}/search/graphql`;
+export const GRAPHIQL_PATH = `${config.get('contextPath')}/search/graphiql`;
 
 const isProd = config.get('NODE_ENV') === 'production';
 const isTest = config.get('NODE_ENV') === 'test';
