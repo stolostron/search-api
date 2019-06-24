@@ -18,7 +18,7 @@ WORKDIR /opt/ibm/search-api
 
 COPY . /opt/ibm/search-api
 
-EXPOSE 4000
+EXPOSE 4010
 
 ENV NODE_ENV production
 CMD ["node", "./build/index.js"]
