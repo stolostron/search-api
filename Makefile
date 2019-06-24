@@ -70,14 +70,6 @@ prune:
 build:
 	npm run build:production
 
-.PHONY: my-version
-my-version:
-	$(eval IMAGE_VERSION := $(shell git rev-parse --short HEAD))
-
-#Removed so that IMAGE_VERSION from config file is added to the version label in the docker image
-#for redhat certification
-#app-version: my-version
-
 -include $(shell curl -fso .build-harness -H "Authorization: token $(GITHUB_TOKEN)" -H "Accept: application/vnd.github.v3.raw" "https://raw.github.ibm.com/ICP-DevOps/build-harness/master/templates/Makefile.build-harness"; echo .build-harness)
 
 .PHONY: run
@@ -128,6 +120,7 @@ ifneq ($(TRAVIS_BRANCH), "development")
 	curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
 	python travis_after_all.py https://travis.ibm.com/api
 	export $(cat .to_export_back)
+	echo BUILD_LEADER - $(BUILD_LEADER), BUILD_AGGREGATE_STATUS - $(BUILD_AGGREGATE_STATUS)
 ifeq ($(BUILD_LEADER), "YES")
 ifeq ($(BUILD_AGGREGATE_STATUS), "others_succeeded")
 	echo "All jobs succeeded! Creating multi arch image..."
