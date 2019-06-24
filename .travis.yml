@@ -42,7 +42,7 @@ after_success:
   - test "$TRAVIS_EVENT_TYPE" = "pull_request" && make push
   - test "$TRAVIS_EVENT_TYPE" != "pull_request" && make release || echo "success"
   - |
-      if [[ "$TRAVIS_EVENT_TYPE" != "pull_request" && "$TRAVIS_BRANCH" != "development"]]; then
+      if [[ "$TRAVIS_EVENT_TYPE" != "pull_request" && "$TRAVIS_BRANCH" != "development" ]]; then
         curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
         python travis_after_all.py https://travis.ibm.com/api
         export $(cat .to_export_back)
