@@ -138,6 +138,7 @@ else
 endif
 endif
 endif
+endif
 
 .PHONY: app-version
 app-version:
