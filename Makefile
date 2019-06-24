@@ -123,13 +123,13 @@ release:
 
 .PHONY: multiarch
 multiarch:
-ifneq ("$(TRAVIS_EVENT_TYPE)" != "pull_request")
-ifneq ("$(TRAVIS_BRANCH)" != "development" ]]
+ifneq ($(TRAVIS_EVENT_TYPE), "pull_request")
+ifneq ($(TRAVIS_BRANCH), "development" ]]
 	curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
 	python travis_after_all.py https://travis.ibm.com/api
 	export $(cat .to_export_back)
-ifeq ("$(BUILD_LEADER)" == "YES" ]]
-ifeq ("$BUILD_AGGREGATE_STATUS)" == "others_succeeded" ]]
+ifeq ($(BUILD_LEADER), "YES" ]]
+ifeq ($(BUILD_AGGREGATE_STATUS), "others_succeeded" ]]
 	echo "All jobs succeeded! Creating multi arch image..."
 	make docker:manifest-tool
 	make docker:multi-arch
