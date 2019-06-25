@@ -113,26 +113,6 @@ release:
 	make docker:tag-arch DOCKER_REGISTRY=$(DOCKER_INTEGRATION_REGISTRY)
 	make docker:push-arch DOCKER_REGISTRY=$(DOCKER_INTEGRATION_REGISTRY)
 
-.PHONY: multiarch
-multiarch:
-ifneq ($(TRAVIS_EVENT_TYPE), "pull_request")
-ifneq ($(TRAVIS_BRANCH), "development")
-	curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
-	python travis_after_all.py https://travis.ibm.com/api
-	export $(cat .to_export_back)
-	echo BUILD_LEADER - $(BUILD_LEADER), BUILD_AGGREGATE_STATUS - $(BUILD_AGGREGATE_STATUS)
-ifeq ($(BUILD_LEADER), "YES")
-ifeq ($(BUILD_AGGREGATE_STATUS), "others_succeeded")
-	echo "All jobs succeeded! Creating multi arch image..."
-	make docker:manifest-tool
-	make docker:multi-arch
-else
-	echo "Some jobs failed" && exit 1
-endif
-endif
-endif
-endif
-
 .PHONY: app-version
 app-version:
 	$(eval WORKING_CHANGES := $(shell git status --porcelain))
