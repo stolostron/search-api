@@ -1,5 +1,4 @@
 GIT_REMOTE_URL = $(shell git config --get remote.origin.url)
-GIT_COMMIT_SHORT := $(shell git rev-parse --short HEAD)
 DOCKER_SERVER ?=
 DOCKER_USERNAME ?= token
 IMAGE_DESCRIPTION =
