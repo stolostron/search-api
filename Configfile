@@ -31,9 +31,10 @@ IMAGE_SUMMARY=$(IMAGE_DESCRIPTION)
 IMAGE_OPENSHIFT_TAGS=search api
 
 
-DOCKER_SCRATCH_REGISTRY ?= hyc-cloud-private-scratch-docker-local.artifactory.swg-devops.com
-DOCKER_EDGE_REGISTRY ?= hyc-cloud-private-edge-docker-local.artifactory.swg-devops.com
+DOCKER_SCRATCH_REGISTRY     ?= hyc-cloud-private-scratch-docker-local.artifactory.swg-devops.com
+DOCKER_EDGE_REGISTRY        ?= hyc-cloud-private-edge-docker-local.artifactory.swg-devops.com
 DOCKER_INTEGRATION_REGISTRY ?= hyc-cloud-private-integration-docker-local.artifactory.swg-devops.com
-DOCKER_REGISTRY ?=$(DOCKER_INTEGRATION_REGISTRY)
+DOCKER_REGISTRY             ?=$(DOCKER_INTEGRATION_REGISTRY)
+
 
 

@@ -48,7 +48,8 @@ describe('redisGraph', () => {
    */
 
   // describe('Testing Connector Functions', () => {
-  //   const searchConnector = new RedisGraphConnector({ rbac: ['kube-system', 'default'], req: { user: { name: 'TestUserName' }, kubeToken: 'Bearer localdev' } });
+  //   const searchConnector = new RedisGraphConnector({ rbac: ['kube-system', 'default'],
+  //      req: { user: { name: 'TestUserName' }, kubeToken: 'Bearer localdev' } });
   //   searchConnector.getRedisClient = jest.fn(() => mockRedis.createClient());
 
   //   test('Check If Redis Is Available', async () => {
@@ -56,7 +57,8 @@ describe('redisGraph', () => {
   //   });
 
   //   test('Create the RBAC String for Redis Queries', async () => {
-  //     const RBACString = await searchConnector.createWhereClause([{ property: 'pods', values: ['testPod'] }]);
+  //     const RBACString =
+  //        await searchConnector.createWhereClause([{ property: 'pods', values: ['testPod'] }]);
   //     console.log(RBACString);
   //   });
   // });
