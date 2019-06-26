@@ -36,7 +36,7 @@ before_script:
 
 script:
   - make copyright-check
-  - make docker:build
+  - make image
 
 after_success:
   - test "$TRAVIS_EVENT_TYPE" = "pull_request" && make push

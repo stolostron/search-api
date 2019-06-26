@@ -26,11 +26,15 @@ IMAGE_NAME_S390X ?= ${IMAGE_REPO}/${IMAGE_NAME}-s390x:${RELEASE_TAG}
 IMAGE_DISPLAY_NAME=Search API
 IMAGE_MAINTAINER=zack.layne1@ibm.com
 IMAGE_VENDOR=IBM
-IMAGE_VERSION=3.2.0
+IMAGE_VERSION=4.1.0
 IMAGE_SUMMARY=$(IMAGE_DESCRIPTION)
 IMAGE_OPENSHIFT_TAGS=search api
 
 
-DOCKER_SCRATCH_REGISTRY ?= hyc-cloud-private-scratch-docker-local.artifactory.swg-devops.com
-DOCKER_EDGE_REGISTRY ?= hyc-cloud-private-edge-docker-local.artifactory.swg-devops.com
+DOCKER_SCRATCH_REGISTRY     ?= hyc-cloud-private-scratch-docker-local.artifactory.swg-devops.com
+DOCKER_EDGE_REGISTRY        ?= hyc-cloud-private-edge-docker-local.artifactory.swg-devops.com
 DOCKER_INTEGRATION_REGISTRY ?= hyc-cloud-private-integration-docker-local.artifactory.swg-devops.com
+DOCKER_REGISTRY             ?=$(DOCKER_INTEGRATION_REGISTRY)
+
+
+
