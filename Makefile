@@ -104,14 +104,18 @@ endif
 
 .PHONY: push
 push: check-env app-version
-	#docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)
-	make docker:tag-arch DOCKER_REGISTRY=$(DOCKER_SCRATCH_REGISTRY)
-	make docker:push-arch DOCKER_REGISTRY=$(DOCKER_SCRATCH_REGISTRY)
+	make docker:tag-arch DOCKER_REGISTRY=$(DOCKER_SCRATCH_REGISTRY) DOCKER_TAG=$(GIT_COMMIT_SHORT)
+	make docker:push-arch DOCKER_REGISTRY=$(DOCKER_SCRATCH_REGISTRY) DOCKER_TAG=$(GIT_COMMIT_SHORT)
 
 .PHONY: release
 release:
 	make docker:tag-arch DOCKER_REGISTRY=$(DOCKER_INTEGRATION_REGISTRY)
 	make docker:push-arch DOCKER_REGISTRY=$(DOCKER_INTEGRATION_REGISTRY)
+
+.PHONY: image
+image: build lint prune
+	make docker:info
+	make docker:build
 
 .PHONY: app-version
 app-version:
