@@ -32,7 +32,7 @@ export default class SearchModel {
     }
   }
 
-  async resolveSearch({ keywords, filters }) {
+  async resolveSearch({ keywords = [], filters = [] }) {
     await this.checkSearchServiceAvailable();
     if (keywords && keywords.length > 0) {
       const results = await this.searchConnector.runSearchQuery(filters);
@@ -41,7 +41,7 @@ export default class SearchModel {
     return this.searchConnector.runSearchQuery(filters);
   }
 
-  async resolveSearchCount({ keywords, filters }) {
+  async resolveSearchCount({ keywords = [], filters = [] }) {
     await this.checkSearchServiceAvailable();
     if (keywords && keywords.length > 0) {
       const results = await this.searchConnector.runSearchQuery(filters);
@@ -50,7 +50,7 @@ export default class SearchModel {
     return this.searchConnector.runSearchQueryCountOnly(filters);
   }
 
-  async resolveSearchComplete({ property, filters }) {
+  async resolveSearchComplete({ property, filters = [] }) {
     await this.checkSearchServiceAvailable();
     return this.searchConnector.getAllValues(property, filters);
   }
