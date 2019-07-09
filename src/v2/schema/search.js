@@ -30,8 +30,6 @@ export const typeDef = `
     items: JSON
     # FUTURE: This isn't fully implemented yet.
     related: [SearchRelatedResult]
-    # Time when the backend data was last updated.
-    updatedTimestamp: Float
   }
 `;
 
