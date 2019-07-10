@@ -90,7 +90,8 @@ export default function createAuthMiddleWare({
 
     req.kubeToken = `Bearer ${idToken}`;
 
-    const iamToken = _.get(req, "cookies['cfc-access-token-cookie']") || config.get('cfc-access-token-cookie');
+    const iamToken = _.get(req, "cookies['cfc-access-token-cookie']") || config.get('cfc-access-token-cookie') ||
+      (req.headers.authorization && req.headers.authorization.substring(7));
     let userName = _.get(jws.decode(idToken), 'payload.uniqueSecurityName');
     if (process.env.NODE_ENV === 'test' || process.env.MOCK === 'true') {
       userName = 'admin_test';
