@@ -4,6 +4,7 @@ language: node_js
 os:
   - linux
   - linux-ppc64le
+  - linux-s390
 
 cache:
   apt: true
