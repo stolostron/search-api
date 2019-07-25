@@ -455,10 +455,26 @@ export default class RedisGraphConnector {
 
 
   async findRelationships({ filters = [] } = {}) {
-    // logger.info('findRelationships()', filters);
     if (this.rbac.length > 0) {
-      const result = await this.g.query(`MATCH (n)-[]->(r) ${await this.createWhereClause(filters)} RETURN DISTINCT r`);
-      return formatResult(result);
+      // A limitation in RedisGraph 1.0.15 is that we can't query relationships without direction.
+      // To work around this limitation, we use 2 queries to get IN and OUT relationships.
+      // Then we join both results.
+      const inRelationships = await this.g.query(`MATCH (n)<-[]-(r) ${await this.createWhereClause(filters)} RETURN DISTINCT r`);
+      const outRelationships = await this.g.query(`MATCH (n)-[]->(r) ${await this.createWhereClause(filters)} RETURN DISTINCT r`);
+
+      const inFormatted = await formatResult(inRelationships);
+      const outFormatted = await formatResult(outRelationships);
+
+      // Join results for IN and OUT, removing duplicates.
+      const result = inFormatted;
+      outFormatted.forEach((outItem) => {
+        // Add only if the relationship doesn't already exist.
+        if (!result.find(item => item._uid === outItem._uid)) {
+          result.push(outItem);
+        }
+      });
+
+      return result;
     }
     return [];
   }
