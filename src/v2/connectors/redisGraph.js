@@ -383,6 +383,13 @@ export default class RedisGraphConnector {
   async runSearchQuery(filters) {
     // logger.info('runSearchQuery()', filters);
     if (this.rbac.length > 0) {
+      const labelFilter = filters.find(f => f.property === 'label');
+      if (labelFilter) {
+        const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters.filter(f => f.property !== 'label'))} RETURN n`);
+
+        // TODO: Filter results by label here!
+        return formatResult(result);
+      }
       const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters)} RETURN n`);
       return formatResult(result);
     }
@@ -407,10 +414,10 @@ export default class RedisGraphConnector {
     if (this.rbac.length > 0) {
       const result = await this.g.query(`MATCH (n) ${await this.createWhereClause([])} RETURN n LIMIT 1`);
 
-      values.add('kind', 'name', 'namespace', 'status'); // Add these first so they show at the top.
+      values.add('kind', 'name', 'namespace', 'status', 'label'); // Add these first so they show at the top.
       result._header.forEach((property) => {
         const label = property.substr(property.indexOf('.') + 1);
-        if (label.charAt(0) !== '_' && label.indexOf('label__') === -1) {
+        if (label.charAt(0) !== '_') {
           values.add(label);
         }
       });
@@ -438,6 +445,17 @@ export default class RedisGraphConnector {
         }
       });
 
+      if (property === 'label') {
+        const labels = [];
+        valuesList.forEach((value) => {
+          value.split('; ').forEach((label) => {
+            if (labels.indexOf(label) === -1) {
+              labels.push(label);
+            }
+          });
+        });
+        return labels;
+      }
       if (isDate(valuesList[0])) {
         return ['isDate'];
       } else if (isNumber(valuesList[0])) { //  || isNumWithChars(valuesList[0]))
