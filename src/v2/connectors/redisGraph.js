@@ -383,13 +383,16 @@ export default class RedisGraphConnector {
   async runSearchQuery(filters) {
     // logger.info('runSearchQuery()', filters);
     if (this.rbac.length > 0) {
+      // RedisGraph 1.0.15 doesn't support a value list or array. To work around this limitation we
+      // encode labels in a single string. As a result we can't use an openCypher query to search
+      // for labels so we need to filter here, which btw is inefficient.
       const labelFilter = filters.find(f => f.property === 'label');
       if (labelFilter) {
         const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters.filter(f => f.property !== 'label'))} RETURN n`);
-
-        // TODO: Filter results by label here!
-        return formatResult(result);
+        return formatResult(result).filter(item =>
+          (item.label && labelFilter.values.find(value => item.label.indexOf(value) > -1)));
       }
+
       const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters)} RETURN n`);
       return formatResult(result);
     }
@@ -400,6 +403,14 @@ export default class RedisGraphConnector {
     // logger.info('runSearchQueryCountOnly()', filters);
 
     if (this.rbac.length > 0) {
+      // RedisGraph 1.0.15 doesn't support a value list or array. To work around this limitation we
+      // encode labels in a single string. As a result we can't use an openCypher query to search
+      // for labels so we need to filter here, which btw is inefficient.
+      const labelFilter = filters.find(f => f.property === 'label');
+      if (labelFilter) {
+        return this.runSearchQuery(filters).then(r => r.length);
+      }
+
       const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters)} RETURN count(n)`);
       if (result.hasNext() === true) {
         return result.next().get('count(n)');
