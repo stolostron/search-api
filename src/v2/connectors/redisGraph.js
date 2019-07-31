@@ -383,6 +383,16 @@ export default class RedisGraphConnector {
   async runSearchQuery(filters) {
     // logger.info('runSearchQuery()', filters);
     if (this.rbac.length > 0) {
+      // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
+      // encode labels in a single string. As a result we can't use an openCypher query to search
+      // for labels so we need to filter here, which btw is inefficient.
+      const labelFilter = filters.find(f => f.property === 'label');
+      if (labelFilter) {
+        const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters.filter(f => f.property !== 'label'))} RETURN n`);
+        return formatResult(result).filter(item =>
+          (item.label && labelFilter.values.find(value => item.label.indexOf(value) > -1)));
+      }
+
       const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters)} RETURN n`);
       return formatResult(result);
     }
@@ -393,6 +403,14 @@ export default class RedisGraphConnector {
     // logger.info('runSearchQueryCountOnly()', filters);
 
     if (this.rbac.length > 0) {
+      // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
+      // encode labels in a single string. As a result we can't use an openCypher query to search
+      // for labels so we need to filter here, which btw is inefficient.
+      const labelFilter = filters.find(f => f.property === 'label');
+      if (labelFilter) {
+        return this.runSearchQuery(filters).then(r => r.length);
+      }
+
       const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters)} RETURN count(n)`);
       if (result.hasNext() === true) {
         return result.next().get('count(n)');
@@ -407,10 +425,10 @@ export default class RedisGraphConnector {
     if (this.rbac.length > 0) {
       const result = await this.g.query(`MATCH (n) ${await this.createWhereClause([])} RETURN n LIMIT 1`);
 
-      values.add('kind', 'name', 'namespace', 'status'); // Add these first so they show at the top.
+      values.add('kind', 'name', 'namespace', 'status', 'label'); // Add these first so they show at the top.
       result._header.forEach((property) => {
         const label = property.substr(property.indexOf('.') + 1);
-        if (label.charAt(0) !== '_' && label.indexOf('label__') === -1) {
+        if (label.charAt(0) !== '_') {
           values.add(label);
         }
       });
@@ -438,6 +456,20 @@ export default class RedisGraphConnector {
         }
       });
 
+      // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
+      // encode labels in a single string. Here we need to decode the string to get all labels.
+      if (property === 'label') {
+        const labels = [];
+        valuesList.forEach((value) => {
+          value.split('; ').forEach((label) => {
+            // We don't want duplicates, so we check if it already exists.
+            if (labels.indexOf(label) === -1) {
+              labels.push(label);
+            }
+          });
+        });
+        return labels;
+      }
       if (isDate(valuesList[0])) {
         return ['isDate'];
       } else if (isNumber(valuesList[0])) { //  || isNumWithChars(valuesList[0]))
