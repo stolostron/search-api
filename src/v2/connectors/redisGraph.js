@@ -383,7 +383,7 @@ export default class RedisGraphConnector {
   async runSearchQuery(filters) {
     // logger.info('runSearchQuery()', filters);
     if (this.rbac.length > 0) {
-      // RedisGraph 1.0.15 doesn't support a value list or array. To work around this limitation we
+      // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
       // encode labels in a single string. As a result we can't use an openCypher query to search
       // for labels so we need to filter here, which btw is inefficient.
       const labelFilter = filters.find(f => f.property === 'label');
@@ -403,7 +403,7 @@ export default class RedisGraphConnector {
     // logger.info('runSearchQueryCountOnly()', filters);
 
     if (this.rbac.length > 0) {
-      // RedisGraph 1.0.15 doesn't support a value list or array. To work around this limitation we
+      // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
       // encode labels in a single string. As a result we can't use an openCypher query to search
       // for labels so we need to filter here, which btw is inefficient.
       const labelFilter = filters.find(f => f.property === 'label');
@@ -456,10 +456,13 @@ export default class RedisGraphConnector {
         }
       });
 
+      // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
+      // encode labels in a single string. Here we need to decode the string to get all labels.
       if (property === 'label') {
         const labels = [];
         valuesList.forEach((value) => {
           value.split('; ').forEach((label) => {
+            // We don't want duplicates, so we check if it already exists.
             if (labels.indexOf(label) === -1) {
               labels.push(label);
             }
