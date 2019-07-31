@@ -421,19 +421,22 @@ export default class RedisGraphConnector {
 
   async getAllProperties() {
     // logger.info('Getting all properties');
-    const values = new Set();
+
+    // Adding these first to rank them higher when showin in UI.
+    const values = ['cluster', 'kind', 'label', 'name', 'namespace', 'status'];
+
     if (this.rbac.length > 0) {
       const result = await this.g.query(`MATCH (n) ${await this.createWhereClause([])} RETURN n LIMIT 1`);
 
-      values.add('kind', 'name', 'namespace', 'status', 'label'); // Add these first so they show at the top.
       result._header.forEach((property) => {
         const label = property.substr(property.indexOf('.') + 1);
-        if (label.charAt(0) !== '_') {
-          values.add(label);
+        if (label.charAt(0) !== '_' && values.indexOf(label) < 0) {
+          values.push(label);
         }
       });
     }
-    return [...values];
+
+    return values;
   }
 
   async getAllValues(property, filters = []) {
