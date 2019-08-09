@@ -10,8 +10,29 @@
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
 
-// TODO: Keyword filtering currently requires that we transfer a large number of records from the
-// gremlin-server to filter locally. We need to investigate alternatives to improve performance.
+// Remove single and double quotes because these can be used to inject malicious
+// code in the RedisGraph query. (SQL injection).
+function sanitizeString(s) {
+  return s.replace(/['"]/g, '');
+}
+
+// Sanitize all inputs to prevent "sql injection" attacks.
+function sanitizeInputs({ keywords = [], filters = [], property = '' }) {
+  const sanitizedKeywords = keywords.map(k => sanitizeString(k));
+  const sanitizedFilters = filters.map(f => ({
+    property: sanitizeString(f.property),
+    values: f.values.map(v => sanitizeString(v)),
+  }));
+
+  return {
+    keywords: sanitizedKeywords,
+    filters: sanitizedFilters,
+    property: sanitizeString(property),
+  };
+}
+
+// TODO: Keyword filtering currently requires that we transfer a large number of records from
+// RedisGraph to filter locally. We need to investigate alternatives to improve performance.
 function filterByKeywords(resultSet, keywords) {
   /* Regular expression resolves to a string like:
    *     /(?=.*keyword1)(?=.*keyword2)(?=.*keyword3)/gi
@@ -32,7 +53,8 @@ export default class SearchModel {
     }
   }
 
-  async resolveSearch({ keywords = [], filters = [] }) {
+  async resolveSearch(input) {
+    const { keywords, filters } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
     if (keywords && keywords.length > 0) {
       const results = await this.searchConnector.runSearchQuery(filters);
@@ -41,7 +63,8 @@ export default class SearchModel {
     return this.searchConnector.runSearchQuery(filters);
   }
 
-  async resolveSearchCount({ keywords = [], filters = [] }) {
+  async resolveSearchCount(input) {
+    const { keywords, filters } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
     if (keywords && keywords.length > 0) {
       const results = await this.searchConnector.runSearchQuery(filters);
@@ -50,7 +73,8 @@ export default class SearchModel {
     return this.searchConnector.runSearchQueryCountOnly(filters);
   }
 
-  async resolveSearchComplete({ property, filters = [] }) {
+  async resolveSearchComplete(input) {
+    const { property, filters } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
     return this.searchConnector.getAllValues(property, filters);
   }
@@ -60,9 +84,10 @@ export default class SearchModel {
    * @param {*} parent
    * returns { kind: String, count: Int, items: [] }
    */
-  async resolveRelated(parent) {
+  async resolveRelated(input) {
+    const { filters } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
-    const relationships = await this.searchConnector.findRelationships(parent);
+    const relationships = await this.searchConnector.findRelationships({ filters });
 
     const result = {};
     relationships.forEach((r) => {
