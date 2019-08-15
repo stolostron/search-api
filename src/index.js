@@ -17,6 +17,10 @@ const logger = log4js.getLogger('server');
 const log4jsConfig = process.env.LOG4JS_CONFIG ? JSON.parse(process.env.LOG4JS_CONFIG) : undefined;
 log4js.configure(log4jsConfig || 'config/log4js.json');
 
+if (process.env.VCS_REF) {
+  logger.info('Built from git commit: ', process.env.VCS_REF);
+}
+
 const GRAPHQL_PORT = process.env.PORT || config.get('httpPort') || 4010;
 const CONTEXT_PATH = config.get('contextPath');
 

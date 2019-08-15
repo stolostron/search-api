@@ -39,5 +39,6 @@ COPY . /opt/ibm/search-api
 
 EXPOSE 4010
 
+ENV VCS_REF="$VCS_REF"
 ENV NODE_ENV production
 CMD ["node", "./build/index.js"]
