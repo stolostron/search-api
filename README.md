@@ -1,7 +1,11 @@
 # search-api
 [![Build Status](https://travis.ibm.com/IBMPrivateCloud/search-api.svg?token=FQtRyxd2oucrshZSEEqZ&branch=master)](https://travis.ibm.com/IBMPrivateCloud/search-api)
 
-## Running
+## Using the Search API
+https://github.ibm.com/IBMPrivateCloud/search/wiki/Using-the-Search-API
+
+
+## Setup for development
 1. The folloing environment variables need to be set.
 ```
 cfcRouterUrl
