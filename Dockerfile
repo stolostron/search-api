@@ -1,4 +1,4 @@
-FROM hyc-cloud-private-edge-docker-local.artifactory.swg-devops.com/build-images/node-dubnium-ubi7-minimal-amd64:latest
+FROM hyc-cloud-private-edge-docker-local.artifactory.swg-devops.com/build-images/node-dubnium-ubi7-minimal-amd64:7.7-98
 
 ARG VCS_REF
 ARG VCS_URL
