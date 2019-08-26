@@ -7,6 +7,7 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 /* eslint-disable no-underscore-dangle */
+/* eslint-disable max-len */
 import _ from 'lodash';
 import fs from 'fs';
 import redis from 'redis';
@@ -509,12 +510,13 @@ export default class RedisGraphConnector {
       // A limitation in RedisGraph 1.0.15 is that we can't query relationships without direction.
       // To work around this limitation, we use 2 queries to get IN and OUT relationships.
       // Then we join both results.
-      const startTime = Date.now();
-      const inRelationships = await this.g.query(`MATCH (n)<-[]-(r) ${await this.createWhereClause(filters, ['n', 'r'])} RETURN DISTINCT r`);
-      const outRelationships = await this.g.query(`MATCH (n)-[]->(r) ${await this.createWhereClause(filters, ['n', 'r'])} RETURN DISTINCT r`);
 
-      const inFormatted = await formatResult(inRelationships);
-      const outFormatted = await formatResult(outRelationships);
+      const startTime = Date.now();
+
+      const inQuery = `MATCH (n)<-[]-(r) ${await this.createWhereClause(filters, ['n', 'r'])} RETURN DISTINCT r`;
+      const outQuery = `MATCH (n)-[]->(r) ${await this.createWhereClause(filters, ['n', 'r'])} RETURN DISTINCT r`;
+
+      const [inFormatted, outFormatted] = await Promise.all([formatResult(await this.g.query(inQuery)), formatResult(await this.g.query(outQuery))]);
 
       logger.perfLog(startTime, 1000, 'findRelationships()');
 
