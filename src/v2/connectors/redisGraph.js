@@ -38,10 +38,7 @@ function formatResult(results) {
     });
     resultList.push(resultItem);
   }
-
-  if (Date.now() - startTime > 100) {
-    logger.warn(`Search formatResult() took ${Date.now() - startTime} ms. Result set size: ${results.length}`);
-  }
+  logger.perfLog(startTime, 100, 'formatResult()', `Result set size: ${results.length}`);
   return resultList;
 }
 
@@ -375,7 +372,7 @@ export default class RedisGraphConnector {
     const filterString = getFilterString(filters);
     if (rbac !== '') {
       if (filterString !== '') {
-        return `WHERE ${rbac} AND ${filterString}`;
+        return `WHERE ${filterString} AND ${rbac}`;
       }
       return `WHERE ${rbac}`;
     } else if (filterString !== '') {
@@ -398,11 +395,17 @@ export default class RedisGraphConnector {
       // for labels so we need to filter here, which btw is inefficient.
       const labelFilter = filters.find(f => f.property === 'label');
       if (labelFilter) {
-        const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters.filter(f => f.property !== 'label'), ['n'])} RETURN n`);
+        const startTime = Date.now();
+        const query = `MATCH (n) ${await this.createWhereClause(filters.filter(f => f.property !== 'label'), ['n'])} RETURN n`;
+        const result = await this.g.query(query);
+        logger.perfLog(startTime, 500, query);
         return formatResult(result).filter(item =>
           (item.label && labelFilter.values.find(value => item.label.indexOf(value) > -1)));
       }
-      const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters, ['n'])} RETURN n`);
+      const startTime = Date.now();
+      const query = `MATCH (n) ${await this.createWhereClause(filters, ['n'])} RETURN n`;
+      const result = await this.g.query(query);
+      logger.perfLog(startTime, 500, query);
       return formatResult(result);
     }
     return [];
@@ -419,8 +422,9 @@ export default class RedisGraphConnector {
       if (labelFilter) {
         return this.runSearchQuery(filters).then(r => r.length);
       }
-
+      const startTime = Date.now();
       const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters, ['n'])} RETURN count(n)`);
+      logger.perfLog(startTime, 500, 'runSearchQueryCountOnly()');
       if (result.hasNext() === true) {
         return result.next().get('count(n)');
       }
@@ -435,8 +439,9 @@ export default class RedisGraphConnector {
     const values = ['cluster', 'kind', 'label', 'name', 'namespace', 'status'];
 
     if (this.rbac.length > 0) {
+      const startTime = Date.now();
       const result = await this.g.query(`MATCH (n) ${await this.createWhereClause([], ['n'])} RETURN n LIMIT 1`);
-
+      logger.perfLog(startTime, 500, 'getAllProperties()');
       result._header.forEach((property) => {
         const label = property.substr(property.indexOf('.') + 1);
         if (label.charAt(0) !== '_' && values.indexOf(label) < 0) {
@@ -458,10 +463,11 @@ export default class RedisGraphConnector {
 
     let valuesList = [];
     if (this.rbac.length > 0) {
+      const startTime = Date.now();
       const result = filters.length > 0
         ? await this.g.query(`MATCH (n) ${await this.createWhereClause(filters, ['n'])} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC`)
         : await this.g.query(`MATCH (n) ${await this.createWhereClause([], ['n'])} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC`);
-
+      logger.perfLog(startTime, 500, 'getAllValues()');
       result._results.forEach((record) => {
         if (record.values()[0] !== 'NULL' && record.values()[0] !== null) {
           valuesList.push(record.values()[0]);
@@ -503,11 +509,14 @@ export default class RedisGraphConnector {
       // A limitation in RedisGraph 1.0.15 is that we can't query relationships without direction.
       // To work around this limitation, we use 2 queries to get IN and OUT relationships.
       // Then we join both results.
+      const startTime = Date.now();
       const inRelationships = await this.g.query(`MATCH (n)<-[]-(r) ${await this.createWhereClause(filters, ['n', 'r'])} RETURN DISTINCT r`);
       const outRelationships = await this.g.query(`MATCH (n)-[]->(r) ${await this.createWhereClause(filters, ['n', 'r'])} RETURN DISTINCT r`);
 
       const inFormatted = await formatResult(inRelationships);
       const outFormatted = await formatResult(outRelationships);
+
+      logger.perfLog(startTime, 1000, 'findRelationships()');
 
       // Join results for IN and OUT, removing duplicates.
       const result = inFormatted;
