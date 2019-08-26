@@ -335,9 +335,8 @@ export default class RedisGraphConnector {
     });
   }
 
-  async getRbacString() {
-    const objAliases = ['n'];
-    const userAccessKey = this.req.user.name;
+  async getRbacString(objAliases = []) {
+    const userAccessKey = this.req.user.accessToken;
     const userAccessCache = cache.get(userAccessKey);
     let data = null;
     if (userAccessCache !== undefined) {
@@ -349,19 +348,30 @@ export default class RedisGraphConnector {
       data = await Promise.all(this.rbac.map(namespace =>
         this.getUserAccess(this.req, namespace)));
       data.push(await this.getNonNamespacedAccess(this.req));
-      data = await _.flatten(data).map(item => `${objAliases[0]}._rbac = ${item}`);
       cache.set(userAccessKey, data);
     }
-
-    if (data.includes(`${objAliases[0]}._rbac = *`)) {
+    const aliasesData = []; // array of arrays
+    await _.flatten(data).forEach((item) => {
+      objAliases.forEach((alias, i) => {
+        if (!aliasesData[i]) {
+          aliasesData[i] = [];
+        }
+        const rbacString = `${alias}._rbac = ${item}`;
+        if (!aliasesData[i].includes(rbacString)) { // no duplicates
+          aliasesData[i].push(rbacString);
+        }
+      });
+    });
+    const aliasesStrings = aliasesData.map(a => a.join(' OR '));
+    const rbacFilter = `(${aliasesStrings.join(') AND (')})`;
+    if (rbacFilter.includes(`${objAliases[0]}._rbac = *`)) {
       return '';
     }
-    const rbacFilter = `(${data.join(' OR ')})`;
     return rbacFilter;
   }
 
-  async createWhereClause(filters) {
-    const rbac = await this.getRbacString();
+  async createWhereClause(filters, aliases) {
+    const rbac = await this.getRbacString(aliases);
     const filterString = getFilterString(filters);
     if (rbac !== '') {
       if (filterString !== '') {
@@ -388,12 +398,11 @@ export default class RedisGraphConnector {
       // for labels so we need to filter here, which btw is inefficient.
       const labelFilter = filters.find(f => f.property === 'label');
       if (labelFilter) {
-        const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters.filter(f => f.property !== 'label'))} RETURN n`);
+        const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters.filter(f => f.property !== 'label'), ['n'])} RETURN n`);
         return formatResult(result).filter(item =>
           (item.label && labelFilter.values.find(value => item.label.indexOf(value) > -1)));
       }
-
-      const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters)} RETURN n`);
+      const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters, ['n'])} RETURN n`);
       return formatResult(result);
     }
     return [];
@@ -411,7 +420,7 @@ export default class RedisGraphConnector {
         return this.runSearchQuery(filters).then(r => r.length);
       }
 
-      const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters)} RETURN count(n)`);
+      const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters, ['n'])} RETURN count(n)`);
       if (result.hasNext() === true) {
         return result.next().get('count(n)');
       }
@@ -426,7 +435,7 @@ export default class RedisGraphConnector {
     const values = ['cluster', 'kind', 'label', 'name', 'namespace', 'status'];
 
     if (this.rbac.length > 0) {
-      const result = await this.g.query(`MATCH (n) ${await this.createWhereClause([])} RETURN n LIMIT 1`);
+      const result = await this.g.query(`MATCH (n) ${await this.createWhereClause([], ['n'])} RETURN n LIMIT 1`);
 
       result._header.forEach((property) => {
         const label = property.substr(property.indexOf('.') + 1);
@@ -450,8 +459,8 @@ export default class RedisGraphConnector {
     let valuesList = [];
     if (this.rbac.length > 0) {
       const result = filters.length > 0
-        ? await this.g.query(`MATCH (n) ${await this.createWhereClause(filters)} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC`)
-        : await this.g.query(`MATCH (n) ${await this.createWhereClause([])} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC`);
+        ? await this.g.query(`MATCH (n) ${await this.createWhereClause(filters, ['n'])} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC`)
+        : await this.g.query(`MATCH (n) ${await this.createWhereClause([], ['n'])} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC`);
 
       result._results.forEach((record) => {
         if (record.values()[0] !== 'NULL' && record.values()[0] !== null) {
@@ -494,8 +503,8 @@ export default class RedisGraphConnector {
       // A limitation in RedisGraph 1.0.15 is that we can't query relationships without direction.
       // To work around this limitation, we use 2 queries to get IN and OUT relationships.
       // Then we join both results.
-      const inRelationships = await this.g.query(`MATCH (n)<-[]-(r) ${await this.createWhereClause(filters)} RETURN DISTINCT r`);
-      const outRelationships = await this.g.query(`MATCH (n)-[]->(r) ${await this.createWhereClause(filters)} RETURN DISTINCT r`);
+      const inRelationships = await this.g.query(`MATCH (n)<-[]-(r) ${await this.createWhereClause(filters, ['n', 'r'])} RETURN DISTINCT r`);
+      const outRelationships = await this.g.query(`MATCH (n)-[]->(r) ${await this.createWhereClause(filters, ['n', 'r'])} RETURN DISTINCT r`);
 
       const inFormatted = await formatResult(inRelationships);
       const outFormatted = await formatResult(outRelationships);

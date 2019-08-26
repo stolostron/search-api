@@ -138,6 +138,7 @@ export default function createAuthMiddleWare({
         accessToken,
         accountId: req.headers && req.headers.accountid,
       }),
+      accessToken,
     };
 
     next();
