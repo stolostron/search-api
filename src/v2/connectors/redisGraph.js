@@ -345,15 +345,19 @@ export default class RedisGraphConnector {
     const userAccessCache = cache.get(userAccessKey);
     let data = null;
     if (userAccessCache !== undefined) {
-      data = userAccessCache;
+      data = await userAccessCache; // userAccessCache is either unresolved Promise or data if resolved
     } else {
-      if (isOpenshift === null) {
-        await this.checkIfOpenShiftPlatform(this.req);
-      }
-      data = await Promise.all(this.rbac.map(namespace =>
-        this.getUserAccess(this.req, namespace)));
-      data.push(await this.getNonNamespacedAccess(this.req));
-      cache.set(userAccessKey, data);
+      const dataPromise = new Promise(async (resolve) => {
+        if (isOpenshift === null) {
+          await this.checkIfOpenShiftPlatform(this.req);
+        }
+        data = await Promise.all(this.rbac.map(namespace =>
+          this.getUserAccess(this.req, namespace)));
+        data.push(await this.getNonNamespacedAccess(this.req));
+        resolve(data);
+      });
+      cache.set(userAccessKey, dataPromise);
+      data = await dataPromise;
     }
     const aliasesData = []; // array of arrays
     await _.flatten(data).forEach((item) => {
