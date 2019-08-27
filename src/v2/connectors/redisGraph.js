@@ -22,7 +22,7 @@ import { isRequired } from '../lib/utils';
 let isOpenshift = null;
 const cache = lru({
   max: 1000,
-  maxAge: 1000 * 60, // 1 min
+  maxAge: 1000 * 60 * 2, // 2 min
 });
 
 // FIXME: Is there a more efficient way?
@@ -205,6 +205,7 @@ export default class RedisGraphConnector {
   }
 
   async getNonNamespacedResources(req) {
+    const startTime = Date.now();
     const resources = [];
 
     // Get non-namespaced resources WITH an api group
@@ -257,10 +258,12 @@ export default class RedisGraphConnector {
       }
       return 'Error getting available apis.';
     }));
+    logger.perfLog(startTime, 100, 'getNonNamespacedResources()');
     return _.flatten(resources);
   }
 
   async getNonNamespacedAccess(req) {
+    const startTime = Date.now();
     const nonNamespacedResources = await this.getNonNamespacedResources(req);
     const results = await Promise.all(nonNamespacedResources.map((resource) => {
       const defaults = {
@@ -289,10 +292,12 @@ export default class RedisGraphConnector {
         return null;
       });
     }));
+    logger.perfLog(startTime, 100, 'getNonNamespacedAccess()');
     return results;
   }
 
   async getUserAccess(req, namespace) {
+    const startTime = Date.now();
     const defaults = {
       url: `${config.get('cfcRouterUrl')}/kubernetes/apis/authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`,
       method: 'POST',
@@ -329,11 +334,13 @@ export default class RedisGraphConnector {
         });
       }
       userResources.push(`'${namespace}_null_releases'`);
+      logger.perfLog(startTime, 300, 'getUserAccess()');
       return userResources;
     });
   }
 
   async getRbacString(objAliases = []) {
+    const startTime = Date.now();
     const userAccessKey = this.req.user.accessToken;
     const userAccessCache = cache.get(userAccessKey);
     let data = null;
@@ -363,8 +370,10 @@ export default class RedisGraphConnector {
     const aliasesStrings = aliasesData.map(a => a.join(' OR '));
     const rbacFilter = `(${aliasesStrings.join(') AND (')})`;
     if (rbacFilter.includes(`${objAliases[0]}._rbac = *`)) {
+      logger.perfLog(startTime, 500, 'getRbacString()');
       return '';
     }
+    logger.perfLog(startTime, 500, 'getRbacString()');
     return rbacFilter;
   }
 
@@ -396,17 +405,19 @@ export default class RedisGraphConnector {
       // for labels so we need to filter here, which btw is inefficient.
       const labelFilter = filters.find(f => f.property === 'label');
       if (labelFilter) {
+        const whereClause = await this.createWhereClause(filters.filter(f => f.property !== 'label'), ['n']);
         const startTime = Date.now();
-        const query = `MATCH (n) ${await this.createWhereClause(filters.filter(f => f.property !== 'label'), ['n'])} RETURN n`;
+        const query = `MATCH (n) ${whereClause} RETURN n`;
         const result = await this.g.query(query);
-        logger.perfLog(startTime, 500, query);
+        logger.perfLog(startTime, 150, query);
         return formatResult(result).filter(item =>
           (item.label && labelFilter.values.find(value => item.label.indexOf(value) > -1)));
       }
+      const whereClause = await this.createWhereClause(filters, ['n']);
       const startTime = Date.now();
-      const query = `MATCH (n) ${await this.createWhereClause(filters, ['n'])} RETURN n`;
+      const query = `MATCH (n) ${whereClause} RETURN n`;
       const result = await this.g.query(query);
-      logger.perfLog(startTime, 500, query);
+      logger.perfLog(startTime, 150, query);
       return formatResult(result);
     }
     return [];
@@ -423,9 +434,10 @@ export default class RedisGraphConnector {
       if (labelFilter) {
         return this.runSearchQuery(filters).then(r => r.length);
       }
+      const whereClause = await this.createWhereClause(filters, ['n']);
       const startTime = Date.now();
-      const result = await this.g.query(`MATCH (n) ${await this.createWhereClause(filters, ['n'])} RETURN count(n)`);
-      logger.perfLog(startTime, 500, 'runSearchQueryCountOnly()');
+      const result = await this.g.query(`MATCH (n) ${whereClause} RETURN count(n)`);
+      logger.perfLog(startTime, 150, 'runSearchQueryCountOnly()');
       if (result.hasNext() === true) {
         return result.next().get('count(n)');
       }
@@ -440,9 +452,10 @@ export default class RedisGraphConnector {
     const values = ['cluster', 'kind', 'label', 'name', 'namespace', 'status'];
 
     if (this.rbac.length > 0) {
+      const whereClause = await this.createWhereClause([], ['n']);
       const startTime = Date.now();
-      const result = await this.g.query(`MATCH (n) ${await this.createWhereClause([], ['n'])} RETURN n LIMIT 1`);
-      logger.perfLog(startTime, 500, 'getAllProperties()');
+      const result = await this.g.query(`MATCH (n) ${whereClause} RETURN n LIMIT 1`);
+      logger.perfLog(startTime, 150, 'getAllProperties()');
       result._header.forEach((property) => {
         const label = property.substr(property.indexOf('.') + 1);
         if (label.charAt(0) !== '_' && values.indexOf(label) < 0) {
@@ -511,14 +524,15 @@ export default class RedisGraphConnector {
       // To work around this limitation, we use 2 queries to get IN and OUT relationships.
       // Then we join both results.
 
+      const whereClause = await this.createWhereClause(filters, ['n', 'r']);
       const startTime = Date.now();
 
-      const inQuery = `MATCH (n)<-[]-(r) ${await this.createWhereClause(filters, ['n', 'r'])} RETURN DISTINCT r`;
-      const outQuery = `MATCH (n)-[]->(r) ${await this.createWhereClause(filters, ['n', 'r'])} RETURN DISTINCT r`;
+      const inQuery = `MATCH (n)<-[]-(r) ${whereClause} RETURN DISTINCT r`;
+      const outQuery = `MATCH (n)-[]->(r) ${whereClause} RETURN DISTINCT r`;
 
       const [inFormatted, outFormatted] = await Promise.all([formatResult(await this.g.query(inQuery)), formatResult(await this.g.query(outQuery))]);
 
-      logger.perfLog(startTime, 1000, 'findRelationships()');
+      logger.perfLog(startTime, 200, 'findRelationships()');
 
       // Join results for IN and OUT, removing duplicates.
       const result = inFormatted;
