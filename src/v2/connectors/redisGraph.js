@@ -258,7 +258,7 @@ export default class RedisGraphConnector {
       }
       return 'Error getting available apis.';
     }));
-    logger.perfLog(startTime, 100, 'getNonNamespacedResources()');
+    logger.perfLog(startTime, 300, 'getNonNamespacedResources()');
     return _.flatten(resources);
   }
 
@@ -292,7 +292,7 @@ export default class RedisGraphConnector {
         return null;
       });
     }));
-    logger.perfLog(startTime, 100, 'getNonNamespacedAccess()');
+    logger.perfLog(startTime, 300, 'getNonNamespacedAccess()');
     return results;
   }
 
@@ -334,7 +334,7 @@ export default class RedisGraphConnector {
         });
       }
       userResources.push(`'${namespace}_null_releases'`);
-      logger.perfLog(startTime, 300, 'getUserAccess()');
+      logger.perfLog(startTime, 500, 'getUserAccess()');
       return userResources;
     });
   }
@@ -374,10 +374,10 @@ export default class RedisGraphConnector {
     const aliasesStrings = aliasesData.map(a => a.join(' OR '));
     const rbacFilter = `(${aliasesStrings.join(') AND (')})`;
     if (rbacFilter.includes(`${objAliases[0]}._rbac = *`)) {
-      logger.perfLog(startTime, 500, 'getRbacString()');
+      logger.perfLog(startTime, 600, 'getRbacString()');
       return '';
     }
-    logger.perfLog(startTime, 500, 'getRbacString()');
+    logger.perfLog(startTime, 600, 'getRbacString()');
     return rbacFilter;
   }
 
@@ -536,7 +536,7 @@ export default class RedisGraphConnector {
 
       const [inFormatted, outFormatted] = await Promise.all([formatResult(await this.g.query(inQuery)), formatResult(await this.g.query(outQuery))]);
 
-      logger.perfLog(startTime, 200, 'findRelationships()');
+      logger.perfLog(startTime, 300, 'findRelationships()');
 
       // Join results for IN and OUT, removing duplicates.
       const result = inFormatted;

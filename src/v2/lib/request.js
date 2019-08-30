@@ -7,6 +7,19 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 
-const request = require('requestretry').defaults({ json: true, maxAttempts: 1, strictSSL: false });
+import { HttpsAgent } from 'agentkeepalive';
+
+const httpsAgent = new HttpsAgent({
+  keepAlive: true,
+  timeout: 1000 * 60 * 5,
+  freeSocketTimeout: 1000 * 60 * 3, // Keep connections alive longer than the cache.
+});
+
+const request = require('requestretry').defaults({
+  agent: httpsAgent,
+  json: true,
+  maxAttempts: 1,
+  strictSSL: false,
+});
 
 export default request;
