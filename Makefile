@@ -18,7 +18,7 @@ GITHUB_TOKEN ?=
 DOCKER_USER := $(shell echo $(DOCKER_USERNAME))
 DOCKER_PASS := $(shell echo $(DOCKER_PASSWORD))
 
-DOCKER_BUILD_OPTS = --build-arg "VCS_REF=$(VCS_REF)" \
+DOCKER_BUILD_OPTS = --build-arg "VCS_REF=$(GIT_COMMIT)" \
 										--build-arg "VCS_URL=$(GIT_REMOTE_URL)" \
 										--build-arg "IMAGE_NAME=$(IMAGE_NAME)" \
 										--build-arg "IMAGE_DESCRIPTION=$(IMAGE_DESCRIPTION)" \

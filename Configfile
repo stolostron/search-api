@@ -1,7 +1,8 @@
 GIT_REMOTE_URL = $(shell git config --get remote.origin.url)
+GIT_COMMIT  = $(shell git rev-parse --short HEAD)
 DOCKER_SERVER ?=
 DOCKER_USERNAME ?= token
-IMAGE_DESCRIPTION =
+IMAGE_DESCRIPTION = Provides the API for the Search service
 IMAGE_NAME = search-api
 IMAGE_REPO ?=
 RELEASE_TAG ?= latest
@@ -21,7 +22,7 @@ MANIFEST_VERSION ?= v0.7.0
 DEFAULT_S390X_IMAGE ?= ibmcom/pause-s390x:3.0
 IMAGE_NAME_S390X ?= ${IMAGE_REPO}/${IMAGE_NAME}-s390x:${RELEASE_TAG}
 
-#new additions for the UBI image
+
 #Variables for redhat required labels
 IMAGE_DISPLAY_NAME=Search API
 IMAGE_MAINTAINER=zack.layne1@ibm.com
