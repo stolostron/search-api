@@ -40,7 +40,7 @@ describe('Auth Middleware', () => {
       expect(err).not.toBeDefined();
       expect(mockRequest.kubeToken).toBe('Bearer test-id-token');
       expect(mockHttpLib.mock.calls).toHaveLength(1);
-      expect(mockCache.set.mock.calls).toHaveLength(1);
+      expect(mockCache.set.mock.calls).toHaveLength(2);
       expect(mockCache.set.mock.calls[0]).toMatchSnapshot();
       done();
     });
@@ -63,7 +63,7 @@ describe('Auth Middleware', () => {
       expect(err).not.toBeDefined();
       expect(mockHttpLib.mock.calls).toHaveLength(0);
       expect(mockRequest.kubeToken).toBe('Bearer test-cached-token');
-      expect(mockCache.get.mock.calls).toHaveLength(1);
+      expect(mockCache.get.mock.calls).toHaveLength(2);
       expect(mockCache.get.mock.calls[0]).toMatchSnapshot();
       done();
     });

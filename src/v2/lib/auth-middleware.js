@@ -115,7 +115,7 @@ async function getNamespaces({ accessToken, accountId }) {
 export default function createAuthMiddleWare({
   cache = lru({
     max: 1000,
-    maxAge: 30 * 60 * 1000, // 30 mins
+    maxAge: 2 * 60 * 1000, // 2 mins. Must keep low because user's permissions can change.
   }),
   httpLib = request,
   shouldLocalAuth,
@@ -132,12 +132,19 @@ export default function createAuthMiddleWare({
     const accessToken = _.get(req, "cookies['cfc-access-token-cookie']") || config.get('cfc-access-token-cookie') ||
       (req.headers.authorization && req.headers.authorization.substring(7));
 
-    req.user = {
-      namespaces: await getNamespaces({
-        // cookies field doesn't exist on test case requests
+    // Get the namespaces for the user.
+    // We cache the promise to prevent starting the same request multiple times.
+    let nsPromise = cache.get(`namespaces_${accessToken}`);
+    if (!nsPromise) {
+      nsPromise = getNamespaces({
         accessToken,
         accountId: req.headers && req.headers.accountid,
-      }),
+      });
+      cache.set(`namespaces_${accessToken}`, nsPromise);
+    }
+
+    req.user = {
+      namespaces: await nsPromise,
       accessToken,
     };
 
