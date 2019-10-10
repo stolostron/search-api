@@ -18,6 +18,18 @@ type Query {
 
   # Gets all Properties for search
   searchSchema: JSON
+
+  # Get saved search queries for the current user.
+  savedSearches: [userSearch]
+}
+
+# Saved Query Mutations
+type Mutation {
+  # Delete search query for the current user.
+  deleteSearch(resource: JSON): JSON
+
+  # Save a search query for the current user.
+  saveSearch(resource: JSON): JSON
 }
 
 # Common fields for all Kubernetes objects

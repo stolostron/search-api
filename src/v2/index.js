@@ -20,10 +20,13 @@ import cookieParser from 'cookie-parser';
 import logger from './lib/logger';
 
 import RedisGraphConnector from './connectors/redisGraph';
+import IdMgmtConnector from './connectors/idmgmt';
 
 import SearchModel from './models/search';
+import QueryModel from './models/userSearch';
 
 import MockSearchConnector from './mocks/search';
+import MockIdMgmtConnector from './mocks/idmgmt';
 import schema from './schema/';
 import config from '../../config';
 import authMiddleware from './lib/auth-middleware';
@@ -83,15 +86,20 @@ graphQLServer.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress(async (req) =>
   const namespaces = req.user.namespaces.map(ns => ns.namespaceId);
 
   let searchConnector;
+  let idMgmtConnector;
   if (isTest) {
     searchConnector = new MockSearchConnector();
+    idMgmtConnector = new MockIdMgmtConnector();
   } else {
     searchConnector = new RedisGraphConnector({ rbac: namespaces, req });
+    idMgmtConnector = new IdMgmtConnector({ iamToken: req.user.accessToken });
   }
+
 
   const context = {
     req,
     searchModel: new SearchModel({ searchConnector }),
+    queryModel: new QueryModel({ idMgmtConnector }),
   };
 
   return { formatError, schema, context };

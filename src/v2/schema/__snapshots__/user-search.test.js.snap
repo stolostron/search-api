@@ -1,0 +1,62 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UserSearch Resolver Correctly Resolves Saved Search Query 1`] = `
+Object {
+  "data": Object {
+    "savedSearches": Array [
+      Object {
+        "description": "Query for all pods",
+        "id": "1570469623824",
+        "name": "All pods",
+        "searchText": "kind:pod",
+      },
+      Object {
+        "description": "Query for all deploys",
+        "id": "1234567890",
+        "name": "All deployments",
+        "searchText": "kind:deployment",
+      },
+    ],
+  },
+}
+`;
+
+exports[`UserSearch Resolver Correctly Resolves Saved Search Query Deletion 1`] = `
+Object {
+  "data": Object {
+    "deleteSearch": Object {
+      "userQueries": Array [
+        Object {
+          "description": "Query for all pods",
+          "id": "1570469623824",
+          "name": "All pods",
+          "searchText": "kind:pod",
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`UserSearch Resolver Correctly Resolves Saved Search Query Edit 1`] = `
+Object {
+  "data": Object {
+    "saveSearch": Object {
+      "userQueries": Array [
+        Object {
+          "description": "Query for all pods",
+          "id": "1570469623824",
+          "name": "All pods",
+          "searchText": "kind:pod",
+        },
+        Object {
+          "description": "Query for all deploys on hub cluster",
+          "id": "1234567890",
+          "name": "All deployments",
+          "searchText": "kind:deployment cluster:local-cluster",
+        },
+      ],
+    },
+  },
+}
+`;

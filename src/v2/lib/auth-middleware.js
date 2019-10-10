@@ -131,6 +131,39 @@ export default function createAuthMiddleWare({
 
     const accessToken = _.get(req, "cookies['cfc-access-token-cookie']") || config.get('cfc-access-token-cookie') ||
       (req.headers.authorization && req.headers.authorization.substring(7));
+    let userNamePromise = cache.get(`userName-${accessToken}`);
+    if (!userNamePromise) {
+      userNamePromise = new Promise(async (resolve) => {
+        let userName = null;
+        userName = _.get(jws.decode(idToken), 'payload.uniqueSecurityName');
+        if (process.env.NODE_ENV === 'test' || process.env.MOCK === 'true') {
+          userName = 'admin_test';
+        }
+        // special case for redhat openshift, can't get user from idtoken
+        if (!userName) {
+          const options = {
+            url: `${config.get('PLATFORM_IDENTITY_PROVIDER_URL')}/v1/auth/userinfo`,
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            method: 'POST',
+            json: true,
+            form: {
+              access_token: accessToken,
+            },
+          };
+
+          const response = await httpLib(options);
+          userName = _.get(response, 'body.sub') || _.get(response, 'body.name');
+          if (!userName) {
+            throw new Error(`Authentication error: ${response.body}`);
+          }
+        }
+        resolve(userName);
+      });
+      cache.set(`userName-${accessToken}`, userNamePromise);
+    }
+    const userName = await userNamePromise;
 
     // Get the namespaces for the user.
     // We cache the promise to prevent starting the same request multiple times.
@@ -144,6 +177,7 @@ export default function createAuthMiddleWare({
     }
 
     req.user = {
+      name: userName,
       namespaces: await nsPromise,
       accessToken,
     };

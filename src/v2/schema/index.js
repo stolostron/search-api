@@ -13,16 +13,19 @@ import { makeExecutableSchema } from 'graphql-tools';
 import * as json from './json';
 import * as query from './query';
 import * as search from './search';
+import * as userSearch from './user-search';
 
 const modules = [
   json,
   query,
   search,
+  userSearch,
 ];
 
 const mainDefs = [`
 schema {
   query: Query,
+  mutation: Mutation,
 }
 `];
 

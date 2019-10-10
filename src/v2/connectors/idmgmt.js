@@ -33,4 +33,17 @@ export default class IDConnector {
 
     return this.http(_.merge(defaults, opts)).then(res => res.body);
   }
+
+  put(path = '', opts = {}) {
+    const defaults = {
+      url: `${this.idmgmtApiEndpoint}${path}`,
+      method: 'PUT',
+      json: {},
+      headers: {
+        Authorization: `Bearer ${this.iamToken}`,
+      },
+    };
+
+    return this.http(_.merge(defaults, opts)).then(res => res.body);
+  }
 }

@@ -143,7 +143,7 @@ function getRedisClient() {
       logger.info('Redis Client connected.');
     });
     redisClient.on('ready', () => {
-      logger.info('Redis Client redy.');
+      logger.info('Redis Client ready.');
       resolve(redisClient);
     });
 
@@ -455,6 +455,12 @@ export default class RedisGraphConnector {
     // Adding these first to rank them higher when showin in UI.
     const values = ['cluster', 'kind', 'label', 'name', 'namespace', 'status'];
 
+    const userAccessKey = _.get(this.req, 'user.accessToken');
+    const allPropertiesCache = userAccessKey !== undefined ? cache.get(`properties-${userAccessKey}`) : undefined;
+    if (allPropertiesCache !== undefined) {
+      return allPropertiesCache;
+    }
+
     if (this.rbac.length > 0) {
       const whereClause = await this.createWhereClause([], ['n']);
       const startTime = Date.now();
@@ -467,7 +473,7 @@ export default class RedisGraphConnector {
         }
       });
     }
-
+    cache.set(`properties-${userAccessKey}`, values);
     return values;
   }
 
