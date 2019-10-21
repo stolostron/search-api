@@ -111,6 +111,7 @@ async function getNamespaces({ accessToken, accountId }) {
 
 // Middleware to:
 // - Set namespaces to filter this request.
+// - Set user for the request
 // - Set token for kubernetes requests.
 export default function createAuthMiddleWare({
   cache = lru({
@@ -163,7 +164,6 @@ export default function createAuthMiddleWare({
       });
       cache.set(`userName-${accessToken}`, userNamePromise);
     }
-    const userName = await userNamePromise;
 
     // Get the namespaces for the user.
     // We cache the promise to prevent starting the same request multiple times.
@@ -176,9 +176,11 @@ export default function createAuthMiddleWare({
       cache.set(`namespaces_${accessToken}`, nsPromise);
     }
 
+    const [userName, namespaces] = await Promise.all([userNamePromise, nsPromise]);
+
     req.user = {
       name: userName,
-      namespaces: await nsPromise,
+      namespaces,
       accessToken,
     };
 
