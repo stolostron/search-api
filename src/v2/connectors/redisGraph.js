@@ -8,22 +8,15 @@
  ****************************************************************************** */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
-import _ from 'lodash';
 import fs from 'fs';
 import redis from 'redis';
-import lru from 'lru-cache';
 import { RedisGraph } from 'redisgraph.js';
 import moment from 'moment';
 import config from '../../../config';
 import logger from '../lib/logger';
 import requestLib from '../lib/request';
 import { isRequired } from '../lib/utils';
-
-let isOpenshift = null;
-const cache = lru({
-  max: 1000,
-  maxAge: 1000 * 60 * 2, // 2 min
-});
+import pollRbacCache, { getUserRbacFilter } from '../lib/rbacCaching';
 
 // FIXME: Is there a more efficient way?
 function formatResult(results) {
@@ -157,9 +150,12 @@ function getRedisClient() {
   });
 }
 
-// Initializes the Redis client on startup.
-if (process.env.NODE_ENV !== 'test') { // Skip while running tests until we can mock Redis.
+// Skip while running tests until we can mock Redis.
+if (process.env.NODE_ENV !== 'test') {
+  // Initializes the Redis client on startup.
   getRedisClient();
+  // Check if user access has changed for any logged in user - if so remove them from the cache so the rbac string is regenerated
+  pollRbacCache();
 }
 
 
@@ -182,197 +178,10 @@ export default class RedisGraphConnector {
     return redisClient.connected && redisClient.ready;
   }
 
-  async checkIfOpenShiftPlatform(req) {
-    const defaults = {
-      url: `${config.get('cfcRouterUrl')}/kubernetes/apis/authorization.openshift.io/v1`,
-      method: 'GET',
-      headers: {
-        Authorization: req.kubeToken,
-      },
-    };
-
-    const res = await this.http(defaults);
-    if (res.statusCode === 200) {
-      const selfReview = res.body.resources.filter(r => r.kind === 'SelfSubjectRulesReview');
-      logger.info('SelfSubjectRulesReview:', selfReview);
-      if (selfReview.length > 0) {
-        logger.info('Found API "authorization.openshift.io/v1" so assuming that we are running in OpenShift');
-        isOpenshift = true;
-        return;
-      }
-    }
-    isOpenshift = false;
-  }
-
-  async getNonNamespacedResources(req) {
-    const startTime = Date.now();
-    const resources = [];
-
-    // Get non-namespaced resources WITH an api group
-    const apiGroupDefaults = {
-      url: `${config.get('cfcRouterUrl')}/kubernetes/apis/`,
-      method: 'POST',
-      headers: {
-        Authorization: req.kubeToken,
-      },
-      json: {},
-    };
-    resources.push(await this.http(apiGroupDefaults).then(async (res) => {
-      if (res.body) {
-        const apiGroups = res.body.groups.map(group => group.preferredVersion.groupVersion);
-        const results = await Promise.all(apiGroups.map((group) => {
-          const resourceDefaults = {
-            url: `${config.get('cfcRouterUrl')}/kubernetes/apis/${group}`,
-            method: 'GET',
-            headers: {
-              Authorization: req.kubeToken,
-            },
-            json: {},
-          };
-          return this.http(resourceDefaults).then((result) => {
-            const groupResources = _.get(result, 'body.resources', []);
-            const nonNamespaced = groupResources.filter(resource => resource.namespaced === false)
-              .map(resource => resource.name);
-            return nonNamespaced.filter(item => item.length > 0)
-              .map(item => ({ name: item, apiGroup: group }));
-          });
-        }));
-        return _.flatten(results.filter(item => item.length > 0));
-      }
-      return 'Error getting available apis.';
-    }));
-
-    // Get non-namespaced resources WITHOUT an api group
-    const defaults = {
-      url: `${config.get('cfcRouterUrl')}/kubernetes/api/v1`,
-      method: 'GET',
-      headers: {
-        Authorization: req.kubeToken,
-      },
-      json: {},
-    };
-    resources.push(await this.http(defaults).then((res) => {
-      if (res.body) {
-        return res.body.resources.filter(resource => resource.namespaced === false)
-          .map(item => ({ name: item.name, apiGroup: 'null' }));
-      }
-      return 'Error getting available apis.';
-    }));
-    logger.perfLog(startTime, 300, 'getNonNamespacedResources()');
-    return _.flatten(resources);
-  }
-
-  async getNonNamespacedAccess(req) {
-    const startTime = Date.now();
-    const nonNamespacedResources = await this.getNonNamespacedResources(req);
-    const results = await Promise.all(nonNamespacedResources.map((resource) => {
-      const defaults = {
-        url: `${config.get('cfcRouterUrl')}/kubernetes/apis/authorization.k8s.io/v1/selfsubjectaccessreviews`,
-        method: 'POST',
-        headers: {
-          Authorization: req.kubeToken,
-        },
-        json: {
-          apiVersion: 'authorization.k8s.io/v1',
-          kind: 'SelfSubjectAccessReview',
-          spec: {
-            resourceAttributes: {
-              verb: 'get',
-              resource: resource.name,
-            },
-          },
-        },
-      };
-      return this.http(defaults).then((res) => {
-        if (res.body && res.body.status) {
-          if (res.body.status.allowed) {
-            return `'null_${resource.apiGroup}_${resource.name}'`;
-          }
-        }
-        return null;
-      });
-    }));
-    logger.perfLog(startTime, 300, 'getNonNamespacedAccess()');
-    return results;
-  }
-
-  async getUserAccess(req, namespace) {
-    const startTime = Date.now();
-    const defaults = {
-      url: `${config.get('cfcRouterUrl')}/kubernetes/apis/authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`,
-      method: 'POST',
-      headers: {
-        Authorization: req.kubeToken,
-      },
-      json: {
-        apiVersion: `authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1`,
-        kind: 'SelfSubjectRulesReview',
-        spec: {
-          namespace,
-        },
-      },
-    };
-    return this.http(defaults).then((res) => {
-      let userResources = [];
-      if (res.body && res.body.status) {
-        const results = isOpenshift ? res.body.status.rules : res.body.status.resourceRules;
-        results.forEach((item) => {
-          if (item.verbs.includes('*') && item.resources.includes('*')) {
-            // if user has access to everything then add just an *
-            userResources = userResources.concat(['*']);
-          } else if (item.verbs.includes('get') && item.resources.length > 0) { // TODO need to include access for 'patch' and 'delete'
-            // RBAC string is defined as "namespace_apigroup_kind"
-            const resources = [];
-            const ns = (namespace === '' || namespace === undefined) ? 'null_' : `${namespace}_`;
-            const apiGroup = (item.apiGroups[0] === '' || item.apiGroups[0] === undefined) ? 'null_' : `${item.apiGroups[0]}_`;
-            item.resources.forEach((resource) => {
-              resources.push(`'${ns + apiGroup + resource}'`);
-            });
-            userResources = userResources.concat(resources);
-          }
-          return null;
-        });
-      }
-      userResources.push(`'${namespace}_null_releases'`);
-      logger.perfLog(startTime, 500, 'getUserAccess()');
-      return userResources;
-    });
-  }
-
+  // eslint-disable-next-line class-methods-use-this
   async getRbacString(objAliases = []) {
     const startTime = Date.now();
-    const userAccessKey = this.req.user.accessToken;
-    const userAccessCache = cache.get(userAccessKey);
-    let data = null;
-    if (userAccessCache !== undefined) {
-      data = await userAccessCache; // userAccessCache is either unresolved Promise or data if resolved
-    } else {
-      const dataPromise = new Promise(async (resolve) => {
-        if (isOpenshift === null) {
-          await this.checkIfOpenShiftPlatform(this.req);
-        }
-        data = await Promise.all(this.rbac.map(namespace =>
-          this.getUserAccess(this.req, namespace)));
-        data.push(await this.getNonNamespacedAccess(this.req));
-        resolve(data);
-      });
-      cache.set(userAccessKey, dataPromise);
-      data = await dataPromise;
-    }
-    const aliasesData = []; // array of arrays
-    await _.flatten(data).forEach((item) => {
-      objAliases.forEach((alias, i) => {
-        if (!aliasesData[i]) {
-          aliasesData[i] = [];
-        }
-        const rbacString = `${alias}._rbac = ${item}`;
-        if (!aliasesData[i].includes(rbacString)) { // no duplicates
-          aliasesData[i].push(rbacString);
-        }
-      });
-    });
-    const aliasesStrings = aliasesData.map(a => a.join(' OR '));
-    const rbacFilter = `(${aliasesStrings.join(') AND (')})`;
+    const rbacFilter = await getUserRbacFilter(this.req, objAliases);
     if (rbacFilter.includes(`${objAliases[0]}._rbac = *`)) {
       logger.perfLog(startTime, 600, 'getRbacString()');
       return '';
@@ -413,7 +222,7 @@ export default class RedisGraphConnector {
         const startTime = Date.now();
         const query = `MATCH (n) ${whereClause} RETURN n`;
         const result = await this.g.query(query);
-        logger.perfLog(startTime, 150, query);
+        logger.perfLog(startTime, 150, 'LabelSearchQuery');
         return formatResult(result).filter(item =>
           (item.label && labelFilter.values.find(value => item.label.indexOf(value) > -1)));
       }
@@ -421,7 +230,7 @@ export default class RedisGraphConnector {
       const startTime = Date.now();
       const query = `MATCH (n) ${whereClause} RETURN n`;
       const result = await this.g.query(query);
-      logger.perfLog(startTime, 150, query);
+      logger.perfLog(startTime, 150, 'SearchQuery');
       return formatResult(result);
     }
     return [];
@@ -455,12 +264,6 @@ export default class RedisGraphConnector {
     // Adding these first to rank them higher when showin in UI.
     const values = ['cluster', 'kind', 'label', 'name', 'namespace', 'status'];
 
-    const userAccessKey = _.get(this.req, 'user.accessToken');
-    const allPropertiesCache = userAccessKey !== undefined ? cache.get(`properties-${userAccessKey}`) : undefined;
-    if (allPropertiesCache !== undefined) {
-      return allPropertiesCache;
-    }
-
     if (this.rbac.length > 0) {
       const whereClause = await this.createWhereClause([], ['n']);
       const startTime = Date.now();
@@ -473,7 +276,6 @@ export default class RedisGraphConnector {
         }
       });
     }
-    cache.set(`properties-${userAccessKey}`, values);
     return values;
   }
 
