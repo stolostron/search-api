@@ -50,17 +50,16 @@ after_success:
         if [[ "$BUILD_LEADER" == "YES" ]]; then
           if [[ "$BUILD_AGGREGATE_STATUS" == "others_succeeded" ]]; then
             echo "All jobs succeeded! Creating multi arch image..."
-            make docker:manifest-tool
-            make docker:multi-arch
+            make multi-arch
           else
             echo "Some jobs failed" && exit 1
           fi
         fi
       fi
-  - make cicd-log-success
+  - make cicd-log-success print_vars
 
 after_failure:
-  - make cicd-log-fail
+  - make cicd-log-fail print_vars
 
 notifications:
   slack:
