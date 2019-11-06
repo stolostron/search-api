@@ -14,7 +14,7 @@ type Query {
   search(input: [SearchInput]): [SearchResult]
 
   # Get all values for the given property. If a query is passed, then results will be filtered to only those matching the query.
-  searchComplete(property: String!, query: SearchInput): [String]
+  searchComplete(property: String!, query: SearchInput, limit: Int): [String]
 
   # Gets all Properties for search
   searchSchema: JSON

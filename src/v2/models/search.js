@@ -7,6 +7,8 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 
+import _ from 'lodash';
+import config from '../../../config';
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
 
@@ -17,7 +19,12 @@ function sanitizeString(s) {
 }
 
 // Sanitize all inputs to prevent "sql injection" attacks.
-function sanitizeInputs({ keywords = [], filters = [], property = '' }) {
+function sanitizeInputs({
+  keywords = [],
+  filters = [],
+  property = '',
+  limit,
+}) {
   const sanitizedKeywords = keywords.map(k => sanitizeString(k));
   const sanitizedFilters = filters.map(f => ({
     property: sanitizeString(f.property),
@@ -28,6 +35,7 @@ function sanitizeInputs({ keywords = [], filters = [], property = '' }) {
     keywords: sanitizedKeywords,
     filters: sanitizedFilters,
     property: sanitizeString(property),
+    limit: limit || config.get('defaultQueryLimit'),
   };
 }
 
@@ -41,6 +49,7 @@ function filterByKeywords(resultSet, keywords) {
 
   return resultSet.filter(r => Object.values(r).toString().match(regex));
 }
+
 export default class SearchModel {
   constructor({ searchConnector = isRequired('searchConnector') }) {
     this.searchConnector = searchConnector;
@@ -53,30 +62,55 @@ export default class SearchModel {
     }
   }
 
+  async searchQueryLimiter(keywords, filters, limit) {
+    let exitLoop = false;
+    let querySkipIdx = 0;
+    let results = [];
+    while (!exitLoop) {
+      // eslint-disable-next-line
+      const searchResults = await this.searchConnector.runSearchQuery(filters, limit, querySkipIdx);
+      // Filter results if keyword search - otherwise its a label search
+      const filteredResults = keywords.length > 0
+        ? filterByKeywords(searchResults, keywords)
+        : searchResults;
+      // concatenate search results each iteration removing any duplicates
+      results = _.unionBy(results, filteredResults, '_uid');
+      querySkipIdx += 1;
+      if (searchResults.length < config.get('defaultQueryLoopLimit') || results.length >= limit) exitLoop = true;
+    }
+    return results;
+  }
+
   async resolveSearch(input) {
-    const { keywords, filters } = sanitizeInputs(input);
+    const {
+      keywords,
+      filters,
+      limit,
+    } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
     if (keywords && keywords.length > 0) {
-      const results = await this.searchConnector.runSearchQuery(filters);
-      return filterByKeywords(results, keywords);
+      return this.searchQueryLimiter(keywords, filters, limit);
     }
-    return this.searchConnector.runSearchQuery(filters);
+    return this.searchConnector.runSearchQuery(filters, limit, -1);
   }
 
   async resolveSearchCount(input) {
-    const { keywords, filters } = sanitizeInputs(input);
+    const {
+      keywords,
+      filters,
+      limit,
+    } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
     if (keywords && keywords.length > 0) {
-      const results = await this.searchConnector.runSearchQuery(filters);
-      return filterByKeywords(results, keywords).length;
+      return this.searchQueryLimiter(keywords, filters, limit).length;
     }
-    return this.searchConnector.runSearchQueryCountOnly(filters);
+    return this.searchConnector.runSearchQueryCountOnly(filters, limit);
   }
 
-  async resolveSearchComplete(input) {
+  async resolveSearchComplete(input, limit) {
     const { property, filters } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
-    return this.searchConnector.getAllValues(property, filters);
+    return this.searchConnector.getAllValues(property, filters, limit);
   }
 
   /** Resolve the related items for a given search query.

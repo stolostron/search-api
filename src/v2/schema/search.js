@@ -23,6 +23,8 @@ export const typeDef = `
   input SearchInput {
     keywords: [String]
     filters: [SearchFilter]
+    # Max number of results. Default limit: 10,000. For unlimited results use -1.
+    limit: Int
   }
 
   type SearchResult {
@@ -36,8 +38,8 @@ export const typeDef = `
 export const resolver = {
   Query: {
     search: (parent, { input }) => input,
-    searchComplete: (parent, { property, query = {} }, { searchModel }) =>
-      searchModel.resolveSearchComplete({ property, filters: lodash.get(query, 'filters', []) }),
+    searchComplete: (parent, { property, query = {}, limit }, { searchModel }) =>
+      searchModel.resolveSearchComplete({ property, filters: lodash.get(query, 'filters', []) }, limit),
     searchSchema: (parent, args, { searchModel }) => searchModel.searchSchema(),
   },
   SearchResult: {

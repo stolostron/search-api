@@ -2,6 +2,8 @@
   "contextPath": "/searchapi",
   "searchPollInterval": 100,
   "searchPollTimeout": 50000,
+  "defaultQueryLimit": 10000,
+  "defaultQueryLoopLimit": 1000,
   "httpPort": 4010,
   "RBAC_POLL_INTERVAL": 60000,
   "RBAC_INACTIVITY_TIMEOUT": 600000,

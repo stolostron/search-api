@@ -32,7 +32,7 @@ function formatResult(results) {
     });
     resultList.push(resultItem);
   }
-  logger.perfLog(startTime, 100, 'formatResult()', `Result set size: ${results.length}`);
+  logger.perfLog(startTime, 100, 'formatResult()', `Result set size: ${resultList.length}`);
   return resultList;
 }
 
@@ -210,7 +210,7 @@ export default class RedisGraphConnector {
    * For users with access to 0 namespaces we return an empty object
    */
 
-  async runSearchQuery(filters) {
+  async runSearchQuery(filters, limit = config.get('defaultQueryLimit'), querySkipIdx = 0) {
     // logger.info('runSearchQuery()', filters);
     if (this.rbac.length > 0) {
       // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
@@ -226,9 +226,15 @@ export default class RedisGraphConnector {
         return formatResult(result).filter(item =>
           (item.label && labelFilter.values.find(value => item.label.indexOf(value) > -1)));
       }
+      let limitClause = '';
+      if (limit > 0) {
+        limitClause = querySkipIdx > -1
+          ? `SKIP ${querySkipIdx * config.get('defaultQueryLoopLimit')} LIMIT ${config.get('defaultQueryLoopLimit')}`
+          : `LIMIT ${limit}`;
+      }
       const whereClause = await this.createWhereClause(filters, ['n']);
       const startTime = Date.now();
-      const query = `MATCH (n) ${whereClause} RETURN n`;
+      const query = `MATCH (n) ${whereClause} RETURN n ${limitClause}`;
       const result = await this.g.query(query);
       logger.perfLog(startTime, 150, 'SearchQuery');
       return formatResult(result);
@@ -236,7 +242,7 @@ export default class RedisGraphConnector {
     return [];
   }
 
-  async runSearchQueryCountOnly(filters) {
+  async runSearchQueryCountOnly(filters, limit = config.get('defaultQueryLimit')) {
     // logger.info('runSearchQueryCountOnly()', filters);
 
     if (this.rbac.length > 0) {
@@ -245,11 +251,12 @@ export default class RedisGraphConnector {
       // for labels so we need to filter here, which btw is inefficient.
       const labelFilter = filters.find(f => f.property === 'label');
       if (labelFilter) {
-        return this.runSearchQuery(filters).then(r => r.length);
+        return this.runSearchQuery(filters, limit, -1).then(r => r.length);
       }
       const whereClause = await this.createWhereClause(filters, ['n']);
       const startTime = Date.now();
-      const result = await this.g.query(`MATCH (n) ${whereClause} RETURN count(n)`);
+      const limitClause = limit <= 0 ? '' : `LIMIT ${limit}`;
+      const result = await this.g.query(`MATCH (n) ${whereClause} RETURN count(n) ${limitClause}`);
       logger.perfLog(startTime, 150, 'runSearchQueryCountOnly()');
       if (result.hasNext() === true) {
         return result.next().get('count(n)');
@@ -279,7 +286,7 @@ export default class RedisGraphConnector {
     return values;
   }
 
-  async getAllValues(property, filters = []) {
+  async getAllValues(property, filters = [], limit) {
     // logger.info('Getting all values for property:', property, filters);
 
     if (property === '') {
@@ -290,9 +297,12 @@ export default class RedisGraphConnector {
     let valuesList = [];
     if (this.rbac.length > 0) {
       const startTime = Date.now();
+      const limitClause = limit <= 0 || property === 'label'
+        ? ''
+        : `LIMIT ${limit}`;
       const result = filters.length > 0
-        ? await this.g.query(`MATCH (n) ${await this.createWhereClause(filters, ['n'])} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC`)
-        : await this.g.query(`MATCH (n) ${await this.createWhereClause([], ['n'])} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC`);
+        ? await this.g.query(`MATCH (n) ${await this.createWhereClause(filters, ['n'])} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`)
+        : await this.g.query(`MATCH (n) ${await this.createWhereClause([], ['n'])} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`);
       logger.perfLog(startTime, 500, 'getAllValues()');
       result._results.forEach((record) => {
         if (record.values()[0] !== 'NULL' && record.values()[0] !== null) {
@@ -328,7 +338,6 @@ export default class RedisGraphConnector {
     }
     return valuesList;
   }
-
 
   async findRelationships({ filters = [] } = {}) {
     if (this.rbac.length > 0) {
