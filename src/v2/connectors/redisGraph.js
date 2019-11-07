@@ -285,7 +285,7 @@ export default class RedisGraphConnector {
     return values;
   }
 
-  async getAllValues(property, filters = [], limit) {
+  async getAllValues(property, filters = [], limit = config.get('defaultQueryLimit')) {
     // logger.info('Getting all values for property:', property, filters);
 
     if (property === '') {
