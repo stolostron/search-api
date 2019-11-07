@@ -98,13 +98,12 @@ export default class SearchModel {
     const {
       keywords,
       filters,
-      limit,
     } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
     if (keywords && keywords.length > 0) {
-      return this.searchQueryLimiter(keywords, filters, limit).length;
+      return this.searchQueryLimiter(keywords, filters, -1).length;
     }
-    return this.searchConnector.runSearchQueryCountOnly(filters, limit);
+    return this.searchConnector.runSearchQueryCountOnly(filters);
   }
 
   async resolveSearchComplete(input, limit) {

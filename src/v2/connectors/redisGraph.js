@@ -242,7 +242,7 @@ export default class RedisGraphConnector {
     return [];
   }
 
-  async runSearchQueryCountOnly(filters, limit = config.get('defaultQueryLimit')) {
+  async runSearchQueryCountOnly(filters) {
     // logger.info('runSearchQueryCountOnly()', filters);
 
     if (this.rbac.length > 0) {
@@ -251,12 +251,11 @@ export default class RedisGraphConnector {
       // for labels so we need to filter here, which btw is inefficient.
       const labelFilter = filters.find(f => f.property === 'label');
       if (labelFilter) {
-        return this.runSearchQuery(filters, limit, -1).then(r => r.length);
+        return this.runSearchQuery(filters, -1, -1).then(r => r.length);
       }
       const whereClause = await this.createWhereClause(filters, ['n']);
       const startTime = Date.now();
-      const limitClause = limit <= 0 ? '' : `LIMIT ${limit}`;
-      const result = await this.g.query(`MATCH (n) ${whereClause} RETURN count(n) ${limitClause}`);
+      const result = await this.g.query(`MATCH (n) ${whereClause} RETURN count(n)`);
       logger.perfLog(startTime, 150, 'runSearchQueryCountOnly()');
       if (result.hasNext() === true) {
         return result.next().get('count(n)');
