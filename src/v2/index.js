@@ -22,6 +22,7 @@ import logger from './lib/logger';
 import RedisGraphConnector from './connectors/redisGraph';
 import IdMgmtConnector from './connectors/idmgmt';
 
+import AppModel from './models/application';
 import SearchModel from './models/search';
 import QueryModel from './models/userSearch';
 
@@ -98,6 +99,7 @@ graphQLServer.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress(async (req) =>
 
   const context = {
     req,
+    appModel: new AppModel({ searchConnector }),
     searchModel: new SearchModel({ searchConnector }),
     queryModel: new QueryModel({ idMgmtConnector }),
   };

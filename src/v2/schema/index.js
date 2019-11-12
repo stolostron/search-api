@@ -10,12 +10,14 @@
 import _ from 'lodash';
 import { makeExecutableSchema } from 'graphql-tools';
 
+import * as application from './application';
 import * as json from './json';
 import * as query from './query';
 import * as search from './search';
 import * as userSearch from './user-search';
 
 const modules = [
+  application,
   json,
   query,
   search,

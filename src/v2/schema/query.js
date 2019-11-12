@@ -9,21 +9,25 @@
 
 // eslint-disable-next-line
 export const typeDef = `
+# Search API - Queries
 type Query {
-  # Returns search results
+  # Special query to search for applications and their related resources efficiently.
+  applications: [Application]
+
+  # Search for resources.
   search(input: [SearchInput]): [SearchResult]
 
   # Get all values for the given property. If a query is passed, then results will be filtered to only those matching the query.
   searchComplete(property: String!, query: SearchInput, limit: Int): [String]
 
-  # Gets all Properties for search
+  # Get all Properties available for search.
   searchSchema: JSON
 
   # Get saved search queries for the current user.
   savedSearches: [userSearch]
 }
 
-# Saved Query Mutations
+# Search API - Mutations
 type Mutation {
   # Delete search query for the current user.
   deleteSearch(resource: JSON): JSON
@@ -31,30 +35,6 @@ type Mutation {
   # Save a search query for the current user.
   saveSearch(resource: JSON): JSON
 }
-
-# Common fields for all Kubernetes objects
-interface K8sObject {
-  metadata: Metadata
-}
-
-# Common fields in all Kubernetes metadata objects.
-type Metadata {
-  annotations: JSON
-  creationTimestamp: String
-  labels: JSON
-  name: String
-  namespace: String
-  resourceVersion: String
-  selfLink: String
-  status: String
-  uid: String
-}
 `;
 
-export const resolver = {
-  K8sObject: {
-    __resolveType() {
-      return null;
-    },
-  },
-};
+export const resolver = {};

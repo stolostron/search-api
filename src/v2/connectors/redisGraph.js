@@ -19,7 +19,7 @@ import { isRequired } from '../lib/utils';
 import pollRbacCache, { getUserRbacFilter } from '../lib/rbacCaching';
 
 // FIXME: Is there a more efficient way?
-function formatResult(results) {
+function formatResult(results, removePrefix = true) {
   const startTime = Date.now();
   const resultList = [];
   while (results.hasNext()) {
@@ -27,7 +27,11 @@ function formatResult(results) {
     const record = results.next();
     record.keys().forEach((key) => {
       if (record.get(key) !== null) {
-        resultItem[key.substr(key.indexOf('.') + 1)] = record.get(key);
+        if (removePrefix) {
+          resultItem[key.substr(key.indexOf('.') + 1)] = record.get(key);
+        } else {
+          resultItem[key] = record.get(key);
+        }
       }
     });
     resultList.push(resultItem);
@@ -118,7 +122,7 @@ function getRedisClient() {
       const redisHost = redisInfo[0];
       const redisPort = redisInfo[1];
       const redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
-      redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] } });
+      redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: 'search', ca: [redisCert] } });
       redisClient.ping((error, result) => {
         if (error) logger.error('Error with Redis SSL connection: ', error);
         else {
@@ -203,6 +207,36 @@ export default class RedisGraphConnector {
     }
     return '';
   }
+
+
+  /*
+   * Get Applications.
+   */
+  async runApplicationsQuery() {
+    const rbac = await this.getRbacString(['app']);
+
+    const queryString = `MATCH (app:Application) ${rbac} RETURN DISTINCT app._uid, app.name, app.namespace ORDER BY app.name ASC`;
+    // logger.info('Query Application: ', queryString);
+    const apps = await this.g.query(queryString);
+    return formatResult(apps, false);
+  }
+
+  /*
+   * Get Applications with thein related Policies.
+   */
+  async runApplicationPoliciesQuery() {
+    const rbac = await this.getRbacString(['app', 'policy', 'vama']);
+
+    const queryString = `
+MATCH (app:Application)<-[{_interCluster:true}]-(vama)-[:ownedBy {_interCluster:true}]->(policy:Policy) \
+WHERE vama.kind='mutationpolicy' OR vama.kind='vulnerabilitypolicy' ${rbac} \
+RETURN DISTINCT app._uid, policy._uid, policy.name, policy.namespace, vama.cluster ORDER BY app._uid ASC`;
+
+    // logger.info('Query (Policies related to Application): ', queryString);
+    const apps = await this.g.query(queryString);
+    return formatResult(apps, false);
+  }
+
 
   /**
    * TODO: For users less than clusterAdmin we we do not currently handle non-namespaced resources
