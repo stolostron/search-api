@@ -27,3 +27,30 @@ npm i
 npm run build
 npm run start:production
 ```
+
+## Developing with RedisGraph in a live cluster.
+
+1. Edit the `search-search-redisgraph` service and add a NodePort.
+
+    ```
+    kubectl edit service search-search-redisgraph
+    ```
+
+    ```
+    ports:
+    - name: redisgraph
+      port: 6380
+      protocol: TCP
+      targetPort: 6380
+      nodePort: 30100
+    ```
+2. Set `redisSSLEndpoint`, format is `\\<clusterIp>:<nodePort>` and `redisPassword` on your config.json. This command gets the redisPassword from your cluster.
+
+    ```
+    kubectl get secret search-redisgraph-user-secrets -o json | jq -r '.data.redispwd' | base64 -D | pbcopy
+    ```
+4. Set the certificate on `./rediscert/redis.crt` or `redisCert`.
+
+    ```
+    kubectl get secret search-search-secrets -o json | jq -r '.data["ca.crt"]' | base64 -D | pbcopy
+    ```
