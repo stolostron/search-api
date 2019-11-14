@@ -24,6 +24,7 @@ function sanitizeInputs({
   filters = [],
   property = '',
   limit,
+  relatedKinds = [],
 }) {
   const sanitizedKeywords = keywords.map(k => sanitizeString(k));
   const sanitizedFilters = filters.map(f => ({
@@ -36,6 +37,7 @@ function sanitizeInputs({
     filters: sanitizedFilters,
     property: sanitizeString(property),
     limit: limit || config.get('defaultQueryLimit'),
+    relatedKinds: relatedKinds.map(k => sanitizeString(k)),
   };
 }
 
@@ -117,10 +119,11 @@ export default class SearchModel {
    * @param {*} parent
    * returns { kind: String, count: Int, items: [] }
    */
-  async resolveRelated(input) {
-    const { filters } = sanitizeInputs(input);
+  async resolveRelated(input, count) {
+    const { filters, relatedKinds } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
-    const relationships = await this.searchConnector.findRelationships({ filters });
+    // eslint-disable-next-line max-len
+    const relationships = await this.searchConnector.findRelationships({ filters, count, relatedKinds });
 
     const result = {};
     relationships.forEach((r) => {
