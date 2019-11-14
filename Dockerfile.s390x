@@ -1,4 +1,4 @@
-FROM s390x/node:lts-alpine
+FROM hyc-cloud-private-edge-docker-local.artifactory.swg-devops.com/build-images/node-dubnium-ubi8-minimal-s390x:8.0-213
 ARG VCS_REF
 ARG VCS_URL
 ARG IMAGE_NAME
