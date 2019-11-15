@@ -168,7 +168,7 @@ async function buildRbacString(accessToken, kubeToken, user, objAliases) {
   } else {
     data = [await userCache.userAccessPromise, await userCache.userNonNamespacedAccessPromise];
   }
-  _.flatten(data).forEach((item) => {
+  _.flattenDeep(data).forEach((item) => {
     objAliases.forEach((alias, i) => {
       if (!aliasesData[i]) {
         aliasesData[i] = [];
