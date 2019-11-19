@@ -86,7 +86,7 @@ async function getNonNamespacedResources(kubeToken) {
     }
     return 'Error getting available apis.';
   }));
-  logger.perfLog(startTime, 300, 'getNonNamespacedResources()');
+  logger.perfLog(startTime, 500, 'getNonNamespacedResources()');
   return _.flatten(resources);
 }
 
@@ -112,12 +112,11 @@ async function getNonNamespacedAccess(kubeToken) {
       return null;
     });
   }));
-  logger.perfLog(startTime, 300, 'getNonNamespacedAccess()');
+  logger.perfLog(startTime, 500, 'getNonNamespacedAccess()');
   return results;
 }
 
 async function getUserAccess(kubeToken, namespace) {
-  const startTime = Date.now();
   const kubeConnector = new KubeConnector({ token: kubeToken });
   const url = `/apis/authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
   const jsonBody = {
@@ -149,12 +148,12 @@ async function getUserAccess(kubeToken, namespace) {
       });
     }
     userResources.push(`'${namespace}_null_releases'`);
-    logger.perfLog(startTime, 500, 'getUserAccess()');
     return userResources;
   });
 }
 
 async function buildRbacString(accessToken, kubeToken, user, objAliases) {
+  const startTime = Date.now();
   let aliasesStrings = null;
   const aliasesData = [];
   if (isOpenshift === null) await checkIfOpenShiftPlatform(kubeToken);
@@ -180,6 +179,7 @@ async function buildRbacString(accessToken, kubeToken, user, objAliases) {
     });
   });
   aliasesStrings = aliasesData.map(a => a.join(' OR '));
+  logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${user.userNamespaces && user.userNamespaces.length} )`);
   return `(${aliasesStrings.join(') AND (')})`;
 }
 

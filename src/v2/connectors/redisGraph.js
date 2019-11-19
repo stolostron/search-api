@@ -187,10 +187,10 @@ export default class RedisGraphConnector {
     const startTime = Date.now();
     const rbacFilter = await getUserRbacFilter(this.req, objAliases);
     if (rbacFilter.includes(`${objAliases[0]}._rbac = *`)) {
-      logger.perfLog(startTime, 600, 'getRbacString()');
+      logger.perfLog(startTime, 1000, 'getRbacString()');
       return '';
     }
-    logger.perfLog(startTime, 600, 'getRbacString()');
+    logger.perfLog(startTime, 1000, 'getRbacString()');
     return rbacFilter;
   }
 
