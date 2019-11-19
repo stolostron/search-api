@@ -28,6 +28,15 @@ npm run build
 npm run start:production
 ```
 
+## Environment variables
+
+| Name | Default | Description |
+| ---  | ---     | ---         |
+|defaultQueryLimit| 10000 | Limits the resources returned by a search query. |
+|defaultQueryLoopLimit | 5000 | Chunk size used by the keyword search logic. |
+|RBAC_POLL_INTERVAL | 60000 | Interval at which we revalidate the RBAC cache. |
+|RBAC_INACTIVITY_TIMEOUT | 600000 | Stop revalidating RBAC cache after user is inactive for this period. |
+
 ## Developing with RedisGraph in a live cluster.
 
 1. Edit the `search-search-redisgraph` service and add a NodePort.
