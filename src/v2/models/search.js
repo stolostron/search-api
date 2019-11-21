@@ -119,11 +119,11 @@ export default class SearchModel {
    * @param {*} parent
    * returns { kind: String, count: Int, items: [] }
    */
-  async resolveRelated(input, count) {
+  async resolveRelated(input, countOnly) {
     const { filters, relatedKinds } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
     // eslint-disable-next-line max-len
-    const relationships = await this.searchConnector.findRelationships({ filters, count, relatedKinds });
+    const relationships = await this.searchConnector.findRelationships({ filters, countOnly, relatedKinds });
 
     const result = {};
     relationships.forEach((r) => {

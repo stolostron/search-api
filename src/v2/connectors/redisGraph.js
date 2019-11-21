@@ -372,7 +372,7 @@ RETURN DISTINCT app._uid, policy._uid, policy.name, policy.namespace, vama.clust
     return valuesList;
   }
 
-  async findRelationships({ filters = [], count = false, relatedKinds = [] } = {}) {
+  async findRelationships({ filters = [], countOnly = false, relatedKinds = [] } = {}) {
     if (this.rbac.length > 0) {
       // A limitation in RedisGraph 1.0.15 is that we can't query relationships without direction.
       // To work around this limitation, we use 2 queries to get IN and OUT relationships.
@@ -388,8 +388,8 @@ RETURN DISTINCT app._uid, policy._uid, policy.name, policy.namespace, vama.clust
         inQuery = `MATCH (n)<-[]-(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
         outQuery = `MATCH (n)-[]->(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
       } else {
-        inQuery = `MATCH (n)<-[]-(r) ${whereClause} RETURN DISTINCT ${count ? 'r._uid, r.kind' : 'r'}`;
-        outQuery = `MATCH (n)-[]->(r) ${whereClause} RETURN DISTINCT ${count ? 'r._uid, r.kind' : 'r'}`;
+        inQuery = `MATCH (n)<-[]-(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
+        outQuery = `MATCH (n)-[]->(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
       }
 
       const [inFormatted, outFormatted] = await Promise.all([formatResult(await this.g.query(inQuery)), formatResult(await this.g.query(outQuery))]);

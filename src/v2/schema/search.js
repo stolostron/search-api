@@ -7,6 +7,7 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 import lodash from 'lodash';
+import logger from '../lib/logger';
 
 export const typeDef = `
   input SearchFilter {
@@ -49,8 +50,11 @@ export const resolver = {
     related: (parent, args, { searchModel }, info) => {
       const selections = lodash.get(info, 'fieldNodes[0].selectionSet.selections', [])
         .map(s => lodash.get(s, 'name.value', []));
-      const count = selections.includes('count');
-      return searchModel.resolveRelated(parent, count);
+      const countOnly = selections.includes('count') && !selections.includes('items');
+      if (selections.includes('count') && selections.includes('items')) {
+        logger.warn('Client requested related items and count in the same query. When both are needed clients should get the count from items.length for better performance.');
+      }
+      return searchModel.resolveRelated(parent, countOnly);
     },
   },
 };
