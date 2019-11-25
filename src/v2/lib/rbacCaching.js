@@ -113,7 +113,7 @@ async function getNonNamespacedAccess(kubeToken) {
     });
   }));
   logger.perfLog(startTime, 500, 'getNonNamespacedAccess()');
-  return results;
+  return results.filter(r => r !== null);
 }
 
 async function getUserAccess(kubeToken, namespace) {
@@ -148,14 +148,12 @@ async function getUserAccess(kubeToken, namespace) {
       });
     }
     userResources.push(`'${namespace}_null_releases'`);
-    return userResources;
+    return userResources.filter(r => r !== null);
   });
 }
 
 async function buildRbacString(accessToken, kubeToken, user, objAliases) {
   const startTime = Date.now();
-  let aliasesStrings = null;
-  const aliasesData = [];
   if (isOpenshift === null) await checkIfOpenShiftPlatform(kubeToken);
   const userCache = cache.get(accessToken);
   let data = [];
@@ -167,18 +165,11 @@ async function buildRbacString(accessToken, kubeToken, user, objAliases) {
   } else {
     data = [await userCache.userAccessPromise, await userCache.userNonNamespacedAccessPromise];
   }
-  _.flattenDeep(data).forEach((item) => {
-    objAliases.forEach((alias, i) => {
-      if (!aliasesData[i]) {
-        aliasesData[i] = [];
-      }
-      const rbacString = `${alias}._rbac = ${item}`;
-      if (!aliasesData[i].includes(rbacString)) { // no duplicates
-        aliasesData[i].push(rbacString);
-      }
-    });
-  });
-  aliasesStrings = aliasesData.map(a => a.join(' OR '));
+
+  const rbacData = new Set(_.flattenDeep(data));
+  const aliasesData = objAliases.map(alias => [...rbacData].map(item => `${alias}._rbac = ${item}`));
+  const aliasesStrings = aliasesData.map(a => a.join(' OR '));
+
   logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${user.userNamespaces && user.userNamespaces.length} )`);
   return `(${aliasesStrings.join(') AND (')})`;
 }
