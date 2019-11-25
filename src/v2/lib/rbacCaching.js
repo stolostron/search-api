@@ -139,7 +139,8 @@ async function getUserAccess(kubeToken, namespace) {
           const resources = [];
           const ns = (namespace === '' || namespace === undefined) ? 'null_' : `${namespace}_`;
           const apiGroup = (item.apiGroups[0] === '' || item.apiGroups[0] === undefined) ? 'null_' : `${item.apiGroups[0]}_`;
-          item.resources.forEach((resource) => {
+          // Filter sub-resources, those contain '/'
+          item.resources.filter(r => r.indexOf('/') === -1).forEach((resource) => {
             resources.push(`'${ns + apiGroup + resource}'`);
           });
           userResources = userResources.concat(resources);
@@ -161,6 +162,7 @@ async function buildRbacString(accessToken, kubeToken, user, objAliases) {
     const userAccessPromise = Promise.all(user.userNamespaces.map(namespace => getUserAccess(kubeToken, namespace)));
     const userNonNamespacedAccessPromise = getNonNamespacedAccess(kubeToken);
     cache.set(accessToken, { ...userCache, userAccessPromise, userNonNamespacedAccessPromise });
+    logger.info('Saved userAcces and nonNamespacesAccess promises to user cache.');
     data = [await userAccessPromise, await userNonNamespacedAccessPromise];
   } else {
     data = [await userCache.userAccessPromise, await userCache.userNonNamespacedAccessPromise];

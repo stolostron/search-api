@@ -40,9 +40,9 @@ async function getKubeToken({
   const authToken = authorization.substring(7);
 
   // If we have a kube token in the cache, then we use it.
-  let kubeToken = cache.get(authToken);
-  if (kubeToken) {
-    return kubeToken;
+  const userCache = cache.get(authToken) || {};
+  if (userCache.kubeToken) {
+    return userCache.kubeToken;
   }
 
   // Check if the auth token is from a service ID.  We can find out by decoding the JWT token.
@@ -60,8 +60,8 @@ async function getKubeToken({
       if (highestRole === 'ClusterAdministrator') {
         // When running on a cluster we use the serviceaccount token is at this location.
         // For local development/testing we'll use the localKubeToken env.
-        kubeToken = process.env.localKubeToken || fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
-        cache.set(authToken, kubeToken);
+        const kubeToken = process.env.localKubeToken || fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
+        cache.set(authToken, { ...userCache, kubeToken });
         return kubeToken;
       }
 
@@ -84,9 +84,9 @@ async function getKubeToken({
   };
 
   const response = await httpLib(options);
-  kubeToken = _.get(response, 'body.id_token');
+  const kubeToken = _.get(response, 'body.id_token');
   if (kubeToken) {
-    cache.set(authToken, kubeToken);
+    cache.set(authToken, { ...userCache, kubeToken });
   } else {
     throw new Error(`Authentication error: ${JSON.stringify(response.body)}`);
   }

@@ -3,7 +3,9 @@
 exports[`Auth Middleware Caches token on first authorization 1`] = `
 Array [
   "ng-for-auth",
-  "test-id-token",
+  Object {
+    "kubeToken": "test-id-token",
+  },
 ]
 `;
 

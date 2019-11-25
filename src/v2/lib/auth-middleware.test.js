@@ -51,7 +51,7 @@ describe('Auth Middleware', () => {
     mockCache.get.mockClear();
 
     const mockRequest = { headers: { authorization: 'substring-for-auth' } };
-    mockCache.get.mockReturnValueOnce('test-cached-token');
+    mockCache.get.mockReturnValueOnce({ kubeToken: 'test-cached-token' });
 
     const authMiddleware = createAuthMiddleWare({
       cache: mockCache,
