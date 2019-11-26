@@ -86,7 +86,7 @@ export function getFilterString(filters) {
   filters.forEach((filter) => {
     // Use OR for filters with multiple values.
     filterStrings.push(`(${filter.values.map((value) => {
-      const operatorRemoved = value.replace(/^<=|^>=|^!=|^!|^<|^>|^=]/, '');
+      const operatorRemoved = value.replace(/^<=|^>=|^!=|^!|^<|^>|^=/, '');
       if (isNumber(operatorRemoved)) { //  || isNumWithChars(operatorRemoved)
         return `n.${filter.property} ${getOperator(value)} ${operatorRemoved}`;
       } else if (isDateFilter(value)) {
