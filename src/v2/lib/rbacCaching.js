@@ -190,13 +190,12 @@ export async function getUserRbacFilter(req, objAliases) {
     // We dont have user data in cache yet - need to create it here
     const { userRoles, userNamespaces } = await getUserResources(req.user.accessToken);
     const newUser = {
-      userAccessPromise: currentUser && currentUser.userAccessPromise ? currentUser.userAccessPromise : undefined,
-      userNonNamespacedAccessPromise: currentUser && currentUser.userNonNamespacedAccessPromise ? currentUser.userNonNamespacedAccessPromise : undefined,
       userRoles,
       userNamespaces,
     };
+    const currentUserCache = cache.get(req.user.accessToken); // Get user cache again because it may have changed.
+    cache.set(req.user.accessToken, { ...currentUserCache, ...newUser });
     rbacFilter = buildRbacString(req.user.accessToken, req.kubeToken, newUser, objAliases);
-    cache.set(req.user.accessToken, newUser);
     return rbacFilter;
   }
   return rbacFilter;
