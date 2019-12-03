@@ -30,9 +30,12 @@ export async function getUserResources(token) {
       idmgmtConnector.get('/identity/api/v1/teams/roleMappings'),
       idmgmtConnector.get('/identity/api/v1/teams/resources?resourceType=namespace'),
     ]);
-    userNamespaces = userNamespaces && userNamespaces.filter(ns => ns.namespaceId).map(ns => ns.namespaceId);
+    userNamespaces = userNamespaces && userNamespaces.length > 0 && userNamespaces.filter(ns => ns.namespaceId).map(ns => ns.namespaceId);
 
-    return { userRoles, userNamespaces };
+    if (!userNamespaces || userNamespaces.length === 0) {
+      logger.warn('User doesn\'t have access to any namespaces');
+    }
+    return { userRoles, userNamespaces: userNamespaces || [] };
   }
   return {};
 }
@@ -42,8 +45,8 @@ async function checkIfOpenShiftPlatform(kubeToken) {
   const kubeConnector = new KubeConnector({ token: kubeToken });
   const res = await kubeConnector.get(url);
 
-  if (res.statusCode === 200) {
-    const selfReview = res.body.resources.filter(r => r.kind === 'SelfSubjectRulesReview');
+  if (res && res.resources) {
+    const selfReview = res.resources.filter(r => r.kind === 'SelfSubjectRulesReview');
     logger.debug('SelfSubjectRulesReview:', selfReview);
     if (selfReview.length > 0) {
       logger.debug('Found API "authorization.openshift.io/v1" so assuming that we are running in OpenShift');
