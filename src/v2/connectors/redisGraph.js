@@ -122,7 +122,7 @@ function getRedisClient() {
       const redisHost = redisInfo[0];
       const redisPort = redisInfo[1];
       const redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
-      redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: 'search', ca: [redisCert] } });
+      redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] } });
       redisClient.ping((error, result) => {
         if (error) logger.error('Error with Redis SSL connection: ', error);
         else {
