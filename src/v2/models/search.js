@@ -103,7 +103,8 @@ export default class SearchModel {
     } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
     if (keywords && keywords.length > 0) {
-      return this.searchQueryLimiter(keywords, filters, -1).length;
+      const results = await this.searchQueryLimiter(keywords, filters, -1);
+      return results.length;
     }
     return this.searchConnector.runSearchQueryCountOnly(filters);
   }
