@@ -213,16 +213,42 @@ export default class RedisGraphConnector {
    * Get Applications.
    */
   async runApplicationsQuery() {
-    const rbac = await this.getRbacString(['app']);
-
-    const queryString = `MATCH (app:Application) ${rbac} RETURN DISTINCT app._uid, app.name, app.namespace ORDER BY app.name ASC`;
+    const startTime = Date.now();
+    const whereClause = await this.createWhereClause([], ['app']);
+    const queryString = `MATCH (app:Application) ${whereClause} RETURN DISTINCT app._uid, app.name, app.namespace, app.created ORDER BY app.name ASC`;
     // logger.info('Query Application: ', queryString);
     const apps = await this.g.query(queryString);
+
+    logger.perfLog(startTime, 150, 'runApplicationsQuery');
     return formatResult(apps, false);
   }
 
   /*
-   * Get Applications with thein related Policies.
+   * Get Applications with the clusters
+   */
+  async runAppClustersQuery(appId) {
+    const startTime = Date.now();
+    const whereClause = await this.createWhereClause([], ['app', 'cluster']);
+    const queryString = `MATCH (app:Application { _uid: '${appId}'})<-[{_interCluster:true}]-(cluster) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} (cluster.kind='cluster' AND exists(cluster._hubClusterResource)=false) RETURN cluster._uid, cluster.name, cluster.namespace`;
+    const clusters = await this.g.query(queryString);
+    logger.perfLog(startTime, 150, 'runAppClustersQuery');
+    return formatResult(clusters, false);
+  }
+
+  /*
+   * Get Applications with their Managed Subscriptions
+   */
+  async runAppManagedSubscriptionsQuery(appId) {
+    const startTime = Date.now();
+    const whereClause = await this.createWhereClause([], ['app', 'sub']);
+    const queryString = `MATCH (app:Application { _uid: '${appId}'})<-[{_interCluster:true}]-(sub) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} (sub.kind='subscription' AND exists(sub._hostingSubscription)=true) RETURN sub._uid, sub.name, sub.namespace`;
+    const subs = await this.g.query(queryString);
+    logger.perfLog(startTime, 150, 'runAppManagedSubscriptionsQuery');
+    return formatResult(subs, false);
+  }
+
+  /*
+   * Get Applications with their related Policies.
    */
   async runApplicationPoliciesQuery() {
     const rbac = await this.getRbacString(['app', 'policy', 'vama']);

@@ -61,4 +61,16 @@ export default class AppModel {
       return prev;
     }, []);
   }
+
+  async resolveApplicationClusters(application) {
+    await this.checkSearchServiceAvailable();
+    // Run a query to get managed clusters for a specific application.
+    return this.searchConnector.runAppClustersQuery(application['app._uid']);
+  }
+
+  async resolveAppManagedSubs(application) {
+    await this.checkSearchServiceAvailable();
+    // Run a query to get subscriptions on managed clusters for a specific application.
+    return this.searchConnector.runAppManagedSubscriptionsQuery(application['app._uid']);
+  }
 }
