@@ -9,7 +9,22 @@
 
 /* eslint-disable class-methods-use-this */
 export default class MockSearchConnector {
-  async get() {
+  async get(url) {
+    if (url.includes('/identity/api/v1/teams/roleMappings')) {
+      return []; // ClusterAdmin response - blank as they have access to everything
+    } else if (url.includes('/identity/api/v1/teams/resources?resourceType=namespace')) {
+      return [
+        {
+          crn: 'crn:v1:icp:private:k8:mycluster:n/kube-system:::',
+          serviceName: 'k8',
+          region: 'mycluster',
+          scope: 'namespace',
+          namespaceId: 'kube-system',
+          actions: 'CRUD',
+          highestRole: 'ClusterAdministrator',
+        },
+      ];
+    }
     return {
       userQueries: [
         {

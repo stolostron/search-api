@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`KubeConnector Get calls default connector 1`] = `
+Array [
+  Object {
+    "headers": Object {
+      "Authorization": "Bearer localdev",
+    },
+    "method": "GET",
+    "url": "https://testURL/kubernetes/api/test",
+  },
+]
+`;
+
+exports[`KubeConnector Get calls httpLib with correct arguments 1`] = `
+Array [
+  Object {
+    "headers": Object {
+      "Authorization": "Bearer localdev",
+    },
+    "method": "GET",
+    "url": "https://testURL/kubernetes/api/test",
+  },
+]
+`;
+
+exports[`KubeConnector Get correctly merges additional arguments 1`] = `
+Array [
+  Object {
+    "headers": Object {
+      "Authorization": "Bearer localdev",
+      "x-custom-header": "test-value",
+    },
+    "method": "GET",
+    "url": "https://testURL/kubernetes/api/test",
+  },
+]
+`;
+
+exports[`KubeConnector Post calls httpLib with correct arguments 1`] = `
+Array [
+  Object {
+    "headers": Object {
+      "Authorization": "Bearer localdev",
+    },
+    "json": Object {
+      "body": "test-value",
+    },
+    "method": "POST",
+    "url": "https://testURL/kubernetes/api/test",
+  },
+]
+`;

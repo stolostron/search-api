@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RBAC Caching Test User Resources 1`] = `
+Object {
+  "userNamespaces": Array [
+    "kube-system",
+  ],
+  "userRoles": Array [],
+}
+`;
+
+exports[`RBAC Caching Tests creation of rbac string for search queries 1`] = `"(n._rbac = * OR n._rbac = 'kube-system_authorization.openshift.io_clusterroles' OR n._rbac = 'kube-system_null_releases')"`;

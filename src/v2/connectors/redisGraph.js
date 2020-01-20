@@ -14,7 +14,6 @@ import { RedisGraph } from 'redisgraph.js';
 import moment from 'moment';
 import config from '../../../config';
 import logger from '../lib/logger';
-import requestLib from '../lib/request';
 import { isRequired } from '../lib/utils';
 import pollRbacCache, { getUserRbacFilter } from '../lib/rbacCaching';
 
@@ -165,12 +164,10 @@ if (process.env.NODE_ENV !== 'test') {
 
 export default class RedisGraphConnector {
   constructor({
-    httpLib = requestLib,
     rbac = isRequired('rbac'),
     req = isRequired('req'),
   } = {}) {
     this.rbac = rbac;
-    this.http = httpLib;
     this.req = req;
   }
 

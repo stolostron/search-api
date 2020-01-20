@@ -18,7 +18,9 @@ describe('Search Resolver', () => {
         query: `
           {
             searchResult: search(input: {keywords: [],
-                filters: [ { property: "cluster", values: ["cluster1"]}]}){
+                filters: [ { property: "cluster", values: ["cluster1"]}],
+                limit: 10000,
+                relatedKinds: ["pod"]}){
               items
               related {
                 kind
@@ -26,6 +28,52 @@ describe('Search Resolver', () => {
                 items
               }
               count
+            }
+          }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  });
+  test('Correctly Resolves Search Keyword Query', (done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+          {
+            searchResult: search(input: { keywords: ["testing"],
+                filters: []}){
+              items
+              related {
+                kind
+                count
+                items
+              }
+              count
+            }
+          }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  });
+  test('Correctly Resolves Performant Search Query', (done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+          {
+            searchResult: search(input: {keywords: [],
+                filters: [ { property: "cluster", values: ["cluster1"]}]}){
+              items
+              related {
+                kind
+                items
+              }
             }
           }
       `,
@@ -72,6 +120,21 @@ describe('Search Resolver', () => {
         query: `
           {
             searchComplete(property:"storage", query: {keywords:[], filters:[{property:"kind", values:"cluster"}]})
+          }
+        `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  });
+  test('Correctly Resolves SearchComplete Query With No Params', (done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+          {
+            searchComplete(property:"kind")
           }
         `,
       })

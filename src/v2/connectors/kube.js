@@ -15,9 +15,11 @@ export default class KubeConnector {
   constructor({
     token = 'Bearer localdev',
     kubeApiEndpoint = `${config.get('cfcRouterUrl')}/kubernetes`,
+    httpLib = request,
   } = {}) {
     this.kubeApiEndpoint = kubeApiEndpoint;
     this.token = token;
+    this.http = httpLib;
   }
 
   /**
@@ -36,7 +38,7 @@ export default class KubeConnector {
       },
     }, opts);
 
-    const newRequest = request(options).then(res => res.body);
+    const newRequest = this.http(options).then(res => res.body);
 
     return newRequest;
   }
@@ -51,6 +53,6 @@ export default class KubeConnector {
       json: jsonBody,
     };
 
-    return request(_.merge(defaults, opts)).then(res => res.body);
+    return this.http(_.merge(defaults, opts)).then(res => res.body);
   }
 }

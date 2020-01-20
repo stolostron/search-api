@@ -1,0 +1,52 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`IdMgmtConnector Get calls default connector 1`] = `
+Array [
+  Object {
+    "headers": Object {
+      "Authorization": "Bearer a token",
+    },
+    "method": "GET",
+    "url": "https://testURL/idmgmt/api/test",
+  },
+]
+`;
+
+exports[`IdMgmtConnector Get calls httpLib with correct arguments 1`] = `
+Array [
+  Object {
+    "headers": Object {
+      "Authorization": "Bearer a token",
+    },
+    "method": "GET",
+    "url": "https://testURL/idmgmt/api/test",
+  },
+]
+`;
+
+exports[`IdMgmtConnector Get correctly merges additional arguments 1`] = `
+Array [
+  Object {
+    "headers": Object {
+      "Authorization": "Bearer a token",
+      "x-custom-header": "test-value",
+    },
+    "method": "GET",
+    "url": "https://testURL/idmgmt/api/test",
+  },
+]
+`;
+
+exports[`IdMgmtConnector Put calls httpLib with correct arguments 1`] = `
+Array [
+  Object {
+    "body": "test-value",
+    "headers": Object {
+      "Authorization": "Bearer a token",
+    },
+    "json": Object {},
+    "method": "PUT",
+    "url": "https://testURL/idmgmt/api/test",
+  },
+]
+`;

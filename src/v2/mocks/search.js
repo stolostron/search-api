@@ -71,6 +71,8 @@ export default class MockSearchConnector {
     return true;
   }
 
+
+  // Search Query Mocks
   async runSearchQuery() {
     return mockSearchResult.mock({ cluster: 2, node: 3, pod: 5 });
   }
@@ -105,6 +107,41 @@ export default class MockSearchConnector {
       items: [{
         _uid: '123', kind: 'cluster', name: 'mockCluster', namespace: 'mockCluster-ns',
       }],
+    }];
+  }
+
+  // Application Query Mocks
+  async runApplicationsQuery() {
+    return [{
+      'app._uid': 'local-cluster/1d4bb419-3666-11ea-9e7f-00000a100f99',
+      'app.name': 'samplebook-gbapp',
+      'app.namespace': 'sample',
+      'app.created': '2020-01-14T00:37:59Z',
+    }];
+  }
+
+  async runAppClustersQuery() {
+    return [{
+      'cluster._uid': 'd7827dc7-361e-11ea-afe0-0a580afe088d',
+      'cluster.name': 'local-cluster',
+      'cluster.namespace': 'local-cluster-ns',
+    }];
+  }
+
+  async runAppManagedSubscriptionsQuery() {
+    return [{
+      'sub._uid': 'test-sub-91007918-3666-11ea-8828-00000a101862',
+      'sub.name': 'test-subscription',
+      'sub.namespace': 'kube-system',
+    }];
+  }
+
+  async runApplicationPoliciesQuery() {
+    return [{
+      'app._uid': 'local-cluster/1d4bb419-3666-11ea-9e7f-00000a100f99',
+      'policy._uid': 'test-policy-91007918-3666-11ea-8828-00000a101862',
+      'policy.name': 'test-policy',
+      'policy.namespace': 'kube-system',
     }];
   }
 }

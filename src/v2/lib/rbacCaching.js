@@ -14,8 +14,12 @@ import config from '../../../config';
 import logger from '../lib/logger';
 import IDConnector from '../connectors/idmgmt';
 import KubeConnector from '../connectors/kube';
+// Mocked connectors for testing
+import MockIdMgmtConnector from '../mocks/idmgmt';
+import MockKubeConnector from '../mocks/kube';
 
 let isOpenshift = null;
+const isTest = config.get('NODE_ENV') === 'test';
 const activeUsers = {};
 const cache = lru({
   max: 1000,
@@ -24,7 +28,9 @@ const cache = lru({
 
 export async function getUserResources(token) {
   if (token !== undefined) {
-    const idmgmtConnector = new IDConnector({ iamToken: token });
+    const idmgmtConnector = !isTest
+      ? new IDConnector({ iamToken: token })
+      : new MockIdMgmtConnector();
     // eslint-disable-next-line prefer-const
     let [userRoles, userNamespaces] = await Promise.all([
       idmgmtConnector.get('/identity/api/v1/teams/roleMappings'),
@@ -42,7 +48,9 @@ export async function getUserResources(token) {
 
 async function checkIfOpenShiftPlatform(kubeToken) {
   const url = '/apis/authorization.openshift.io/v1';
-  const kubeConnector = new KubeConnector({ token: kubeToken });
+  const kubeConnector = !isTest
+    ? new KubeConnector({ token: kubeToken })
+    : new MockKubeConnector();
   const res = await kubeConnector.get(url);
 
   if (res && res.resources) {
@@ -60,7 +68,9 @@ async function checkIfOpenShiftPlatform(kubeToken) {
 async function getNonNamespacedResources(kubeToken) {
   const startTime = Date.now();
   const resources = [];
-  const kubeConnector = new KubeConnector({ token: kubeToken });
+  const kubeConnector = !isTest
+    ? new KubeConnector({ token: kubeToken })
+    : new MockKubeConnector();
 
   // Get non-namespaced resources WITH an api group
   resources.push(kubeConnector.post('/apis', {}).then(async (res) => {
@@ -95,7 +105,9 @@ async function getNonNamespacedResources(kubeToken) {
 
 async function getNonNamespacedAccess(kubeToken) {
   const startTime = Date.now();
-  const kubeConnector = new KubeConnector({ token: kubeToken });
+  const kubeConnector = !isTest
+    ? new KubeConnector({ token: kubeToken })
+    : new MockKubeConnector();
   const nonNamespacedResources = await getNonNamespacedResources(kubeToken);
   const results = await Promise.all(nonNamespacedResources.map((resource) => {
     const jsonBody = {
@@ -120,7 +132,9 @@ async function getNonNamespacedAccess(kubeToken) {
 }
 
 async function getUserAccess(kubeToken, namespace) {
-  const kubeConnector = new KubeConnector({ token: kubeToken });
+  const kubeConnector = !isTest
+    ? new KubeConnector({ token: kubeToken })
+    : new MockKubeConnector();
   const url = `/apis/authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
   const jsonBody = {
     apiVersion: `authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1`,
