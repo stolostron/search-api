@@ -212,8 +212,7 @@ export default class RedisGraphConnector {
   async runApplicationsQuery() {
     const startTime = Date.now();
     const whereClause = await this.createWhereClause([], ['app']);
-    const queryString = `MATCH (app:Application) ${whereClause} RETURN DISTINCT app._uid, app.name, app.namespace, app.created ORDER BY app.name ASC`;
-    // logger.info('Query Application: ', queryString);
+    const queryString = `MATCH (app:Application) ${whereClause} RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard ORDER BY app.name ASC`;
     const apps = await this.g.query(queryString);
 
     logger.perfLog(startTime, 150, 'runApplicationsQuery');
@@ -242,7 +241,7 @@ export default class RedisGraphConnector {
   async runAppHubSubscriptionsQuery(appId) {
     const startTime = Date.now();
     const whereClause = await this.createWhereClause([], ['app', 'sub']);
-    const queryString = `MATCH (app:Application { _uid: '${appId}'})-[r]->(sub) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} (sub.kind='subscription') RETURN sub._uid`;
+    const queryString = `MATCH (app:Application { _uid: '${appId}'})-[r]->(sub) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} (sub.kind='subscription') RETURN sub._uid, sub.status, sub.channel`;
     const subs = await this.g.query(queryString);
     logger.perfLog(startTime, 150, 'runAppHubSubscriptionsQuery');
     return formatResult(subs, false);
@@ -276,6 +275,7 @@ export default class RedisGraphConnector {
     return counterResult;
   }
 
+
   /*
    * Get Applications with the pods counter
    * return the number of pods for this app as a string, grouped by their status
@@ -299,6 +299,7 @@ export default class RedisGraphConnector {
     if (counterResult.endsWith(';')) { counterResult = counterResult.substring(0, counterResult.length - 1); }
     return counterResult;
   }
+
   /*
    * Get Applications with their related Policies.
    */
@@ -308,7 +309,7 @@ export default class RedisGraphConnector {
     const queryString = `
 MATCH (app:Application)<-[{_interCluster:true}]-(vama)-[:ownedBy {_interCluster:true}]->(policy:Policy) \
 WHERE vama.kind='mutationpolicy' OR vama.kind='vulnerabilitypolicy' ${rbac} \
-RETURN DISTINCT app._uid, policy._uid, policy.name, policy.namespace, vama.cluster ORDER BY app._uid ASC`;
+RETURN DISTINCT app._uid, policy._uid, policy.name, policy.namespace, vama.kind ORDER BY app._uid ASC`;
 
     // logger.info('Query (Policies related to Application): ', queryString);
     const apps = await this.g.query(queryString);

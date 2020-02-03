@@ -5,10 +5,26 @@ Object {
   "data": Object {
     "applications": Array [
       Object {
-        "_uid": "local-cluster/1d4bb419-3666-11ea-9e7f-00000a100f99",
-        "created": "2020-01-14T00:37:59Z",
-        "dashboard": null,
-        "hubSubs": "Failed=1;Propagated=2",
+        "_uid": "local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99",
+        "created": "2020-01-23T13:56:32Z",
+        "dashboard": "https://icp-console.apps.appmgmt.os.fyre.ibm.com:443/grafana/dashboard/db/samplebook-gbapp-dashboard-via-federated-prometheus?namespace=sample",
+        "hubSubscriptions": Array [
+          Object {
+            "_uid": "local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99",
+            "channel": "dev1/dev1",
+            "status": null,
+          },
+          Object {
+            "_uid": "local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99",
+            "channel": "default/mortgage-channel",
+            "status": "Propagated",
+          },
+          Object {
+            "_uid": "local-cluster/66426f24-3bd3-11ea-a488-00000a100f99",
+            "channel": "dev1/dev1",
+            "status": "Propagated",
+          },
+        ],
         "name": "samplebook-gbapp",
         "namespace": "sample",
         "pods": "Running=6",

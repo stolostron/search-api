@@ -16,13 +16,11 @@ export const typeDef = `
     dashboard: String
     #get nb of remote clusters related to this app
     remoteCls: Int
-    #Get nb of hub subscriptions in this format Failed=2;Propagated=2;null=3
-    hubSubs: String
-    #Get nb of remote subscriptions in this format Failed=2;Subscribed=2;null=3
+    #Get nb of remote subscriptions, grouped by status, in this format Failed=2;Subscribed=2;null=3
     remoteSubs: String
-    #Get nb of pods in this format Failed=2;Success=10
+    #Get nb of pods grouped by pod status, in this format Running=2;ImageLoopBackOff=10
     pods: String
-    # Subscriptions propagated to managed clusters by this application.
+    # Hub Subscriptions used by this application.
     hubSubscriptions: [Subscription]
     policies: [Policy]
     created: String
@@ -30,14 +28,20 @@ export const typeDef = `
 
   type Subscription {
     _uid: String
+    status: String
+    channel: String
   }
 
   # This is the parent policy on the MCM hub.
   type Policy {
     _uid: String
+    app: String
     name: String
     namespace: String
+    kind: String
   }
+
+  
 `;
 
 export const resolver = {
@@ -50,14 +54,22 @@ export const resolver = {
     namespace: parent => parent['app.namespace'],
     dashboard: parent => parent['app.dashboard'],
     remoteCls: (parent, args, { appModel }) => appModel.resolveApplicationClustersCount(parent),
-    hubSubs: (parent, args, { appModel }) => appModel.resolveSubscriptionsCount(parent, false),
     remoteSubs: (parent, args, { appModel }) => appModel.resolveSubscriptionsCount(parent, true),
     pods: (parent, args, { appModel }) => appModel.resolveApplicationPodsCount(parent),
     hubSubscriptions: (parent, args, { appModel }) => appModel.resolveAppHubSubs(parent),
     policies: (parent, args, { appModel }) => appModel.resolveApplicationPolicies(parent),
     created: parent => parent['app.created'],
   },
+  Policy: {
+    _uid: parent => parent['policy._uid'],
+    app: parent => parent['app._uid'],
+    name: parent => parent['policy.name'],
+    namespace: parent => parent['policy.namespace'],
+    kind: parent => parent['vama.kind'],
+  },
   Subscription: {
     _uid: parent => parent['sub._uid'],
+    status: parent => parent['sub.status'],
+    channel: parent => parent['sub.channel'],
   },
 };

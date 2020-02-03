@@ -113,10 +113,11 @@ export default class MockSearchConnector {
   // Application Query Mocks
   async runApplicationsQuery() {
     return [{
-      'app._uid': 'local-cluster/1d4bb419-3666-11ea-9e7f-00000a100f99',
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
       'app.name': 'samplebook-gbapp',
       'app.namespace': 'sample',
-      'app.created': '2020-01-14T00:37:59Z',
+      'app.created': '2020-01-23T13:56:32Z',
+      'app.dashboard': 'https://icp-console.apps.appmgmt.os.fyre.ibm.com:443/grafana/dashboard/db/samplebook-gbapp-dashboard-via-federated-prometheus?namespace=sample',
     }];
   }
 
@@ -126,22 +127,13 @@ export default class MockSearchConnector {
       'policy._uid': 'test-policy-91007918-3666-11ea-8828-00000a101862',
       'policy.name': 'test-policy',
       'policy.namespace': 'kube-system',
+      'vama.kind': 'mutationpolicy',
     }];
   }
 
 
   async runAppClustersCountQuery() {
     return 1;
-  }
-  async runAppManagedSubscriptionsQuery() {
-    return [
-      {
-        uid: 'french/ea6319d5-3df4-11ea-80b1-00000a101b0f',
-        name: 'gb-gbapp-guestbook',
-        namespace: 'default',
-        status: 'Failed',
-      },
-    ];
   }
 
   async runSubscriptionsCountQuery() {
@@ -151,13 +143,18 @@ export default class MockSearchConnector {
   async runAppHubSubscriptionsQuery() {
     return [
       {
-        _uid: 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
+        'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
+        'sub.channel': 'dev1/dev1',
       },
       {
-        _uid: 'local-cluster/66426f24-3bd3-11ea-a488-00000a100f99',
+        'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
+        'sub.status': 'Propagated',
+        'sub.channel': 'default/mortgage-channel',
       },
       {
-        _uid: 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
+        'sub._uid': 'local-cluster/66426f24-3bd3-11ea-a488-00000a100f99',
+        'sub.status': 'Propagated',
+        'sub.channel': 'dev1/dev1',
       },
     ];
   }

@@ -17,19 +17,23 @@ describe('Application Resolver', () => {
       .post(GRAPHQL_PATH)
       .send({
         query: `
-          {
-            applications {
+        {
+          applications {
+            _uid
+            name
+            namespace
+            dashboard
+            remoteCls
+            remoteSubs
+            pods
+            hubSubscriptions {
               _uid
-              created
-              name
-              namespace
-              dashboard
-              remoteCls
-              remoteSubs
-              hubSubs
-              pods
+              status
+              channel
             }
+            created
           }
+        }
       `,
       })
       .end((err, res) => {
