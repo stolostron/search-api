@@ -9,37 +9,34 @@
 
 export const typeDef = `
   type Application {
-    uid: String
+    _uid: String
+    # keep this for now because the app ui is asking for this string; will remove it once we have the UI use _uid
     name: String
     namespace: String
-    # Clusters with subscriptions propagated by this application.
-    clusters: [Cluster]
+    dashboard: String
+    #get nb of remote clusters related to this app
+    remoteCls: Int
+    #Get nb of hub subscriptions in this format Failed=2;Propagated=2;null=3
+    hubSubs: String
+    #Get nb of remote subscriptions in this format Failed=2;Subscribed=2;null=3
+    remoteSubs: String
+    #Get nb of pods in this format Failed=2;Success=10
+    pods: String
     # Subscriptions propagated to managed clusters by this application.
-    managedSubscriptions: [Subscription]
-    # Policies for which this application has violations. This is the parent policy on the MCM hub.
+    hubSubscriptions: [Subscription]
     policies: [Policy]
     created: String
   }
 
-  type Cluster {
-    uid: String
-    name: String
-    namespace: String
-  }
-
   type Subscription {
-    uid: String
-    name: String
-    namespace: String
+    _uid: String
   }
 
   # This is the parent policy on the MCM hub.
   type Policy {
-    uid: String
+    _uid: String
     name: String
     namespace: String
-    # Clusters where this policy has been propagated and has a violation.
-    clusters: [Cluster]
   }
 `;
 
@@ -48,28 +45,19 @@ export const resolver = {
     applications: (parent, args, { appModel }) => appModel.resolveApplications(),
   },
   Application: {
-    uid: parent => parent['app._uid'],
+    _uid: parent => parent['app._uid'],
     name: parent => parent['app.name'],
     namespace: parent => parent['app.namespace'],
-    clusters: (parent, args, { appModel }) => appModel.resolveApplicationClusters(parent),
-    managedSubscriptions: (parent, args, { appModel }) => appModel.resolveAppManagedSubs(parent),
+    dashboard: parent => parent['app.dashboard'],
+    remoteCls: (parent, args, { appModel }) => appModel.resolveApplicationClustersCount(parent),
+    hubSubs: (parent, args, { appModel }) => appModel.resolveSubscriptionsCount(parent, false),
+    remoteSubs: (parent, args, { appModel }) => appModel.resolveSubscriptionsCount(parent, true),
+    pods: (parent, args, { appModel }) => appModel.resolveApplicationPodsCount(parent),
+    hubSubscriptions: (parent, args, { appModel }) => appModel.resolveAppHubSubs(parent),
     policies: (parent, args, { appModel }) => appModel.resolveApplicationPolicies(parent),
     created: parent => parent['app.created'],
   },
-  Policy: {
-    uid: parent => parent['policy._uid'],
-    name: parent => parent['policy.name'],
-    namespace: parent => parent['policy.namespace'],
-    clusters: parent => parent.clusters,
-  },
   Subscription: {
-    uid: parent => parent['sub._uid'],
-    name: parent => parent['sub.name'],
-    namespace: parent => parent['sub.namespace'],
-  },
-  Cluster: {
-    uid: parent => parent['cluster._uid'],
-    name: parent => parent['cluster.name'],
-    namespace: parent => parent['cluster.namespace'],
+    _uid: parent => parent['sub._uid'],
   },
 };

@@ -19,25 +19,15 @@ describe('Application Resolver', () => {
         query: `
           {
             applications {
-              uid
+              _uid
+              created
               name
               namespace
-              clusters {
-                uid
-                name
-                namespace
-              }
-              managedSubscriptions {
-                uid
-                name
-                namespace
-              }
-              policies {
-                uid
-                name
-                namespace
-              }
-              created
+              dashboard
+              remoteCls
+              remoteSubs
+              hubSubs
+              pods
             }
           }
       `,

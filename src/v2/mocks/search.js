@@ -120,22 +120,6 @@ export default class MockSearchConnector {
     }];
   }
 
-  async runAppClustersQuery() {
-    return [{
-      'cluster._uid': 'd7827dc7-361e-11ea-afe0-0a580afe088d',
-      'cluster.name': 'local-cluster',
-      'cluster.namespace': 'local-cluster-ns',
-    }];
-  }
-
-  async runAppManagedSubscriptionsQuery() {
-    return [{
-      'sub._uid': 'test-sub-91007918-3666-11ea-8828-00000a101862',
-      'sub.name': 'test-subscription',
-      'sub.namespace': 'kube-system',
-    }];
-  }
-
   async runApplicationPoliciesQuery() {
     return [{
       'app._uid': 'local-cluster/1d4bb419-3666-11ea-9e7f-00000a100f99',
@@ -143,5 +127,42 @@ export default class MockSearchConnector {
       'policy.name': 'test-policy',
       'policy.namespace': 'kube-system',
     }];
+  }
+
+
+  async runAppClustersCountQuery() {
+    return 1;
+  }
+  async runAppManagedSubscriptionsQuery() {
+    return [
+      {
+        uid: 'french/ea6319d5-3df4-11ea-80b1-00000a101b0f',
+        name: 'gb-gbapp-guestbook',
+        namespace: 'default',
+        status: 'Failed',
+      },
+    ];
+  }
+
+  async runSubscriptionsCountQuery() {
+    return 'Failed=1;Propagated=2';
+  }
+
+  async runAppHubSubscriptionsQuery() {
+    return [
+      {
+        _uid: 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
+      },
+      {
+        _uid: 'local-cluster/66426f24-3bd3-11ea-a488-00000a100f99',
+      },
+      {
+        _uid: 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
+      },
+    ];
+  }
+
+  async runAppPodsCountQuery() {
+    return 'Running=6';
   }
 }

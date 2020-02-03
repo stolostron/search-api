@@ -62,15 +62,28 @@ export default class AppModel {
     }, []);
   }
 
-  async resolveApplicationClusters(application) {
+  async resolveApplicationPodsCount(application) {
     await this.checkSearchServiceAvailable();
-    // Run a query to get managed clusters for a specific application.
-    return this.searchConnector.runAppClustersQuery(application['app._uid']);
+    // Run a query to get number of managed clusters for a specific application.
+    return this.searchConnector.runAppPodsCountQuery(application['app._uid']);
   }
 
-  async resolveAppManagedSubs(application) {
+  async resolveApplicationClustersCount(application) {
     await this.checkSearchServiceAvailable();
-    // Run a query to get subscriptions on managed clusters for a specific application.
-    return this.searchConnector.runAppManagedSubscriptionsQuery(application['app._uid']);
+    // Run a query to get number of managed clusters for a specific application.
+    return this.searchConnector.runAppClustersCountQuery(application['app._uid']);
+  }
+
+  async resolveAppHubSubs(application) {
+    await this.checkSearchServiceAvailable();
+    // Run a query to get hub subscriptions for a specific application.
+    return this.searchConnector.runAppHubSubscriptionsQuery(application['app._uid']);
+  }
+
+
+  async resolveSubscriptionsCount(application, isRemote) {
+    await this.checkSearchServiceAvailable();
+    // Run the nb of remote subscriptions for a specific application.
+    return this.searchConnector.runSubscriptionsCountQuery(application['app._uid'], isRemote);
   }
 }

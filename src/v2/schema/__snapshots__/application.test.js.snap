@@ -5,31 +5,15 @@ Object {
   "data": Object {
     "applications": Array [
       Object {
-        "clusters": Array [
-          Object {
-            "name": "local-cluster",
-            "namespace": "local-cluster-ns",
-            "uid": "d7827dc7-361e-11ea-afe0-0a580afe088d",
-          },
-        ],
+        "_uid": "local-cluster/1d4bb419-3666-11ea-9e7f-00000a100f99",
         "created": "2020-01-14T00:37:59Z",
-        "managedSubscriptions": Array [
-          Object {
-            "name": "test-subscription",
-            "namespace": "kube-system",
-            "uid": "test-sub-91007918-3666-11ea-8828-00000a101862",
-          },
-        ],
+        "dashboard": null,
+        "hubSubs": "Failed=1;Propagated=2",
         "name": "samplebook-gbapp",
         "namespace": "sample",
-        "policies": Array [
-          Object {
-            "name": "test-policy",
-            "namespace": "kube-system",
-            "uid": "test-policy-91007918-3666-11ea-8828-00000a101862",
-          },
-        ],
-        "uid": "local-cluster/1d4bb419-3666-11ea-9e7f-00000a100f99",
+        "pods": "Running=6",
+        "remoteCls": 1,
+        "remoteSubs": "Failed=1;Propagated=2",
       },
     ],
   },
