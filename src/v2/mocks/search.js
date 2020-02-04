@@ -117,7 +117,7 @@ export default class MockSearchConnector {
       'app.name': 'samplebook-gbapp',
       'app.namespace': 'sample',
       'app.created': '2020-01-23T13:56:32Z',
-      'app.dashboard': 'https://icp-console.apps.appmgmt.os.fyre.ibm.com:443/grafana/dashboard/db/samplebook-gbapp-dashboard-via-federated-prometheus?namespace=sample',
+      'app.dashboard': 'localhost/grafana/dashboard/db/samplebook-gbapp-dashboard-via-federated-prometheus?namespace=sample',
     }];
   }
 

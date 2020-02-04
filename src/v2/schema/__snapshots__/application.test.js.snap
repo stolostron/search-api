@@ -7,7 +7,7 @@ Object {
       Object {
         "_uid": "local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99",
         "created": "2020-01-23T13:56:32Z",
-        "dashboard": "https://icp-console.apps.appmgmt.os.fyre.ibm.com:443/grafana/dashboard/db/samplebook-gbapp-dashboard-via-federated-prometheus?namespace=sample",
+        "dashboard": "localhost/grafana/dashboard/db/samplebook-gbapp-dashboard-via-federated-prometheus?namespace=sample",
         "hubSubscriptions": Array [
           Object {
             "_uid": "local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99",
