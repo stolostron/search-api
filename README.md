@@ -39,27 +39,31 @@ npm run start:production
 
 ## Developing with RedisGraph in a live cluster.
 
-1. Edit the `search-search-redisgraph` service and add a NodePort.
+1. Create a route to expose the `search-search-redisgraph` service.
 
-    ```
-    kubectl edit service search-search-redisgraph
-    ```
+    - Log to the OpenShift console.
+    - On the left navigation, go to Networking -> Routes.
+    - Select project kube-system (You should see 2 other routes)
+    - Create a new route with the following:
+        - Name: redisgraph
+        - Hostname: leave blank
+        - Path: leave blank
+        - Service: search-search-redisgraph
+        - Target Port: 6380 -> 6380 (TCP)
+        - Secure Route: enable
+        - TLS Termination: Passthrough
+        -  Insecure traffic: None
+    - Your route should look like this: https://redisgraph-kube-system.apps.search-test-1.os.fyre.ibm.com
 
-    ```
-    ports:
-    - name: redisgraph
-      port: 6380
-      protocol: TCP
-      targetPort: 6380
-      nodePort: 30100
-    ```
-2. Set `redisSSLEndpoint`, format is `\\<clusterIp>:<nodePort>` and `redisPassword` on your config.json. This command gets the redisPassword from your cluster.
+2. Set `redisSSLEndpoint` on your config.json. The format is `<redisgraph-route>:443`
+3. Set `redisPassword` on your config.json. Use this command to get the redisPassword from your cluster.
 
     ```
     kubectl get secret search-redisgraph-user-secrets -o json | jq -r '.data.redispwd' | base64 -D | pbcopy
     ```
-4. Set the certificate on `./rediscert/redis.crt` or `redisCert`.
-
+4. Allow unsecured TLS connection.
     ```
-    kubectl get secret search-search-secrets -o json | jq -r '.data["ca.crt"]' | base64 -D | pbcopy
+    export NODE_TLS_REJECT_UNAUTHORIZED=0
+    -- OR --
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED= '0'
     ```
