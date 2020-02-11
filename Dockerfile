@@ -1,4 +1,4 @@
-FROM hyc-cloud-private-edge-docker-local.artifactory.swg-devops.com/build-images/node-dubnium-ubi8-minimal-amd64:8.1-279
+FROM registry.access.redhat.com/ubi8/nodejs-10:latest
 
 ARG VCS_REF
 ARG VCS_URL
