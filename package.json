@@ -36,12 +36,6 @@
       "pre-push": "npm run test"
     }
   },
-  "lint-staged": {
-    "*.{js,jsx,json}": [
-      "eslint --fix",
-      "git add"
-    ]
-  },
   "dependencies": {
     "@icp/security-middleware": "file:pkg/icp-security-middleware-2.0.95.tgz",
     "agentkeepalive": "^4.0.2",
@@ -81,7 +75,6 @@
     "husky": "^1.1.0",
     "jest": "^23.1.0",
     "jest-tap-reporter": "^1.9.0",
-    "lint-staged": "^7.3.0",
     "nodemon": "^1.17.3",
     "redis-mock": "^0.44.0",
     "supertest": "^3.1.0"
