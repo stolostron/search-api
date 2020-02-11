@@ -40,7 +40,6 @@ jobs:
       script:
         - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
         - |
-          make
           make component/build
           make component/push
     - stage: unit-test
@@ -50,8 +49,7 @@ jobs:
         # Set the image tag differently for PRs
         - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
         # Bootstrap the build harness, pull test image, and run unit tests.  
-        - | 
-          make 
+        - |  
           make component/pull 
           make component/test/unit
           sonar-scanner --debug
@@ -61,8 +59,7 @@ jobs:
       script:
         #Check out a clusterpool, set up oc, deploy, run e2e tests, and return clusterpool cluster
         - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
-        - |
-          make 
+        - | 
           make component/pull 
           make component/test/e2e
     - stage: publish
@@ -70,7 +67,6 @@ jobs:
       if: type = push AND branch =~ /^release-[0-9]+\..*$/
       script:
         - |
-          make 
           make pipeline-manifest/update PIPELINE_MANIFEST_COMPONENT_SHA256=${TRAVIS_COMMIT} PIPELINE_MANIFEST_COMPONENT_REPO=${TRAVIS_REPO_SLUG} PIPELINE_MANIFEST_BRANCH=${TRAVIS_BRANCH}
 
 
