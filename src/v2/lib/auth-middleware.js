@@ -60,12 +60,13 @@ async function getKubeToken({
       if (highestRole === 'ClusterAdministrator') {
         // When running on a cluster we use the serviceaccount token is at this location.
         // For local development/testing we'll use the localKubeToken env.
-        const kubeToken = process.env.localKubeToken || fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
+        const kubeToken = process.env.localKubeToken ||
+          fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
         cache.set(authToken, { ...userCache, kubeToken });
         return kubeToken;
       }
 
-      throw new Error(`When authenticating with a service id, the role must be a ClusterAdministrator. This service id role is ${highestRole}`);
+      throw new Error(`When authenticating with a service id, the role must be a ClusterAdministrator. This service id role is ${highestRole}`); // eslint-disable-line max-len
     }
   }
 
@@ -105,7 +106,8 @@ async function getNamespaces({ accessToken, accountId }) {
 
   const idmgmtConnector = new IDConnector(options);
 
-  return idmgmtConnector.get(`/identity/api/v1/teams/resources?resourceType=namespace${accountId ? `&accountId=${accountId}` : ''}`);
+  return idmgmtConnector
+    .get(`/identity/api/v1/teams/resources?resourceType=namespace${accountId ? `&accountId=${accountId}` : ''}`);
 }
 
 

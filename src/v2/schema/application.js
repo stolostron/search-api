@@ -10,20 +10,28 @@
 export const typeDef = `
   type Application {
     _uid: String
-    # keep this for now because the app ui is asking for this string; will remove it once we have the UI use _uid
+    created: String
+
+    # Grafana dashboard for this application.
+    dashboard: String
+
     name: String
     namespace: String
-    dashboard: String
-    #get nb of remote clusters related to this app
-    remoteCls: Int
-    #Get nb of remote subscriptions, grouped by status, in this format Failed=2;Subscribed=2;null=3
-    remoteSubs: String
-    #Get nb of pods grouped by pod status, in this format Running=2;ImageLoopBackOff=10
-    pods: String
-    # Hub Subscriptions used by this application.
+    selfLink: String
+
+    # Number of clusters where this application has created any resources.
+    clusterCount: Int
+
+    # Hub subscriptions associated with this application.
+    # Hub subscriptions are those without '_hostingSubscription' AND with _hubClusterResource=true
     hubSubscriptions: [Subscription]
-    policies: [Policy]
-    created: String
+
+    # Pods associated with this app, grouped by pod status, in this format { Running: 2, ImageLoopBackOff: 10 }.
+    podStatusCount: JSON
+
+    # Remote subscriptions for this app, grouped by status, in this format { Failed:2, Subscribed: 2, null: 3 }.
+    # Remote subscriptions are those with the '_hostingSubscription' property.
+    remoteSubscriptionStatusCount: JSON
   }
 
   type Subscription {
@@ -32,40 +40,47 @@ export const typeDef = `
     channel: String
   }
 
-  # This is the parent policy on the MCM hub.
-  type Policy {
-    _uid: String
-    app: String
-    name: String
-    namespace: String
-    kind: String
-  }
+  # Aggregated data from all applications.
+  type GlobalAppData {
+    # All chanels being referenced by any application.
+    channelsCount: Int
 
-  
+    # Number of clusters where any application has created resources.
+    clusterCount: Int
+
+    # Subscriptions in the hub associated with any application.
+    # Subscriptions without '_hostingSubscription' AND with _hubClusterResource=true
+    hubSubscriptionCount: Int
+
+    # Remote Subscriptions grouped by status, in this format { Failed:2, Subscribed: 2, null: 3 }.
+    # Remote subscriptions are those with the '_hostingSubscription' property.
+    remoteSubscriptionStatusCount: JSON
+  }
 `;
 
 export const resolver = {
   Query: {
-    applications: (parent, args, { appModel }) => appModel.resolveApplications(),
+    globalAppData: () => ({}),
+    applications: (parent, { name, namespace }, { appModel }) => appModel.resolveApplications({ name, namespace }),
   },
   Application: {
     _uid: parent => parent['app._uid'],
+    created: parent => parent['app.created'],
+    dashboard: parent => parent['app.dashboard'],
     name: parent => parent['app.name'],
     namespace: parent => parent['app.namespace'],
-    dashboard: parent => parent['app.dashboard'],
-    remoteCls: (parent, args, { appModel }) => appModel.resolveApplicationClustersCount(parent),
-    remoteSubs: (parent, args, { appModel }) => appModel.resolveSubscriptionsCount(parent, true),
-    pods: (parent, args, { appModel }) => appModel.resolveApplicationPodsCount(parent),
-    hubSubscriptions: (parent, args, { appModel }) => appModel.resolveAppHubSubs(parent),
-    policies: (parent, args, { appModel }) => appModel.resolveApplicationPolicies(parent),
-    created: parent => parent['app.created'],
+    selfLink: parent => parent['app.selfLink'],
+    clusterCount: (parent, args, { appModel }) => appModel.resolveAppClustersCount(parent['app._uid']),
+    hubSubscriptions: (parent, args, { appModel }) => appModel.resolveAppHubSubscriptions(parent['app._uid']),
+    podStatusCount: (parent, args, { appModel }) => appModel.resolveAppPodsCount(parent['app._uid']),
+    remoteSubscriptionStatusCount: (parent, args, { appModel }) =>
+      appModel.resolveAppRemoteSubscriptions(parent['app._uid']),
   },
-  Policy: {
-    _uid: parent => parent['policy._uid'],
-    app: parent => parent['app._uid'],
-    name: parent => parent['policy.name'],
-    namespace: parent => parent['policy.namespace'],
-    kind: parent => parent['vama.kind'],
+  GlobalAppData: {
+    channelsCount: (parent, args, { appModel }) => appModel.resolveGlobalAppChannelsCount(),
+    clusterCount: (parent, args, { appModel }) => appModel.resolveGlobalAppClusterCount(),
+    hubSubscriptionCount: (parent, args, { appModel }) => appModel.resolveGlobalAppHubSubscriptionsCount(),
+    remoteSubscriptionStatusCount: (parent, args, { appModel }) => appModel.resolveGlobalAppRemoteSubscriptions(),
   },
   Subscription: {
     _uid: parent => parent['sub._uid'],

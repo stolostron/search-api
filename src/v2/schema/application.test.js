@@ -12,7 +12,6 @@ import server, { GRAPHQL_PATH } from '../index';
 
 describe('Application Resolver', () => {
   test('Correctly Resolves Application Query', (done) => {
-    // TODO - Include policy in test query
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -20,18 +19,92 @@ describe('Application Resolver', () => {
         {
           applications {
             _uid
+            clusterCount
+            created
+            dashboard
             name
             namespace
-            dashboard
-            remoteCls
-            remoteSubs
-            pods
+            selfLink
+            podStatusCount
+            remoteSubscriptionStatusCount
             hubSubscriptions {
               _uid
               status
               channel
             }
+          }
+        }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  });
+
+  test('Correctly Resolves Single Application', (done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          applications (namespace: "test", name: "app02") {
+            _uid
+            clusterCount
             created
+            dashboard
+            name
+            namespace
+            selfLink
+            podStatusCount
+            remoteSubscriptionStatusCount
+            hubSubscriptions {
+              _uid
+              status
+              channel
+            }
+          }
+        }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  });
+
+  test('Ignores filters when only name or namespace is passed.', (done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          applications (name: "app02") {
+            _uid
+            name
+          }
+        }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  });
+});
+
+describe('Global Application Resolver', () => {
+  test('Correctly Resolves Global Application Data', (done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          globalAppData {
+            channelsCount
+            clusterCount
+            hubSubscriptionCount
+            remoteSubscriptionStatusCount
           }
         }
       `,

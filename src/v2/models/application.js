@@ -10,6 +10,25 @@
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
 
+/*
+ * Format results grouping by status.
+ * Sample output:
+ *   {
+ *     ContainerCreating: 1,
+ *     Running: 3,
+ *   }
+ */
+function groupByStatus(resources, statusKey) {
+  const result = {};
+  resources.forEach((r) => {
+    if (result[r[statusKey]]) {
+      result[r[statusKey]] += 1;
+    } else {
+      result[r[statusKey]] = 1;
+    }
+  });
+  return result;
+}
 
 export default class AppModel {
   constructor({ searchConnector = isRequired('searchConnector') }) {
@@ -24,66 +43,105 @@ export default class AppModel {
   }
 
   /*
+   * An instance of AppModel is created for every API request.
+   * This is used for queries that run only once, for example, when
+   * resolving an application list, we'll resolve subscriptions only once
+   * for all applications, then use the same result for each app resolver.
+   */
+  async runQueryOnlyOnce(searchConnectorQueryName) {
+    await this.checkSearchServiceAvailable();
+    const queryFn = this.searchConnector[searchConnectorQueryName];
+    if (queryFn && typeof queryFn === 'function') {
+      if (!this[`${searchConnectorQueryName}Promise`]) {
+        this[`${searchConnectorQueryName}Promise`] = this.searchConnector[searchConnectorQueryName]();
+      }
+      return this[`${searchConnectorQueryName}Promise`];
+    }
+    logger.error('Expected to recive a function.', queryFn, searchConnectorQueryName);
+    return Promise.reject(new Error('Expected to recive a function.'));
+  }
+
+  /*
    * Resolve Applications.
    * This is more efficient than searching for `kind:application`
    */
-  async resolveApplications() {
+  async resolveApplications({ name, namespace }) {
     await this.checkSearchServiceAvailable();
+
+    if (name != null && namespace != null) {
+      const apps = await this.searchConnector.runApplicationsQuery();
+      return apps.filter(app => (app['app.name'] === name && app['app.namespace'] === namespace));
+    } else if (name == null || namespace == null) {
+      logger.warn('To filter applications must you provide both name and namespace. Returning all apps.');
+    }
+
     return this.searchConnector.runApplicationsQuery();
   }
 
   /*
-   * Resolve Policies for an Application.
-   * This returns the parent policies (in the hub).
+   * For a given application, return the number of clusters where it has resources.
    */
-  async resolveApplicationPolicies(application) {
-    await this.checkSearchServiceAvailable();
-    // Run a single query to get policies for all the applications.
-    if (!this.policiesPromise) {
-      this.policiesPromise = this.searchConnector.runApplicationPoliciesQuery();
-    }
-    const policies = await this.policiesPromise;
-
-    // Filter the policy rows to the current application.
-    const appPolicies = policies.filter(p => p['app._uid'] === application['app._uid']) || [];
-
-    // The query returns a row for each cluster where the policy is violated.
-    // We need to reduce the results to collapse into a single row per policy.
-    return appPolicies.reduce((prev = [], current) => {
-      if (prev.find(p => p['policy._ui'] === current['policy._uid'])) {
-        const policy = prev.find(p => p['policy._ui'] === current['policy._uid']);
-        policy.clusters.push({ name: current['vama.cluster'] });
-      } else {
-        const policy = current;
-        policy.clusters = [{ name: current['vama.cluster'] }];
-        prev.push(policy);
-      }
-      return prev;
-    }, []);
+  async resolveAppClustersCount(appUid) {
+    const clusters = await this.runQueryOnlyOnce('runAppClustersQuery');
+    const c = clusters.find(app => app['app._uid'] === appUid);
+    return c ? c.count : 0;
   }
 
-  async resolveApplicationPodsCount(application) {
-    await this.checkSearchServiceAvailable();
-    // Run a query to get number of managed clusters for a specific application.
-    return this.searchConnector.runAppPodsCountQuery(application['app._uid']);
+  /*
+   * For a given application, resolve the hub subscriptions.
+   */
+  async resolveAppHubSubscriptions(appUid) {
+    const subs = await this.runQueryOnlyOnce('runAppHubSubscriptionsQuery');
+    return subs.filter(s => s['app._uid'] === appUid);
   }
 
-  async resolveApplicationClustersCount(application) {
-    await this.checkSearchServiceAvailable();
-    // Run a query to get number of managed clusters for a specific application.
-    return this.searchConnector.runAppClustersCountQuery(application['app._uid']);
+  /*
+   * For a given application, resolve the pod count, grouped by status.
+   */
+  async resolveAppPodsCount(appUid) {
+    const pods = await this.runQueryOnlyOnce('runAppPodsCountQuery');
+    return groupByStatus(pods.filter(p => p['app._uid'] === appUid), 'pod.status');
   }
 
-  async resolveAppHubSubs(application) {
-    await this.checkSearchServiceAvailable();
-    // Run a query to get hub subscriptions for a specific application.
-    return this.searchConnector.runAppHubSubscriptionsQuery(application['app._uid']);
+  /*
+   * For a given application, resolve the mote subscriptions, grouped by status.
+   */
+  async resolveAppRemoteSubscriptions(appUid) {
+    const subs = await this.runQueryOnlyOnce('runAppRemoteSubscriptionsQuery');
+    return groupByStatus(subs.filter(s => s['app._uid'] === appUid), 'sub.status');
   }
 
+  /* ***  GLOBAL APPLICATION DATA RESOLVERS *** */
 
-  async resolveSubscriptionsCount(application, isRemote) {
-    await this.checkSearchServiceAvailable();
-    // Run the nb of remote subscriptions for a specific application.
-    return this.searchConnector.runSubscriptionsCountQuery(application['app._uid'], isRemote);
+  /*
+   * Number of channels associated to any application.
+   */
+  async resolveGlobalAppChannelsCount() {
+    const ch = await this.searchConnector.runGlobalAppChannelsQuery();
+    return ch.length;
+  }
+
+  /*
+   * Number of clusters where any application has resources.
+   */
+  async resolveGlobalAppClusterCount() {
+    const clusters = await this.searchConnector.runGlobalAppClusterCountQuery();
+    return clusters.length;
+  }
+
+  /*
+   * Number of hub subscriptions associated to any application.
+   */
+  async resolveGlobalAppHubSubscriptionsCount() {
+    const subs = await this.searchConnector.runGlobalAppHubSubscriptionsQuery();
+    return subs.length;
+  }
+
+  /*
+   * Remote subscriptions associated to any application. Grouped by state.
+   */
+  async resolveGlobalAppRemoteSubscriptions() {
+    const subs = await this.searchConnector.runGlobalAppRemoteSubscriptionsQuery();
+    return groupByStatus(subs, 'sub.status');
   }
 }

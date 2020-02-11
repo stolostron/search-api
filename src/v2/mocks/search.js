@@ -112,46 +112,48 @@ export default class MockSearchConnector {
 
   // Application Query Mocks
   async runApplicationsQuery() {
+    return [
+      {
+        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+        'app.created': '2020-01-23T13:56:32Z',
+        'app.dashboard': 'localhost/grafana/dashboard/db/app01-dashboard-via-federated-prometheus?namespace=sample',
+        'app.name': 'app01',
+        'app.namespace': 'sample',
+        'app.selfLink': '/apis/app.k8s.io/v1beta1/namespaces/sample/applications/app01',
+      },
+      {
+        'app._uid': 'local-cluster/app-02-uid',
+        'app.created': '2020-01-23T13:56:32Z',
+        'app.dashboard': 'localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test',
+        'app.name': 'app02',
+        'app.namespace': 'test',
+        'app.selfLink': '/apis/app.k8s.io/v1beta1/namespaces/test/applications/app02',
+      },
+    ];
+  }
+
+  async runAppClustersQuery() {
     return [{
       'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-      'app.name': 'samplebook-gbapp',
-      'app.namespace': 'sample',
-      'app.created': '2020-01-23T13:56:32Z',
-      'app.dashboard': 'localhost/grafana/dashboard/db/samplebook-gbapp-dashboard-via-federated-prometheus?namespace=sample',
+      count: 5,
     }];
-  }
-
-  async runApplicationPoliciesQuery() {
-    return [{
-      'app._uid': 'local-cluster/1d4bb419-3666-11ea-9e7f-00000a100f99',
-      'policy._uid': 'test-policy-91007918-3666-11ea-8828-00000a101862',
-      'policy.name': 'test-policy',
-      'policy.namespace': 'kube-system',
-      'vama.kind': 'mutationpolicy',
-    }];
-  }
-
-
-  async runAppClustersCountQuery() {
-    return 1;
-  }
-
-  async runSubscriptionsCountQuery() {
-    return 'Failed=1;Propagated=2';
   }
 
   async runAppHubSubscriptionsQuery() {
     return [
       {
+        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
         'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
         'sub.channel': 'dev1/dev1',
       },
       {
+        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
         'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
         'sub.status': 'Propagated',
         'sub.channel': 'default/mortgage-channel',
       },
       {
+        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
         'sub._uid': 'local-cluster/66426f24-3bd3-11ea-a488-00000a100f99',
         'sub.status': 'Propagated',
         'sub.channel': 'dev1/dev1',
@@ -160,6 +162,75 @@ export default class MockSearchConnector {
   }
 
   async runAppPodsCountQuery() {
-    return 'Running=6';
+    return [
+      {
+        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+        'pod.status': 'Running',
+      },
+      {
+        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+        'pod.status': 'Running',
+      },
+      {
+        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+        'pod.status': 'Failed',
+      },
+    ];
+  }
+
+  async runAppRemoteSubscriptionsQuery() {
+    return [
+      {
+        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+        'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
+        'sub.status': 'Subscribed',
+      },
+    ];
+  }
+
+  /*
+   * Global Application queries mocks.
+   */
+  async runGlobalAppChannelsQuery() {
+    return [
+      { 'ch._uid': 'local-cluster/mock-channel-1-uid' },
+      { 'ch._uid': 'local-cluster/mock-channel-2-uid' },
+    ];
+  }
+
+  async runGlobalAppClusterCountQuery() {
+    return [
+      { 'app._uid': 'local-cluster/mock-cluster-1-uid' },
+      { 'app._uid': 'local-cluster/mock-cluster-2-uid' },
+    ];
+  }
+
+  async runGlobalAppHubSubscriptionsQuery() {
+    return [
+      {
+        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+        'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
+        'sub.channel': 'dev1/dev1',
+      },
+      {
+        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+        'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
+        'sub.status': 'Propagated',
+        'sub.channel': 'default/mortgage-channel',
+      },
+    ];
+  }
+
+  async runGlobalAppRemoteSubscriptionsQuery() {
+    return [
+      {
+        'sub._uid': 'cluster-1/mock-remote-subscription-2-uid',
+        'sub.status': 'Subscribed',
+      },
+      {
+        'sub._uid': 'cluster-2/mock-remote-subscription-2-uid',
+        'sub.status': 'Propagated',
+      },
+    ];
   }
 }

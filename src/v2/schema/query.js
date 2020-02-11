@@ -7,17 +7,21 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 
-// eslint-disable-next-line
 export const typeDef = `
 # Search API - Queries
 type Query {
   # Special query to search for applications and their related resources efficiently.
-  applications: [Application]
+  # Optionally, pass name and namespace to filter the results.
+  applications(name:String namespace: String): [Application]
+
+  # Aggregated data from all applications.
+  globalAppData: GlobalAppData
 
   # Search for resources.
   search(input: [SearchInput]): [SearchResult]
 
-  # Get all values for the given property. If a query is passed, then results will be filtered to only those matching the query.
+  # Get all values for the given property.
+  # If a query is passed, then results will be filtered to only those matching the query.
   searchComplete(property: String!, query: SearchInput, limit: Int): [String]
 
   # Get all Properties available for search.

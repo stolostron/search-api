@@ -69,10 +69,13 @@ export default class QueryModel {
         userQueries: [...queries, resource],
       };
     }
-    const updatedSearches = await this.idMgmtConnector.put(`/identity/api/v1/userpreferences/preferenceId_${user.name || ''}`, { json });
-    // eslint-disable-next-line
-    if (updatedSearches.error && (updatedSearches.error.code || updatedSearches.error.statusCode || updatedSearches.error.message)) {
-      throw new Error(`HCM ERROR ${updatedSearches.error.code || updatedSearches.error.statusCode} - ${updatedSearches.error.message}`);
+    const updatedSearches = await this.idMgmtConnector
+      .put(`/identity/api/v1/userpreferences/preferenceId_${user.name || ''}`, { json });
+
+    if (updatedSearches.error &&
+      (updatedSearches.error.code || updatedSearches.error.statusCode || updatedSearches.error.message)) {
+      // eslint-disable-next-line max-len
+      throw new Error(`ERROR ${updatedSearches.error.code || updatedSearches.error.statusCode} - ${updatedSearches.error.message}`);
     }
     // Update the cache to represent the edit/save/delete
     userQueryCache.set(`savedQueries-${cacheKey}`, json);
@@ -94,9 +97,11 @@ export default class QueryModel {
       userQueries: filteredUserQueries,
     };
     const updatedSearches = await this.idMgmtConnector.put(url, { json });
-    // eslint-disable-next-line
-    if (updatedSearches.error && (updatedSearches.error.code || updatedSearches.error.statusCode || updatedSearches.error.message)) {
-      throw new Error(`HCM ERROR ${updatedSearches.error.code || updatedSearches.error.statusCode} - ${updatedSearches.error.message}`);
+
+    if (updatedSearches.error &&
+      (updatedSearches.error.code || updatedSearches.error.statusCode || updatedSearches.error.message)) {
+      // eslint-disable-next-line max-len
+      throw new Error(`ERROR ${updatedSearches.error.code || updatedSearches.error.statusCode} - ${updatedSearches.error.message}`);
     }
     return updatedSearches;
   }

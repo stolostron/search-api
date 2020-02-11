@@ -20,7 +20,8 @@ export const typeDef = `
     filters: [SearchFilter]
     # Max number of results. Default limit: 10,000. For unlimited results use -1.
     limit: Int
-    # Filter relationships to the specified kinds.  If empty, all relationships will be included. This filter is used with the \`related\` field on SearchResult.
+    # Filter relationships to the specified kinds.
+    # If empty, all relationships will be included. This filter is used with the 'related' field on SearchResult.
     relatedKinds: [String]
   }
 
@@ -52,6 +53,7 @@ export const resolver = {
         .map(s => lodash.get(s, 'name.value', []));
       const countOnly = selections.includes('count') && !selections.includes('items');
       if (selections.includes('count') && selections.includes('items')) {
+        // eslint-disable-next-line max-len
         logger.warn('Client requested related items and count in the same query. When both are needed clients should get the count from items.length for better performance.');
       }
       return searchModel.resolveRelated(parent, countOnly);

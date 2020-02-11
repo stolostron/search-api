@@ -179,7 +179,6 @@ export default class RedisGraphConnector {
     return redisClient.connected && redisClient.ready;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async getRbacString(objAliases = []) {
     const startTime = Date.now();
     const rbacFilter = await getUserRbacFilter(this.req, objAliases);
@@ -207,115 +206,107 @@ export default class RedisGraphConnector {
 
 
   /*
+   * Execute a redis query and format the result as an array of Object.
+   */
+  async executeQuery({ query, removePrefix = true }) {
+    await this.isServiceAvailable();
+    const startTime = Date.now();
+    const result = await this.g.query(query);
+    logger.perfLog(startTime, 200, query);
+    return formatResult(result, removePrefix);
+  }
+
+
+  /*
    * Get Applications.
    */
   async runApplicationsQuery() {
-    const startTime = Date.now();
     const whereClause = await this.createWhereClause([], ['app']);
-    const queryString = `MATCH (app:Application) ${whereClause} RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard ORDER BY app.name ASC`;
-    const apps = await this.g.query(queryString);
-
-    logger.perfLog(startTime, 150, 'runApplicationsQuery');
-    return formatResult(apps, false);
+    const query = `MATCH (app:Application) ${whereClause} RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard, app.selfLink ORDER BY app.name ASC`;
+    return this.executeQuery({ query, removePrefix: false });
   }
 
+
   /*
-   * Get Applications with the clusters counter
+   * Get a list of applications that have related clusters.
+   * NOTE: If an app doesn't have resources in any cluster it won't be in the result.
+   *
+   * Sample result:
+   * [
+   *   {app._uid: 'app1', count: 3 },
+   *   {app._uid: 'app2', count: 1 },
+   * ]
    */
-  async runAppClustersCountQuery(appId) {
-    const startTime = Date.now();
+  async runAppClustersQuery() {
     const whereClause = await this.createWhereClause([], ['app', 'cluster']);
-    const queryString = `MATCH (app:Application { _uid: '${appId}'})<-[{_interCluster:true}]-(cluster) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} (cluster.kind='cluster' AND exists(cluster._hubClusterResource)=false) RETURN count(cluster._uid)`;
-    const result = await this.g.query(queryString);
-    logger.perfLog(startTime, 150, 'runAppClustersNbQuery');
-    if (result.hasNext() === true) {
-      return result.next().get('count(cluster._uid)');
-    }
-
-    return 0;
+    const query = `MATCH (app:Application)<-[{_interCluster:true}]-(cluster:Cluster) ${whereClause} RETURN DISTINCT app._uid, count(cluster._uid) as count`;
+    return this.executeQuery({ query, removePrefix: false });
   }
 
   /*
-   * Get Applications with their Hub Subscriptions
+   * Get Applications with their related Hub Subscriptions.
    */
-  async runAppHubSubscriptionsQuery(appId) {
-    const startTime = Date.now();
+  async runAppHubSubscriptionsQuery() {
     const whereClause = await this.createWhereClause([], ['app', 'sub']);
-    const queryString = `MATCH (app:Application { _uid: '${appId}'})-[r]->(sub) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} (sub.kind='subscription') RETURN sub._uid, sub.status, sub.channel`;
-    const subs = await this.g.query(queryString);
-    logger.perfLog(startTime, 150, 'runAppHubSubscriptionsQuery');
-    return formatResult(subs, false);
+    const query = `MATCH (app:Application)-[]->(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN app._uid, sub._uid, sub.status, sub.channel`;
+    return this.executeQuery({ query, removePrefix: false });
   }
-  /*
-   * return the number of subscriptions for this app as a string, grouped by their status
-   * sample output : Failed=2;Subscribed=2;null=3
-   * isRemote - if set to true it returns remote subscriptions
-   */
-  async runSubscriptionsCountQuery(appId, isRemote) {
-    const startTime = Date.now();
-
-    const whereClause = await this.createWhereClause([], ['app', 'sub']);
-    let queryString = `MATCH (app:Application { _uid: '${appId}'})-[r]->(sub) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} (sub.kind='subscription' AND exists(sub._hostingSubscription)=false AND exists(r._interCluster)=false) RETURN count(sub._uid), sub.status`;
-    if (isRemote) { // remote subscriptions
-      queryString = `MATCH (app:Application { _uid: '${appId}'})<-[{_interCluster:true}]-(sub) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} (sub.kind='subscription' AND exists(sub._hostingSubscription)=true) RETURN count(sub._uid), sub.status`;
-    }
-
-    const result = await this.g.query(queryString);
-
-    logger.perfLog(startTime, 150, 'runSubscriptionsCountQuery');
-    let counterResult = '';
-    if (result.hasNext() === true) {
-      while (result.hasNext()) {
-        const resultStatus = result.next();
-        counterResult += `${resultStatus.get('sub.status')}=${resultStatus.get('count(sub._uid)')};`;
-      }
-    }
-
-    if (counterResult.endsWith(';')) { counterResult = counterResult.substring(0, counterResult.length - 1); }
-    return counterResult;
-  }
-
 
   /*
    * Get Applications with the pods counter
    * return the number of pods for this app as a string, grouped by their status
-   * sample output : Failed=2;Running=10
   */
-  async runAppPodsCountQuery(appId) {
-    const startTime = Date.now();
+  async runAppPodsCountQuery() {
     const whereClause = await this.createWhereClause([], ['app', 'pod']);
-    const queryString = `MATCH (app:Application { _uid: '${appId}'})<-[{_interCluster:true}]-(pod) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} (pod.kind='pod') RETURN count(pod._uid), pod.status`;
-    const result = await this.g.query(queryString);
-    logger.perfLog(startTime, 150, 'runAppPodsCountQuery');
-
-    let counterResult = '';
-    if (result.hasNext() === true) {
-      while (result.hasNext()) {
-        const resultStatus = result.next();
-        counterResult += `${resultStatus.get('pod.status')}=${resultStatus.get('count(pod._uid)')};`;
-      }
-    }
-
-    if (counterResult.endsWith(';')) { counterResult = counterResult.substring(0, counterResult.length - 1); }
-    return counterResult;
+    const query = `MATCH (app:Application)<-[{_interCluster:true}]-(pod:Pod) ${whereClause} RETURN app._uid, pod._uid, pod.status`;
+    return this.executeQuery({ query, removePrefix: false });
   }
 
   /*
-   * Get Applications with their related Policies.
+   * Get Applications with their related remote subscriptions.
+   # Remote subscriptions are those with the '_hostingSubscription' property.
    */
-  async runApplicationPoliciesQuery() {
-    const rbac = await this.getRbacString(['app', 'policy', 'vama']);
-
-    const queryString = `
-MATCH (app:Application)<-[{_interCluster:true}]-(vama)-[:ownedBy {_interCluster:true}]->(policy:Policy) \
-WHERE vama.kind='mutationpolicy' OR vama.kind='vulnerabilitypolicy' ${rbac} \
-RETURN DISTINCT app._uid, policy._uid, policy.name, policy.namespace, vama.kind ORDER BY app._uid ASC`;
-
-    // logger.info('Query (Policies related to Application): ', queryString);
-    const apps = await this.g.query(queryString);
-    return formatResult(apps, false);
+  async runAppRemoteSubscriptionsQuery() {
+    const whereClause = await this.createWhereClause([], ['app', 'sub']);
+    const query = `MATCH (app:Application)<-[{_interCluster:true}]-(sub:Subscription) ${whereClause === '' ? 'WHERE' : `(${whereClause}) AND`} exists(sub._hostingSubscription)=true RETURN app._uid, sub._uid, sub.status`;
+    return this.executeQuery({ query, removePrefix: false });
   }
 
+  /*
+   * Get clusters related to any application.
+   */
+  async runGlobalAppClusterCountQuery() {
+    const whereClause = await this.createWhereClause([], ['app', 'cluster']);
+    const query = `MATCH (app:Application)<-[{_interCluster:true}]-(cluster:Cluster) ${whereClause} RETURN DISTINCT cluster._uid`;
+    return this.executeQuery({ query, removePrefix: false });
+  }
+
+  /*
+   * Get channels related to any application.
+   */
+  async runGlobalAppChannelsQuery() {
+    const whereClause = await this.createWhereClause([], ['app', 'ch']);
+    const query = `MATCH (app:Application)<-[]-(ch:Channel) ${whereClause} RETURN DISTINCT ch`;
+    return this.executeQuery({ query, removePrefix: false });
+  }
+
+  /*
+   * Get hub subscriptions related to any application.
+   */
+  async runGlobalAppHubSubscriptionsQuery() {
+    const whereClause = await this.createWhereClause([], ['app', 'sub']);
+    const query = `MATCH (app:Application)-[]->(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN DISTINCT sub`;
+    return this.executeQuery({ query, removePrefix: false });
+  }
+
+  /*
+   * Get remote subscriptions related to any application.
+   */
+  async runGlobalAppRemoteSubscriptionsQuery() {
+    const whereClause = await this.createWhereClause([], ['app', 'sub']);
+    const query = `MATCH (app:Application)<-[{_interCluster:true}]-(sub:Subscription) ${whereClause === '' ? 'WHERE' : `(${whereClause}) AND`} exists(sub._hostingSubscription)=true RETURN DISTINCT sub`;
+    return this.executeQuery({ query, removePrefix: false });
+  }
 
   /**
    * TODO: For users less than clusterAdmin we we do not currently handle non-namespaced resources
