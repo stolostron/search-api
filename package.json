@@ -11,7 +11,7 @@
     "build-server": "babel -d ./output ./src -s",
     "build": "npm run clean && npm run build-server",
     "build:production": "npm run build",
-    "clean": "rm -rf build && mkdir build",
+    "clean": "rm -rf output && mkdir output",
     "shrinkwrap:clean": "del-cli node_modules npm-shrinkwrap.json && npm install --no-optional && npm prune && npm shrinkwrap",
     "lint": "eslint --ext ,.js .",
     "lint:fix": "eslint --ext .jsx,.js --fix .",

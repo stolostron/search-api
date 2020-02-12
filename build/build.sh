@@ -8,10 +8,12 @@ export DOCKER_IMAGE_AND_TAG=${1}
 make lint
 echo "Current dir:"
 pwd
+ls /home/travis/build/open-cluster-management/search-api/build
 make build-prod
 
 echo "Current dir:"
 pwd
+ls /home/travis/build/open-cluster-management/search-api/build
 echo ">> make prune"
 make prune
 
