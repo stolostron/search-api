@@ -31,14 +31,18 @@ LABEL org.label-schema.vendor="IBM" \
       io.k8s.description="$IMAGE_DESCRIPTION" \
       io.openshift.tags="$IMAGE_OPENSHIFT_TAGS"
 
-RUN mkdir -p /opt/ibm/search-api /licenses
-ADD license.txt /licenses
-WORKDIR /opt/ibm/search-api
+ENV BABEL_DISABLE_CACHE=1 \
+    NODE_ENV=production \
+    USER_UID=1001 \
+    VCS_REF="$VCS_REF"
 
-COPY . /opt/ibm/search-api
+RUN mkdir -p /opt/app-root/search-api /licenses
+ADD license.txt /licenses
+WORKDIR /opt/app-root/search-api
+
+COPY . /opt/app-root/search-api
 
 EXPOSE 4010
 
-ENV VCS_REF="$VCS_REF"
-ENV NODE_ENV production
-CMD ["node", "./build/index.js"]
+USER ${USER_UID}
+CMD ["node", "./output/index.js"]
