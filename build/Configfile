@@ -1,18 +1,18 @@
 VCS_URL ?=$(shell git config --get remote.origin.url)
 IMAGE_NAME =grc-ui-api
-IMAGE_DISPLAY_NAME =GRC Console Backend
+IMAGE_DISPLAY_NAME =Search API Backend
 ARCH = $(shell uname -m)
 ifeq ($(ARCH), x86_64)
 	IMAGE_NAME_ARCH =$(IMAGE_NAME)-amd64
 else
 	IMAGE_NAME_ARCH =$(IMAGE_NAME)-$(ARCH)
 endif
-IMAGE_MAINTAINER =ycao@us.ibm.com
+IMAGE_MAINTAINER =jpadilla@us.ibm.com
 IMAGE_VENDOR =IBM
 IMAGE_VERSION :=$(shell git rev-parse --short HEAD)
-IMAGE_DESCRIPTION =GRC UI API Container
+IMAGE_DESCRIPTION =Search API Container
 IMAGE_SUMMARY =$(IMAGE_DESCRIPTION)
-IMAGE_OPENSHIFT_TAGS =GRC Console Backend
+IMAGE_OPENSHIFT_TAGS =Search API Backend
 
 DOCKER_BUILD_OPTS=--build-arg "VCS_REF=$(SEMVERSION)" \
 	--build-arg "VCS_URL=$(VCS_URL)" \
