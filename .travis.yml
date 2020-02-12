@@ -35,8 +35,8 @@ before_script:
 
 script:
   - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
-  - make component/build
   - make component/test/unit
+  - make component/build
   - make component/test/e2e
 
 # jobs:
