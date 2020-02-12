@@ -26,7 +26,7 @@ prune:
 build-prod:
 	npm run build:production
 
-unit-test:
+unit-test: install
 	if [ ! -d "test-output" ]; then \
 		mkdir test-output; \
 	fi
