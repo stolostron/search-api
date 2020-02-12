@@ -4,3 +4,5 @@ config/config-development.json
 .idea
 coverage
 .build-harness-bootstrap
+build-harness-extensions/
+build-harness/
