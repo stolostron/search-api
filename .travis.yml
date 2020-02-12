@@ -33,12 +33,6 @@ stages:
 before_script:
   - make init
 
-# script:
-#   - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
-#   - make component/test/unit
-#   - make component/build
-#   - make component/test/e2e
-
 jobs:
   include:
     - stage: build
@@ -46,7 +40,7 @@ jobs:
       script:
         - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
         - make component/build
-        #- make component/push
+        - make component/push
     - stage: unit-test
       name: "Run unit tests"
       if: type = pull_request
@@ -54,7 +48,7 @@ jobs:
         # Set the image tag differently for PRs
         - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
         # Bootstrap the build harness, pull test image, and run unit tests.   
-        # - make component/pull 
+        - make component/pull 
         - make component/test/unit
         # - sonar-scanner --debug
     - stage: test-e2e
@@ -63,7 +57,7 @@ jobs:
       script:
         #Check out a clusterpool, set up oc, deploy, run e2e tests, and return clusterpool cluster
         - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
-        #- make component/pull 
+        - make component/pull 
         - make component/test/e2e
     - stage: publish
       name: "Publish the image to quay with an official version/sha tag and publish entry to integration pipeline stage"
