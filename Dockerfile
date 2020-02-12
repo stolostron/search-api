@@ -36,10 +36,8 @@ ENV BABEL_DISABLE_CACHE=1 \
     USER_UID=1001 \
     VCS_REF="$VCS_REF"
 
-RUN mkdir -p /opt/app-root/search-api /licenses
-ADD license.txt /licenses
+RUN mkdir -p /opt/app-root/search-api
 WORKDIR /opt/app-root/search-api
-
 COPY . /opt/app-root/search-api
 
 EXPOSE 4010
