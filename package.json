@@ -1,7 +1,7 @@
 {
   "name": "search-api",
   "version": "1.0.0",
-  "description": "GraphQL API for search.",
+  "description": "API server for search.",
   "main": "index.js",
   "scripts": {
     "start": "nodemon ./src/index.js --exec babel-node",
