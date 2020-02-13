@@ -2,7 +2,7 @@
 !/jest.config.js
 !/LICENSE 
 !/.babelrc
-!/build
+!/output
 !/config
 !/jest.setup.js
 !/node_modules

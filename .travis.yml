@@ -3,71 +3,64 @@ language: node_js
 
 os:
   - linux
-  - linux-ppc64le
-  - linux-s390
 
-cache:
-  apt: true
-  directories:
-    - "$TRAVIS_CACHE_DIR"
 
 branches:
   only:
     - master
-    - development
-    - /^[0-9]+\..*$/
-    - /^v[0-9]+\..*$/
     - /^release-[0-9]+\..*$/
 
 services:
   - docker
 
-before_install:
-  - make init
-  - make cicd-log-init
-  - source travis-env.sh
-  - make docker-logins
-  - chmod +x copyright-check.sh
+env:
+  global:
+    # Required
+    - OS=linux
+    - COMPONENT_TAG_EXTENSION="-${TRAVIS_COMMIT}"
+    # Component Specific
+    - COMPONENT_INIT_COMMAND=${TRAVIS_BUILD_DIR}/build/install-dependencies.sh
+    - COMPONENT_BUILD_COMMAND=${TRAVIS_BUILD_DIR}/build/build.sh
+    - COMPONENT_UNIT_TEST_COMMAND=${TRAVIS_BUILD_DIR}/build/run-unit-tests.sh
+    - COMPONENT_E2E_TEST_COMMAND=${TRAVIS_BUILD_DIR}/build/run-e2e-tests.sh
 
-install:
-  - make install
+stages:
+  - build
+  - unit-test
+  - test-e2e
+  - publish
 
 before_script:
-  - make test
+  - make init
 
-script:
-  - make copyright-check
-  - make image
-
-after_success:
-  - test "$TRAVIS_EVENT_TYPE" = "pull_request" && make push
-  - test "$TRAVIS_EVENT_TYPE" != "pull_request" && make release || echo "success"
-  - |
-      if [[ "$TRAVIS_EVENT_TYPE" != "pull_request" && "$TRAVIS_BRANCH" != "development" ]]; then
-        curl -Lo travis_after_all.py https://raw.github.com/dmakhno/travis_after_all/master/travis_after_all.py
-        python travis_after_all.py https://travis.ibm.com/api
-        export $(cat .to_export_back)
-        if [[ "$BUILD_LEADER" == "YES" ]]; then
-          if [[ "$BUILD_AGGREGATE_STATUS" == "others_succeeded" ]]; then
-            echo "All jobs succeeded! Creating multi arch image..."
-            make multi-arch
-          else
-            echo "Some jobs failed" && exit 1
-          fi
-        fi
-      fi
-  - make cicd-log-success print_vars
-
-after_failure:
-  - make cicd-log-fail print_vars
-
-notifications:
-  slack:
-    on_failure: always
-    on_success: change
-    on_pull_request: false
-    rooms:
-      - secure: uJhSvxCfppPv9Ux5r0bgbOVz8u4vxWYhitgpuvBiQt4OGpGUb6GHkzZKl3E1Y27R4NyawULW18csRXfUJQ6hyh1hGjlU5Sh4iztArxqUC1w16VC9vSZaPvseLXulFmv3pcFPFLMJI1iJRBDWNXMvhFjHlXBfK2uD11tbBsf3Kf7L4v1DnU72aDZDPkwRPZiW3TTQpAx9ebdgbdHg+aFhyQPblzo/SHsFyrkALXrpGWI8/XHM+HeLm10SSQ5hMn0ahdwIv97KYo6Z/iVzOy9yoZLTCT7LkXe3lw5WAE+rGpxMy2nXi1vTZp8sJIsbAe/ywhgFor9t7g8qf8fTDptrF+sf5zA173e6RCAYboVG9IuHW0E6Pm5Ip8rBhaQf/JfVYltHsb9yU9kqc1oYGS2e+RpKSIGvx+r6elSNBu+2F3MgtQsSzU3TkuDG90RCxNfEQikDjPNRx7Xc/1AsemMj9/6eETlzODhQDJH/wUfWf7O1r/H7whmPbwm30Od4CO0NowXWoNT8lweSqm+OXYtgySjCj36O30C7ucdZZFHBo3S6zC8KjAIfe1/w9jw/jZ48SP/tvM2QrR0n1MT1gvV06xykRMoDVLZdDwHT3vKQZ5eJzhvn6c8gS2JHZRM6xPOpkzLrsLMpKQiyj11B7svyn79cxiUxrvkN67pAWb2uolo=
-    template:
-      - "Search API"
-      - "Build <%{build_url}|#%{build_number}> (<%{compare_url}|%{commit}>) of %{repository_slug}@%{branch} %{result} in %{duration}"
+jobs:
+  include:
+    - stage: build
+      name: "Build the test image and push it"
+      script:
+        - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
+        - make component/build
+        - make component/push
+    - stage: unit-test
+      name: "Run unit tests"
+      if: type = pull_request
+      script:
+        # Set the image tag differently for PRs
+        - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
+        # Bootstrap the build harness, pull test image, and run unit tests.   
+        - make component/pull 
+        - make component/test/unit
+        # - sonar-scanner --debug
+    - stage: test-e2e
+      name: "Deploy the image to a cluster and run e2e tests"
+      if: type = pull_request
+      script:
+        #Check out a clusterpool, set up oc, deploy, run e2e tests, and return clusterpool cluster
+        - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
+        - make component/pull 
+        - make component/test/e2e
+    - stage: publish
+      name: "Publish the image to quay with an official version/sha tag and publish entry to integration pipeline stage"
+      if: type = push AND branch =~ /^release-[0-9]+\..*$/
+      script:
+        - make pipeline-manifest/update PIPELINE_MANIFEST_COMPONENT_SHA256=${TRAVIS_COMMIT} PIPELINE_MANIFEST_COMPONENT_REPO=${TRAVIS_REPO_SLUG} PIPELINE_MANIFEST_BRANCH=${TRAVIS_BRANCH}

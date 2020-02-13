@@ -1,17 +1,17 @@
 {
   "name": "search-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "API server for search.",
   "main": "index.js",
   "scripts": {
     "start": "nodemon ./src/index.js --exec babel-node",
-    "start:production": "cross-env NODE_ENV=production node ./build/index.js",
-    "start:test": "cross-env NODE_ENV=test MOCK=true node ./build/index.js",
-    "start:development": "cross-env NODE_ENV=development node ./build/index.js",
-    "build-server": "babel -d ./build ./src -s",
+    "start:production": "cross-env NODE_ENV=production node ./output/index.js",
+    "start:test": "cross-env NODE_ENV=test MOCK=true node ./output/index.js",
+    "start:development": "cross-env NODE_ENV=development node ./output/index.js",
+    "build-server": "babel -d ./output ./src -s",
     "build": "npm run clean && npm run build-server",
     "build:production": "npm run build",
-    "clean": "rm -rf build && mkdir build",
+    "clean": "rm -rf output && mkdir output",
     "shrinkwrap:clean": "del-cli node_modules npm-shrinkwrap.json && npm install --no-optional && npm prune && npm shrinkwrap",
     "lint": "eslint --ext ,.js .",
     "lint:fix": "eslint --ext .jsx,.js --fix .",
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.ibm.com:IBMPrivateCloud/search-api.git"
+    "url": "git@github.com:open-cluster-management/search-api.git"
   },
   "author": "",
   "license": "SEE LICENSE IN LICENSE",
@@ -32,18 +32,12 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged",
+      "pre-commit": "npm run lint",
       "pre-push": "npm run test"
     }
   },
-  "lint-staged": {
-    "*.{js,jsx,json}": [
-      "eslint --fix",
-      "git add"
-    ]
-  },
   "dependencies": {
-    "@icp/security-middleware": "^2.0.91",
+    "@icp/security-middleware": "file:pkg/icp-security-middleware-2.0.95.tgz",
     "agentkeepalive": "^4.0.2",
     "apollo-errors": "^1.9.0",
     "apollo-server-express": "^1.3.5",
@@ -81,7 +75,6 @@
     "husky": "^1.1.0",
     "jest": "^23.1.0",
     "jest-tap-reporter": "^1.9.0",
-    "lint-staged": "^7.3.0",
     "nodemon": "^1.17.3",
     "redis-mock": "^0.44.0",
     "supertest": "^3.1.0"

@@ -1,5 +1,5 @@
-**Related Issue:** [closes|resolves|fixes] IBMPrivateCloud/roadmap/issues/<ISSUE_NUMBER>
+**Related Issue:** [closes|resolves|fixes] open-container-management/backlog/issues/<ISSUE_NUMBER>
 
 **Description of Changes**
 
-- [ ] I wrote test cases to cover new code
+- [ ] I wrote test cases to cover new code.
