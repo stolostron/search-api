@@ -126,7 +126,13 @@ function getRedisClient() {
         redisHost,
         {
           auth_pass: config.get('redisPassword'),
-          tls: { servername: redisHost, ca: [redisCert], minVersion: 'TLSv1.2', maxVersion: 'TLSv1.2' }
+          tls: {
+            servername: redisHost,
+            ca: [redisCert],
+            minVersion: 'TLSv1.2',
+            maxVersion: 'TLSv1.2',
+            family: 'IPv6'
+          }
         }
       );
       redisClient.ping((error, result) => {
