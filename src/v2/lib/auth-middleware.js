@@ -7,12 +7,9 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 
-import fs from 'fs';
 import _ from 'lodash';
 import lru from 'lru-cache';
-import jws from 'jws';
 import config from '../../../config';
-import IDConnector from '../connectors/idmgmt';
 import createMockIAMHTTP from '../mocks/iam-http';
 import request from './request';
 
@@ -28,86 +25,39 @@ const asyncMiddleware = fn => (req, res, next) => {
 //   service account token. This is only possible if the service id role is ClusterAdmin.
 async function getKubeToken({
   authorization,
-  cache,
-  httpLib,
   shouldLocalAuth,
 }) {
   if ((_.isEmpty(authorization) && shouldLocalAuth) || process.env.MOCK === 'true') {
     // special case for graphiql to work locally
     // do not exchange for idtoken since authorization header is empty
-    return config.get('localKubeToken') || 'localdev';
+    return process.env.SERVICEACCT_TOKEN || 'localdev';
   }
-  const authToken = authorization.substring(7);
-
-  // If we have a kube token in the cache, then we use it.
-  const userCache = cache.get(authToken) || {};
-  if (userCache.kubeToken) {
-    return userCache.kubeToken;
+  const idToken = authorization;
+  if (!idToken) {
+    throw new Error('Authentication error: invalid token parsed from cookie');
   }
 
-  // Check if the auth token is from a service ID.  We can find out by decoding the JWT token.
-  const tokenPayload = _.get(jws.decode(authToken), 'payload');
-  if (tokenPayload) {
-    const tokenType = JSON.parse(tokenPayload).sub_type;
-
-    if (tokenType === 'ServiceId') {
-      // Service IDs don't have a Kubernetes token. Since we need a kubernetes token to continue,
-      // we can use the service account token. This token has admin privileges, so we need to
-      // check the service account highest role before continuing.
-      const idmgmtConnector = new IDConnector({ iamToken: authToken });
-      const highestRole = await idmgmtConnector.get('/identity/api/v1/teams/highestRole');
-
-      if (highestRole === 'ClusterAdministrator') {
-        // When running on a cluster we use the serviceaccount token is at this location.
-        // For local development/testing we'll use the localKubeToken env.
-        const kubeToken = process.env.localKubeToken ||
-          fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
-        cache.set(authToken, { ...userCache, kubeToken });
-        return kubeToken;
-      }
-
-      throw new Error(`When authenticating with a service id, the role must be a ClusterAdministrator. This service id role is ${highestRole}`); // eslint-disable-line max-len
-    }
-  }
-
-  // When the actor of the request is a user we get an access_token from the UI, which needs
-  // to be exchanged for an id_token to make kube requests.
-  const options = {
-    url: `${config.get('PLATFORM_IDENTITY_PROVIDER_URL')}/v1/auth/exchangetoken`,
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    method: 'POST',
-    json: true,
-    form: {
-      access_token: authToken,
-    },
-  };
-
-  const response = await httpLib(options);
-  const kubeToken = _.get(response, 'body.id_token');
-  if (kubeToken) {
-    cache.set(authToken, { ...userCache, kubeToken });
-  } else {
-    throw new Error(`Authentication error: ${JSON.stringify(response.body)}`);
-  }
-
-  return kubeToken;
+  return idToken;
 }
 
 // Get the namespaces authorized for the access_token.
-// accessToken - could be from a user or service id.
-// accountId - optional to filter namespaces by account id.
-async function getNamespaces({ accessToken, accountId }) {
-  const options = { iamToken: accessToken };
+// usertoken - could be from a user or service id.
+async function getNamespaces(usertoken) {
+  const options = {
+    url: `${config.get('API_SERVER_URL')}/apis/project.openshift.io/v1/projects`,
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${usertoken}`,
+    },
+    json: true,
+    fullResponse: false,
+  };
   if (process.env.NODE_ENV === 'test') {
-    options.httpLib = createMockIAMHTTP();
+    const mockReq = createMockIAMHTTP();
+    return mockReq(options);
   }
-
-  const idmgmtConnector = new IDConnector(options);
-
-  return idmgmtConnector
-    .get(`/identity/api/v1/teams/resources?resourceType=namespace${accountId ? `&accountId=${accountId}` : ''}`);
+  return request(options);
 }
 
 
@@ -120,70 +70,25 @@ export default function createAuthMiddleWare({
     max: 1000,
     maxAge: 2 * 60 * 1000, // 2 mins. Must keep low because user's permissions can change.
   }),
-  httpLib = request,
   shouldLocalAuth,
 } = {}) {
   return asyncMiddleware(async (req, res, next) => {
     const idToken = await getKubeToken({
       authorization: req.headers.authorization || req.headers.Authorization,
-      cache,
-      httpLib,
       shouldLocalAuth,
     });
-    req.kubeToken = `Bearer ${idToken}`;
-
-    const accessToken = _.get(req, "cookies['cfc-access-token-cookie']") || config.get('cfc-access-token-cookie') ||
-      (req.headers.authorization && req.headers.authorization.substring(7));
-    let userNamePromise = cache.get(`userName-${accessToken}`);
-    if (!userNamePromise) {
-      userNamePromise = new Promise(async (resolve) => {
-        let userName = null;
-        userName = _.get(jws.decode(idToken), 'payload.uniqueSecurityName');
-        if (process.env.NODE_ENV === 'test' || process.env.MOCK === 'true') {
-          userName = 'admin_test';
-        }
-        // special case for redhat openshift, can't get user from idtoken
-        if (!userName) {
-          const options = {
-            url: `${config.get('PLATFORM_IDENTITY_PROVIDER_URL')}/v1/auth/userinfo`,
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            method: 'POST',
-            json: true,
-            form: {
-              access_token: accessToken,
-            },
-          };
-
-          const response = await httpLib(options);
-          userName = _.get(response, 'body.sub') || _.get(response, 'body.name');
-          if (!userName) {
-            throw new Error(`Authentication error: ${response.body}`);
-          }
-        }
-        resolve(userName);
-      });
-      cache.set(`userName-${accessToken}`, userNamePromise);
-    }
-
+    req.kubeToken = idToken;
     // Get the namespaces for the user.
     // We cache the promise to prevent starting the same request multiple times.
-    let nsPromise = cache.get(`namespaces_${accessToken}`);
+    let nsPromise = cache.get(`namespaces_${idToken}`);
     if (!nsPromise) {
-      nsPromise = getNamespaces({
-        accessToken,
-        accountId: req.headers && req.headers.accountid,
-      });
-      cache.set(`namespaces_${accessToken}`, nsPromise);
+      nsPromise = getNamespaces(idToken);
+      cache.set(`namespaces_${idToken}`, nsPromise);
     }
-
-    const [userName, namespaces] = await Promise.all([userNamePromise, nsPromise]);
-
     req.user = {
-      name: userName,
-      namespaces,
-      accessToken,
+      // name: userName,
+      namespaces: await nsPromise,
+      idToken,
     };
 
     next();

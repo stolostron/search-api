@@ -27,10 +27,10 @@ const jestConfig = {
   ],
   coverageThreshold: {
     global: {
-      branches: 40,
-      functions: 68,
-      lines: 58,
-      statements: 60,
+      branches: 37,
+      functions: 63,
+      lines: 51,
+      statements: 53,
     },
   },
   collectCoverageFrom: [

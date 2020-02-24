@@ -12,10 +12,8 @@ import lru from 'lru-cache';
 import asyncPolling from 'async-polling';
 import config from '../../../config';
 import logger from '../lib/logger';
-import IDConnector from '../connectors/idmgmt';
 import KubeConnector from '../connectors/kube';
 // Mocked connectors for testing
-import MockIdMgmtConnector from '../mocks/idmgmt';
 import MockKubeConnector from '../mocks/kube';
 
 let isOpenshift = null;
@@ -26,22 +24,40 @@ const cache = lru({
   maxAge: config.get('RBAC_INACTIVITY_TIMEOUT'), // default is 10 mins
 });
 
-export async function getUserResources(token) {
-  if (token !== undefined) {
-    const idmgmtConnector = !isTest
-      ? new IDConnector({ iamToken: token })
-      : new MockIdMgmtConnector();
+export async function getUserResources(kubeToken) {
+  if (kubeToken !== undefined) {
+    const kubeConnector = !isTest
+      ? new KubeConnector({ token: `Bearer ${kubeToken}` })
+      : new MockKubeConnector();
     // eslint-disable-next-line prefer-const
-    let [userRoles, userNamespaces] = await Promise.all([
-      idmgmtConnector.get('/identity/api/v1/teams/roleMappings'),
-      idmgmtConnector.get('/identity/api/v1/teams/resources?resourceType=namespace'),
+    let [roles, clusterRoles, roleBindings, clusterRoleBindings, namespaces] = await Promise.all([
+      kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/roles'),
+      kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/rolebindings'),
+      kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/clusterroles'),
+      kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/clusterrolebindings'),
+      kubeConnector.get('/apis/project.openshift.io/v1/projects', {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+      }),
     ]);
-    userNamespaces = userNamespaces && userNamespaces.length > 0 && userNamespaces.filter(ns => ns.namespaceId).map(ns => ns.namespaceId);
-
-    if (!userNamespaces || userNamespaces.length === 0) {
+    // Get just the items, whole response contians resourceVersion whichs changes everytime
+    roles = roles && roles.items;
+    clusterRoles = clusterRoles && clusterRoles.items;
+    roleBindings = roleBindings && roleBindings.items;
+    clusterRoleBindings = clusterRoleBindings && clusterRoleBindings.items;
+    namespaces = Array.isArray(namespaces.items) ? namespaces.items.map(ns => ns.metadata.name) : [];
+    if (!namespaces || namespaces.length === 0) {
       logger.warn('User doesn\'t have access to any namespaces');
     }
-    return { userRoles, userNamespaces: userNamespaces || [] };
+    return {
+      roles,
+      clusterRoles,
+      roleBindings,
+      clusterRoleBindings,
+      namespaces: namespaces || [],
+    };
   }
   return {};
 }
@@ -49,7 +65,7 @@ export async function getUserResources(token) {
 async function checkIfOpenShiftPlatform(kubeToken) {
   const url = '/apis/authorization.openshift.io/v1';
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: kubeToken })
+    ? new KubeConnector({ token: `Bearer ${kubeToken}` })
     : new MockKubeConnector();
   const res = await kubeConnector.get(url);
 
@@ -69,7 +85,7 @@ async function getNonNamespacedResources(kubeToken) {
   const startTime = Date.now();
   const resources = [];
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: kubeToken })
+    ? new KubeConnector({ token: `Bearer ${kubeToken}` })
     : new MockKubeConnector();
 
   // Get non-namespaced resources WITH an api group
@@ -106,7 +122,7 @@ async function getNonNamespacedResources(kubeToken) {
 async function getNonNamespacedAccess(kubeToken) {
   const startTime = Date.now();
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: kubeToken })
+    ? new KubeConnector({ token: `Bearer ${kubeToken}` })
     : new MockKubeConnector();
   const nonNamespacedResources = await getNonNamespacedResources(kubeToken);
   const results = await Promise.all(nonNamespacedResources.map((resource) => {
@@ -133,7 +149,7 @@ async function getNonNamespacedAccess(kubeToken) {
 
 async function getUserAccess(kubeToken, namespace) {
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: kubeToken })
+    ? new KubeConnector({ token: `Bearer ${kubeToken}` })
     : new MockKubeConnector();
   const url = `/apis/authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
   const jsonBody = {
@@ -170,16 +186,16 @@ async function getUserAccess(kubeToken, namespace) {
   });
 }
 
-async function buildRbacString(accessToken, kubeToken, user, objAliases) {
+async function buildRbacString(idToken, kubeToken, user, objAliases) {
   const startTime = Date.now();
   if (isOpenshift === null) await checkIfOpenShiftPlatform(kubeToken);
-  const userCache = cache.get(accessToken);
+  const userCache = cache.get(idToken);
   let data = [];
   if (!userCache || !userCache.userAccessPromise || !userCache.userNonNamespacedAccessPromise) {
-    const userAccessPromise = Promise.all(user.userNamespaces.map(namespace => getUserAccess(kubeToken, namespace)));
+    const userAccessPromise = Promise.all(user.namespaces.map(namespace => getUserAccess(kubeToken, namespace)));
     const userNonNamespacedAccessPromise = getNonNamespacedAccess(kubeToken);
-    cache.set(accessToken, { ...userCache, userAccessPromise, userNonNamespacedAccessPromise });
-    logger.info('Saved userAcces and nonNamespacesAccess promises to user cache.');
+    cache.set(idToken, { ...userCache, userAccessPromise, userNonNamespacedAccessPromise });
+    logger.info('Saved userAccess and nonNamespacesAccess promises to user cache.');
     data = [await userAccessPromise, await userNonNamespacedAccessPromise];
   } else {
     data = [await userCache.userAccessPromise, await userCache.userNonNamespacedAccessPromise];
@@ -189,36 +205,45 @@ async function buildRbacString(accessToken, kubeToken, user, objAliases) {
   const aliasesData = objAliases.map(alias => [...rbacData].map(item => `${alias}._rbac = ${item}`));
   const aliasesStrings = aliasesData.map(a => a.join(' OR '));
 
-  logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${user.userNamespaces && user.userNamespaces.length} )`);
+  logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${user.namespaces && user.namespaces.length} )`);
   return `(${aliasesStrings.join(') AND (')})`;
 }
 
 export async function getUserRbacFilter(req, objAliases) {
   let rbacFilter = null;
   // update/add user on active list
-  activeUsers[req.user.accessToken] = Date.now();
-  const currentUser = cache.get(req.user.accessToken);
+  activeUsers[req.user.idToken] = Date.now();
+  const currentUser = cache.get(req.user.idToken);
   // 1. if user exists -> return the cached RBAC string
   if (currentUser) {
-    rbacFilter = await buildRbacString(req.user.accessToken, req.kubeToken, currentUser, objAliases);
+    rbacFilter = await buildRbacString(req.user.idToken, req.kubeToken, currentUser, objAliases);
   }
   // 2. if (users 1st time querying, they have been removed b/c inactivity, they otherwise dont have an rbacString) -> create the RBAC String
   if (!rbacFilter) {
     // We dont have user data in cache yet - need to create it here
-    const { userRoles, userNamespaces } = await getUserResources(req.user.accessToken);
+    const {
+      roles,
+      clusterRoles,
+      roleBindings,
+      clusterRoleBindings,
+      namespaces,
+    } = await getUserResources(req.kubeToken);
     const newUser = {
-      userRoles,
-      userNamespaces,
+      roles,
+      clusterRoles,
+      roleBindings,
+      clusterRoleBindings,
+      namespaces,
     };
-    const currentUserCache = cache.get(req.user.accessToken); // Get user cache again because it may have changed.
-    cache.set(req.user.accessToken, { ...currentUserCache, ...newUser });
-    rbacFilter = buildRbacString(req.user.accessToken, req.kubeToken, newUser, objAliases);
+    const currentUserCache = cache.get(req.user.idToken); // Get user cache again because it may have changed.
+    cache.set(req.user.idToken, { ...currentUserCache, ...newUser });
+    rbacFilter = buildRbacString(req.user.idToken, req.kubeToken, newUser, objAliases);
     return rbacFilter;
   }
   return rbacFilter;
 }
 
-// Poll users access every 2 mins(default) in the background to determine RBAC revalidation
+// Poll users access every 1 mins(default) in the background to determine RBAC revalidation
 export default function pollUserAccess() {
   asyncPolling(async (end) => {
     if (config.get('NODE_ENV') !== 'test') {
@@ -233,15 +258,24 @@ export default function pollUserAccess() {
           cache.del(user[0]);
         }
       });
+      // **TODO** Instead of going through each user -> have a cluster-wide role object
+      // if that object changes then delete all user's rbac string
+
       // if a users access has changed reset the roles and namespaces
       Object.keys(activeUsers).forEach((token) => {
         // Check if user exists and they are active (done something within the last 10 mins)
         const userCache = cache.get(token);
         getUserResources(token).then((res) => {
-          const userRolesCache = userCache && userCache.userRoles;
-          const userNamespacesCache = userCache && userCache.userNamespaces;
-          if (JSON.stringify(res.userRoles) !== JSON.stringify(userRolesCache)
-            || JSON.stringify(res.userNamespaces) !== JSON.stringify(userNamespacesCache)) {
+          const rolesCache = userCache && userCache.roles;
+          const clusterRolesCache = userCache && userCache.clusterRoles;
+          const roleBindingsCache = userCache && userCache.roleBindings;
+          const clusteroleBindingsCache = userCache && userCache.clusterRoleBindings;
+          const namespacesCache = userCache && userCache.namespaces;
+          if (JSON.stringify(res.roles) !== JSON.stringify(rolesCache)
+            || JSON.stringify(res.clusterRoles) !== JSON.stringify(clusterRolesCache)
+            || JSON.stringify(res.roleBindings) !== JSON.stringify(roleBindingsCache)
+            || JSON.stringify(res.clusterRoleBindings) !== JSON.stringify(clusteroleBindingsCache)
+            || JSON.stringify(res.namespaces) !== JSON.stringify(namespacesCache)) {
             logger.info('User access has changed - deleting users RBAC cache');
             cache.del(token);
             delete activeUsers[token];

@@ -12,9 +12,9 @@ import { getUserRbacFilter, getUserResources } from './rbacCaching';
 describe('RBAC Caching', () => {
   test('Tests creation of rbac string for search queries', async () => {
     const req = {
-      kubeToken: 'test-kube-token',
+      kubeToken: 'Bearer localdev',
       user: {
-        accessToken: 'test-access-token',
+        idToken: 'Bearer localdev',
       },
     };
     const objAliases = ['n'];
@@ -22,7 +22,7 @@ describe('RBAC Caching', () => {
     expect(rbacFilter).toMatchSnapshot();
   });
   test('Test User Resources', async () => {
-    const token = 'test-access-token';
+    const token = 'Bearer localdev';
     const userRes = await getUserResources(token);
 
     expect(userRes).toMatchSnapshot();
