@@ -86,7 +86,8 @@ export default function createAuthMiddleWare({
       cache.set(`namespaces_${idToken}`, nsPromise);
     }
     req.user = {
-      // name: userName,
+      // temporarily using the idToken as userName until we figure out how to exchange token for name
+      name: idToken,
       namespaces: await nsPromise,
       idToken,
     };

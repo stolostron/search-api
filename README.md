@@ -10,10 +10,8 @@ https://github.ibm.com/IBMPrivateCloud/search/wiki/Using-the-Search-API
 ```
 redisEndpoint - Endpoint of RedisGraph server ie. "//redis-host:6379"
 redisPassword - Password to authenticate with the RedisGraph server.
-ARTIFACTORY_USER - mcmdev@us.ibm.com
-ARTIFACTORY_PWD - Artifactory API KEY, base64 encoded. You can get this value for functional id mcmdev@us.ibm.com from: https://ibm.ent.box.com/notes/287638278960
 API_SERVER_URL
-SERVICEACCT_TOKEN - the token that you can get from the top right corner of mcm-ui page - configure client - the value of kubectl config set-credentials admin --token, it's a long string, starts with "ey...". Please note that this value is updated every 24 hrs.
+SERVICEACCT_TOKEN - the token that you can get from the top right corner of console-ui page - configure client - the value of kubectl config set-credentials admin --token, it's a long string, starts with "ey...". Please note that this value is updated every 24 hrs.
 ```
 2. Start the dev server
 ```
