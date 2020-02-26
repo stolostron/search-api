@@ -47,7 +47,6 @@
     "cross-env": "^5.1.4",
     "express": "^4.17.1",
     "flat": "^4.1.0",
-    "fs": "0.0.1-security",
     "graphql": "^0.13.2",
     "graphql-tools": "^2.24.0",
     "graphql-type-json": "^0.2.1",
