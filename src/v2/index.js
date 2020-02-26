@@ -89,15 +89,13 @@ if (isTest) {
 
 graphQLServer.use(...auth);
 graphQLServer.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress(async (req) => {
-  let namespaces = await req.user.namespaces;
-  namespaces = Array.isArray(namespaces.items) ? namespaces.items.map(ns => ns.metadata.name) : [];
   let searchConnector;
   let kubeConnector;
   if (isTest) {
     searchConnector = new MockSearchConnector();
     kubeConnector = new MockKubeConnector();
   } else {
-    searchConnector = new RedisGraphConnector({ rbac: namespaces, req });
+    searchConnector = new RedisGraphConnector({ rbac: req.user.namespaces, req });
     kubeConnector = new KubeConnector({ token: req.kubeToken });
   }
 
