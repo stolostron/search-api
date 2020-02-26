@@ -20,6 +20,7 @@ import MockKubeConnector from '../mocks/kube';
 let isOpenshift = null;
 const isTest = config.get('NODE_ENV') === 'test';
 let activeUsers = [];
+let adminAccessToken;
 const cache = lru({
   max: 1000,
   maxAge: config.get('RBAC_INACTIVITY_TIMEOUT'), // default is 10 mins
@@ -178,16 +179,15 @@ async function getUserAccess(kubeToken, namespace) {
 }
 
 async function buildRbacString(req, objAliases) {
-  const { user: { name, namespaces, idToken } } = req;
-  const userNamespaces = Array.isArray(namespaces.items) ? namespaces.items.map(ns => ns.metadata.name) : [];
+  const { user: { namespaces, idToken } } = req;
   const startTime = Date.now();
   if (isOpenshift === null) await checkIfOpenShiftPlatform(idToken);
-  const userCache = cache.get(name);
+  const userCache = cache.get(idToken);
   let data = [];
   if (!userCache || !userCache.userAccessPromise || !userCache.userNonNamespacedAccessPromise) {
-    const userAccessPromise = Promise.all(userNamespaces.map(namespace => getUserAccess(idToken, namespace)));
+    const userAccessPromise = Promise.all(namespaces.map(namespace => getUserAccess(idToken, namespace)));
     const userNonNamespacedAccessPromise = getNonNamespacedAccess(idToken);
-    cache.set(name, { ...userCache, userAccessPromise, userNonNamespacedAccessPromise });
+    cache.set(idToken, { ...userCache, userAccessPromise, userNonNamespacedAccessPromise });
     logger.info('Saved userAccess and nonNamespacesAccess promises to user cache.');
     data = [await userAccessPromise, await userNonNamespacedAccessPromise];
   } else {
@@ -198,7 +198,7 @@ async function buildRbacString(req, objAliases) {
   const aliasesData = objAliases.map(alias => [...rbacData].map(item => `${alias}._rbac = ${item}`));
   const aliasesStrings = aliasesData.map(a => a.join(' OR '));
 
-  logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${userNamespaces && userNamespaces.length} )`);
+  logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaces && namespaces.length} )`);
   return `(${aliasesStrings.join(') AND (')})`;
 }
 
@@ -206,15 +206,15 @@ export async function getUserRbacFilter(req, objAliases) {
   let rbacFilter = null;
   // update/add user on active list
   activeUsers[req.user.name] = Date.now();
-  const currentUser = cache.get(req.user.name);
+  const currentUser = cache.get(req.user.idToken);
   // 1. if user exists -> return the cached RBAC string
   if (currentUser) {
     rbacFilter = await buildRbacString(req, objAliases);
   }
   // 2. if (users 1st time querying || they have been removed b/c inactivity || they otherwise dont have an rbacString) -> create the RBAC String
   if (!rbacFilter) {
-    const currentUserCache = cache.get(req.user.name); // Get user cache again because it may have changed.
-    cache.set(req.user.name, { ...currentUserCache });
+    const currentUserCache = cache.get(req.user.idToken); // Get user cache again because it may have changed.
+    cache.set(req.user.idToken, { ...currentUserCache });
     rbacFilter = buildRbacString(req, objAliases);
     return rbacFilter;
   }
@@ -239,14 +239,12 @@ export default function pollUserAccess() {
       // If role/roleBinding/clusterRole/clusterRoleBinding resources changed -> need to delete all active user RBAC cache
       const roleAccessCache = cache.get('user-role-access-data');
       // Need to use admin token to retrieve role data as admin has access to all data.
-      let SERVICEACCT_TOKEN = cache.get('admin_access_token');
-      if (!SERVICEACCT_TOKEN) {
-        SERVICEACCT_TOKEN = process.env.NODE_ENV === 'production'
+      if (!adminAccessToken) {
+        adminAccessToken = process.env.NODE_ENV === 'production'
           ? fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8')
           : process.env.SERVICEACCT_TOKEN || '';
-        cache.set('admin_access_token', SERVICEACCT_TOKEN);
       }
-      getClusterRbacConfig(SERVICEACCT_TOKEN).then((res) => {
+      getClusterRbacConfig(adminAccessToken).then((res) => {
         // If we dont have this cached we need to set it
         if (!roleAccessCache) {
           cache.set('user-role-access-data', res);

@@ -57,7 +57,8 @@ async function getNamespaces(usertoken) {
     const mockReq = createMockIAMHTTP();
     return mockReq(options);
   }
-  return request(options);
+  const nsResponse = await request(options);
+  return Array.isArray(nsResponse.items) ? nsResponse.items.map(ns => ns.metadata.name) : [];
 }
 
 
