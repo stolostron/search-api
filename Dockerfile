@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/nodejs-10:latest
+FROM registry.access.redhat.com/ubi8/nodejs-10:1
 
 ARG VCS_REF
 ARG VCS_URL

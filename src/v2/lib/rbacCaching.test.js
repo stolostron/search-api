@@ -7,14 +7,19 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 
-import { getUserRbacFilter, getUserResources } from './rbacCaching';
+import { getUserRbacFilter, getClusterRbacConfig } from './rbacCaching';
 
 describe('RBAC Caching', () => {
   test('Tests creation of rbac string for search queries', async () => {
     const req = {
-      kubeToken: 'test-kube-token',
+      kubeToken: 'Bearer localdev',
       user: {
-        accessToken: 'test-access-token',
+        name: 'kube:admin',
+        idToken: 'Bearer localdev',
+        namespaces: [
+          'default',
+          'kube-system',
+        ],
       },
     };
     const objAliases = ['n'];
@@ -22,8 +27,8 @@ describe('RBAC Caching', () => {
     expect(rbacFilter).toMatchSnapshot();
   });
   test('Test User Resources', async () => {
-    const token = 'test-access-token';
-    const userRes = await getUserResources(token);
+    const token = 'Bearer localdev';
+    const userRes = await getClusterRbacConfig(token);
 
     expect(userRes).toMatchSnapshot();
   });

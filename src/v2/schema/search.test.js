@@ -17,7 +17,8 @@ describe('Search Resolver', () => {
       .send({
         query: `
           {
-            searchResult: search(input: {keywords: [],
+            searchResult: search(input: {
+                keywords: [],
                 filters: [ { property: "cluster", values: ["cluster1"]}],
                 limit: 10000,
                 relatedKinds: ["pod"]}){
@@ -43,7 +44,8 @@ describe('Search Resolver', () => {
       .send({
         query: `
           {
-            searchResult: search(input: { keywords: ["testing"],
+            searchResult: search(input: {
+                keywords: ["testing"],
                 filters: []}){
               items
               related {
@@ -67,7 +69,8 @@ describe('Search Resolver', () => {
       .send({
         query: `
           {
-            searchResult: search(input: {keywords: [],
+            searchResult: search(input: {
+                keywords: [],
                 filters: [ { property: "cluster", values: ["cluster1"]}]}){
               items
               related {

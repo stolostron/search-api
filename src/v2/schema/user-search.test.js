@@ -10,7 +10,7 @@
 import supertest from 'supertest';
 import server, { GRAPHQL_PATH } from '../index';
 
-describe('UserSearch Resolver', () => {
+describe.skip('UserSearch Resolver', () => {
   test('Correctly Resolves Saved Search Query', (done) => {
     supertest(server)
       .post(GRAPHQL_PATH)

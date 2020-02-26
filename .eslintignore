@@ -1,7 +1,8 @@
 node_modules
 build
 coverage
+output
 package.json
-npm-shrinkwrap.json
+package-lock.json
 config/config-defaults.json
 build-harness/

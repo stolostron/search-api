@@ -11,7 +11,7 @@ import express from 'express';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import { isInstance as isApolloErrorInstance, formatError as formatApolloError } from 'apollo-errors';
 import bodyParser from 'body-parser';
-import { app as inspect } from '@icp/security-middleware';
+import inspect from 'security-middleware';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -20,17 +20,17 @@ import cookieParser from 'cookie-parser';
 import logger from './lib/logger';
 
 import RedisGraphConnector from './connectors/redisGraph';
-import IdMgmtConnector from './connectors/idmgmt';
 
 import AppModel from './models/application';
 import SearchModel from './models/search';
 import QueryModel from './models/userSearch';
 
 import MockSearchConnector from './mocks/search';
-import MockIdMgmtConnector from './mocks/idmgmt';
 import schema from './schema/';
 import config from '../../config';
 import authMiddleware from './lib/auth-middleware';
+import MockKubeConnector from './mocks/kube';
+import KubeConnector from './connectors/kube';
 
 export const GRAPHQL_PATH = `${config.get('contextPath')}/graphql`;
 export const GRAPHIQL_PATH = `${config.get('contextPath')}/graphiql`;
@@ -74,7 +74,7 @@ const auth = [];
 
 if (isProd) {
   logger.info('Authentication enabled');
-  auth.push(inspect, authMiddleware());
+  auth.push(inspect.app, authMiddleware());
 } else {
   auth.push(authMiddleware({ shouldLocalAuth: true }));
   graphQLServer.use(GRAPHIQL_PATH, graphiqlExpress({ endpointURL: GRAPHQL_PATH }));
@@ -89,16 +89,14 @@ if (isTest) {
 
 graphQLServer.use(...auth);
 graphQLServer.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress(async (req) => {
-  const namespaces = req.user.namespaces.map(ns => ns.namespaceId);
-
   let searchConnector;
-  let idMgmtConnector;
+  let kubeConnector;
   if (isTest) {
     searchConnector = new MockSearchConnector();
-    idMgmtConnector = new MockIdMgmtConnector();
+    kubeConnector = new MockKubeConnector();
   } else {
-    searchConnector = new RedisGraphConnector({ rbac: namespaces, req });
-    idMgmtConnector = new IdMgmtConnector({ iamToken: req.user.accessToken });
+    searchConnector = new RedisGraphConnector({ rbac: req.user.namespaces, req });
+    kubeConnector = new KubeConnector({ token: req.kubeToken });
   }
 
 
@@ -106,7 +104,7 @@ graphQLServer.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress(async (req) =>
     req,
     appModel: new AppModel({ searchConnector }),
     searchModel: new SearchModel({ searchConnector }),
-    queryModel: new QueryModel({ idMgmtConnector }),
+    queryModel: new QueryModel({ kubeConnector }),
   };
 
   return { formatError, schema, context };

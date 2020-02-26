@@ -2,11 +2,128 @@
 
 exports[`RBAC Caching Test User Resources 1`] = `
 Object {
-  "userNamespaces": Array [
-    "kube-system",
+  "clusterRoleBindings": Array [
+    Object {
+      "metadata": Object {
+        "annotations": Object {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\\"apiVersion\\":\\"rbac.authorization.k8s.io/v1\\",\\"kind\\":\\"ClusterRoleBinding\\",\\"metadata\\":{\\"annotations\\":{},\\"name\\":\\"admin-users\\"},\\"roleRef\\":{\\"apiGroup\\":\\"rbac.authorization.k8s.io\\",\\"kind\\":\\"ClusterRole\\",\\"name\\":\\"cluster-admin\\"},\\"subjects\\":[{\\"kind\\":\\"ServiceAccount\\",\\"name\\":\\"default\\",\\"namespace\\":\\"kube-system\\"},{\\"kind\\":\\"ServiceAccount\\",\\"name\\":\\"default\\",\\"namespace\\":\\"icp-system\\"}]}
+",
+        },
+        "creationTimestamp": "2020-02-09T06:16:23Z",
+        "name": "admin-users",
+        "resourceVersion": "58885",
+        "selfLink": "/apis/rbac.authorization.k8s.io/v1/clusterrolebindings/admin-users",
+        "uid": "b1ecadaa-4b03-11ea-92a9-00000a1027bc",
+      },
+      "roleRef": Object {
+        "apiGroup": "rbac.authorization.k8s.io",
+        "kind": "ClusterRole",
+        "name": "cluster-admin",
+      },
+      "subjects": Array [
+        Object {
+          "kind": "ServiceAccount",
+          "name": "default",
+          "namespace": "kube-system",
+        },
+        Object {
+          "kind": "ServiceAccount",
+          "name": "default",
+          "namespace": "icp-system",
+        },
+      ],
+    },
   ],
-  "userRoles": Array [],
+  "clusterRoles": Array [
+    Object {
+      "metadata": Object {
+        "annotations": Object {
+          "openshift.io/description": "Allows deploymentconfigs in this namespace to rollout pods in this namespace...",
+        },
+        "creationTimestamp": "2020-02-09T06:16:55Z",
+        "name": "system:deployers",
+        "namespace": "cert-manager",
+        "resourceVersion": "59172",
+        "selfLink": "/apis/rbac.authorization.k8s.io/v1/namespaces/cert-manager/rolebindings/system%3Adeployers",
+        "uid": "c532cf60-4b03-11ea-9c46-00000a10276e",
+      },
+      "roleRef": Object {
+        "apiGroup": "rbac.authorization.k8s.io",
+        "kind": "ClusterRole",
+        "name": "system:deployer",
+      },
+      "subjects": Array [
+        Object {
+          "kind": "ServiceAccount",
+          "name": "deployer",
+          "namespace": "cert-manager",
+        },
+      ],
+    },
+  ],
+  "roleBindings": Array [
+    Object {
+      "metadata": Object {
+        "annotations": Object {
+          "rbac.authorization.kubernetes.io/autoupdate": "true",
+        },
+        "creationTimestamp": "2020-02-09T04:09:12Z",
+        "labels": Object {
+          "kubernetes.io/bootstrapping": "rbac-defaults",
+        },
+        "name": "admin",
+        "resourceVersion": "78126",
+        "selfLink": "/apis/rbac.authorization.k8s.io/v1/clusterroles/admin",
+        "uid": "ee11bac6-4af1-11ea-969d-00000a10275c",
+      },
+      "rules": Array [
+        Object {
+          "apiGroups": Array [
+            "operators.coreos.com",
+          ],
+          "resources": Array [
+            "subscriptions",
+          ],
+          "verbs": Array [
+            "create",
+            "update",
+            "patch",
+            "delete",
+          ],
+        },
+      ],
+    },
+  ],
+  "roles": Array [
+    Object {
+      "metadata": Object {
+        "creationTimestamp": "2020-02-09T04:17:20Z",
+        "name": "prometheus-k8s",
+        "namespace": "default",
+        "resourceVersion": "10954",
+        "selfLink": "/apis/rbac.authorization.k8s.io/v1/namespaces/default/roles/prometheus-k8s",
+        "uid": "10c4e691-4af3-11ea-b9dd-00000a102771",
+      },
+      "rules": Array [
+        Object {
+          "apiGroups": Array [
+            "",
+          ],
+          "resources": Array [
+            "services",
+            "endpoints",
+            "pods",
+          ],
+          "verbs": Array [
+            "get",
+            "list",
+            "watch",
+          ],
+        },
+      ],
+    },
+  ],
 }
 `;
 
-exports[`RBAC Caching Tests creation of rbac string for search queries 1`] = `"(n._rbac = * OR n._rbac = 'kube-system_authorization.openshift.io_clusterroles' OR n._rbac = 'kube-system_null_releases')"`;
+exports[`RBAC Caching Tests creation of rbac string for search queries 1`] = `"(n._rbac = * OR n._rbac = 'default_authorization.openshift.io_clusterroles' OR n._rbac = 'default_null_releases' OR n._rbac = 'kube-system_null_releases' OR n._rbac = 'null_undefined_undefined')"`;

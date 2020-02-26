@@ -8,13 +8,13 @@
  ****************************************************************************** */
 
 import _ from 'lodash';
-import config from '../../../config';
 import request from '../lib/request';
+import config from '../../../config';
 
 export default class KubeConnector {
   constructor({
     token = 'Bearer localdev',
-    kubeApiEndpoint = `${config.get('cfcRouterUrl')}/kubernetes`,
+    kubeApiEndpoint = `${config.get('API_SERVER_URL')}` || 'https://kubernetes.default.svc',
     httpLib = request,
   } = {}) {
     this.kubeApiEndpoint = kubeApiEndpoint;
@@ -38,17 +38,29 @@ export default class KubeConnector {
       },
     }, opts);
 
-    const newRequest = this.http(options).then(res => res.body);
-
-    return newRequest;
+    return this.http(_.merge(options, opts)).then(res => res.body);
   }
 
-  post(path, jsonBody, opts = {}) {
+  post(path = '', jsonBody, opts = {}) {
     const defaults = {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'POST',
       headers: {
         Authorization: this.token,
+      },
+      json: jsonBody,
+    };
+
+    return this.http(_.merge(defaults, opts)).then(res => res.body);
+  }
+
+  patch(path = '', jsonBody, opts = {}) {
+    const defaults = {
+      url: `${this.kubeApiEndpoint}${path}`,
+      method: 'PATCH',
+      headers: {
+        Authorization: this.token,
+        'Content-Type': 'application/json-patch+json',
       },
       json: jsonBody,
     };

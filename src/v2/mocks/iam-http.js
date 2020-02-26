@@ -11,22 +11,31 @@
 export default function createMockHttp() {
   const state = {
     namespaces: {
-      body: [
+      kind: 'ProjectList',
+      apiVersion: 'project.openshift.io/v1',
+      metadata: { selfLink: '/apis/project.openshift.io/v1/projects' },
+      items: [
         {
-          crn: 'crn:v1:icp:private:k8:mycluster:n/default:::',
-          serviceName: 'k8',
-          region: 'mycluster',
-          scope: 'namespace',
-          namespaceId: 'default',
-          actions: 'CRUD',
+          metadata: {
+            name: 'default',
+            selfLink: '/apis/project.openshift.io/v1/projects/default',
+            uid: 'd039f9ea-152f-11ea-920f-00000a1012a4',
+            resourceVersion: '21120909',
+            creationTimestamp: '2019-12-02T18:16:08Z',
+          },
+          spec: { finalizers: [] },
+          status: { phase: 'Active' },
         },
         {
-          crn: 'crn:v1:icp:private:k8:mycluster:n/kube-system:::',
-          serviceName: 'k8',
-          region: 'mycluster',
-          scope: 'namespace',
-          namespaceId: 'kube-system',
-          actions: 'CRUD',
+          metadata: {
+            name: 'kube-system',
+            selfLink: '/apis/project.openshift.io/v1/projects/kube-system',
+            uid: 'ce32a2c7-152f-11ea-920f-00000a1012a4',
+            resourceVersion: '21133087',
+            creationTimestamp: '2019-12-02T18:16:05Z',
+          },
+          spec: { finalizers: [] },
+          status: { phase: 'Active' },
         },
       ],
     },
@@ -34,7 +43,7 @@ export default function createMockHttp() {
 
   return async function MockLib(params) {
     switch (true) {
-      case params.url.includes('resourceType=namespace'):
+      case params.url.includes('project.openshift.io/v1/projects'):
         return state.namespaces;
       default:
         return state.namespaces;

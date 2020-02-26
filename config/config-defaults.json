@@ -1,11 +1,12 @@
 {
+  "API_SERVER_URL": "https://kubernetes.default.svc",
   "contextPath": "/searchapi",
   "defaultQueryLimit": 10000,
   "defaultQueryLoopLimit": 5000,
   "httpPort": 4010,
   "RBAC_POLL_INTERVAL": 60000,
   "RBAC_INACTIVITY_TIMEOUT": 600000,
-  "localKubeToken": "",
+  "SERVICEACCT_TOKEN": "",
   "redisEndpoint": "//localhost:6379",
   "redisSSLEndpoint": "",
   "redisPassword": ""
