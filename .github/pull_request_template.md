@@ -1,4 +1,4 @@
-**Related Issue:**  https://github.com/open-container-management/backlog/issues/<ISSUE_NUMBER>
+**Related Issue:**  open-container-management/backlog#<ISSUE_NUMBER>
 
 **Description of Changes**
 
