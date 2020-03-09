@@ -39,6 +39,7 @@ const jestConfig = {
   ],
   testEnvironment: 'node',
   setupTestFrameworkScriptFile: './jest.setup.js',
+  testResultsProcessor: 'jest-sonar-reporter',
 };
 
 jestConfig.reporters = process.env.TRAVIS ? ['default', tapReporter] : ['default'];

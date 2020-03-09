@@ -13,6 +13,13 @@ branches:
 services:
   - docker
 
+addons:
+  sonarcloud:
+    organization: "open-cluster-management"
+    token:
+      secure: "uEOFg1jLhE+q4C1uu2woPC2pqMrNN4M4/LVT9TRAaW9pdd7glsfPQBidAeeUz9edVGxPzqgG3MiMxlhsbGwj54zTQr3GPwerF+Nig4expHXteMYfIvwhPYPhEr4XOgHexic1zOpNtaUIv2ETKZWYnM9tR1r7OYDaFzi4Sz4DWmPteI8PgpHnf95JVWn8n4p68p69UYYw1t6gLnPcBA2e9mwyzQRDLgfWEX7OZIGm6f1YXYUdvKFUJIyf0g+0eTPibbw+7DgvX1e6UcSKt6zCQCESfxp6XteYg1GbVsHpuHAWpHu8TQj3FUf+3O60DZHrk1QDpXMjbQqNak7wi4gsQSpvhsvNQ/ngV+venIKbn233t1S8gCkAPiG1SVCKhIpDSf9+vHHLkPZ3qzWPpPHmpmqciuSRCfLEsZKSLrb76LAONQF0T/tYhbAHVEv6AJhVMJQ8bZD/cJd7GyPbod5ViTkQzALbxiEgRtLxfsaBVckSOlhHdZs22S1UpwgI8TEPiVijziMgXQ/X1/GlChgpC+qmnWUEm916avByKinWxzZ2ZKXc/0NmOSeS8AXrd3utsp1+WXa6OBeix3VaTXLbbBmU8IqKT5UdOKDeG7kgeUbkLdJM1s+TRLLXS8w+3en7x84U7dqRTV6PzB7xhF/a1Ip6HxN/k0g4D/VGj6/Wze0="
+
+
 env:
   global:
     # Required
@@ -60,6 +67,8 @@ jobs:
         - make component/pull 
         - make component/test/e2e
         - make security/scans 
+        - make sonar/js/jest-init
+        - make sonar/js
     - stage: publish
       name: "Publish the image to quay with an official version/sha tag and publish entry to integration pipeline stage"
       if: type = push AND branch =~ /^release-[0-9]+\..*$/
