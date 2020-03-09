@@ -110,10 +110,10 @@ function getRedisClient() {
 
     if (config.get('redisPassword') === '') {
       logger.warn('Starting redis client without authentication. redisPassword was not provided in config.');
-      redisClient = redis.createClient(config.get('redisEndpoint'));
+      redisClient = redis.createClient(config.get('redisHost'), config.get('redisPort'));
     } else if (config.get('redisSSLEndpoint') === '') {
-      logger.info('Starting Redis client using endpoint: ', config.get('redisEndpoint'));
-      redisClient = redis.createClient(config.get('redisEndpoint'), { password: config.get('redisPassword') });
+      logger.info('Starting Redis client using endpoint: ', config.get('redisHost'), config.get('redisPort'));
+      redisClient = redis.createClient(config.get('redisHost'), config.get('redisPort'), { password: config.get('redisPassword') });
     } else {
       logger.info('Starting Redis client using SSL endpoint: ', config.get('redisSSLEndpoint'));
       const redisUrl = config.get('redisSSLEndpoint');
