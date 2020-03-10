@@ -32,11 +32,12 @@ async function getKubeToken({
     // do not exchange for idtoken since authorization header is empty
     return process.env.SERVICEACCT_TOKEN || 'localdev';
   }
-  const idToken = authorization;
+  const idToken = authorization.substring(authorization.indexOf('Bearer '));
   if (!idToken) {
     throw new Error('Authentication error: invalid token parsed from cookie');
   }
 
+  console.log('idToken: ', idToken); // eslint-disable-line
   return idToken;
 }
 
@@ -49,7 +50,7 @@ async function getNamespaces(usertoken) {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
-      Authorization: `${usertoken}`,
+      Authorization: `Bearer ${usertoken}`,
     },
     json: true,
     fullResponse: false,
