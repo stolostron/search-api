@@ -84,7 +84,6 @@ export default function createAuthMiddleWare({
     let nsPromise = cache.get(`namespaces_${idToken}`);
     if (!nsPromise) {
       nsPromise = getNamespaces(idToken);
-      console.log('Saving nsPromise to cache.'); // eslint-disable-line
       cache.set(`namespaces_${idToken}`, nsPromise);
     }
     req.user = {
