@@ -17,6 +17,8 @@ import logger from '../lib/logger';
 import { isRequired } from '../lib/utils';
 import pollRbacCache, { getUserRbacFilter } from '../lib/rbacCaching';
 
+const dns = require('dns');
+
 // FIXME: Is there a more efficient way?
 function formatResult(results, removePrefix = true) {
   const startTime = Date.now();
@@ -107,14 +109,18 @@ function getRedisClient() {
     }
 
     logger.info('Initializing new Redis client.');
-
+    dns.lookup(config.get('redisHost'), (err, address, family) =>
+      logger.info('address: %j family: IPv%s', address, family));
     if (config.get('redisPassword') === '') {
+      logger.info('***Search, option 1');
       logger.warn('Starting redis client without authentication. redisPassword was not provided in config.');
-      redisClient = redis.createClient(config.get('redisHost'), config.get('redisPort'));
+      redisClient = redis.createClient(config.get('redisPort'), config.get('redisHost'));
     } else if (config.get('redisSSLEndpoint') === '') {
+      logger.info('***Search, option 2');
       logger.info('Starting Redis client using endpoint: ', config.get('redisHost'), config.get('redisPort'));
-      redisClient = redis.createClient(config.get('redisHost'), config.get('redisPort'), { password: config.get('redisPassword') });
+      redisClient = redis.createClient(config.get('redisPort'), config.get('redisHost'), { password: config.get('redisPassword') });
     } else {
+      logger.info('***Search, option 3');
       logger.info('Starting Redis client using SSL endpoint: ', config.get('redisSSLEndpoint'));
       const redisUrl = config.get('redisSSLEndpoint');
       const redisInfo = redisUrl.split(':');
@@ -122,17 +128,16 @@ function getRedisClient() {
       const redisPort = redisInfo[1];
       const redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
       redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] } });
-      redisClient.ping((error, result) => {
-        if (error) logger.error('Error with Redis SSL connection: ', error);
-        else {
-          logger.info('Redis SSL connection respone : ', result);
-          if (result === 'PONG') {
-            resolve(redisClient);
-          }
-        }
-      });
     }
-
+    redisClient.ping((error, result) => {
+      if (error) logger.error('Error with Redis SSL connection: ', error);
+      else {
+        logger.info('Redis SSL connection response : ', result);
+        if (result === 'PONG') {
+          resolve(redisClient);
+        }
+      }
+    });
 
     // Wait until the client connects and is ready to resolve with the connecction.
     redisClient.on('connect', () => {
