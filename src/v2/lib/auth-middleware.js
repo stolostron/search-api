@@ -37,14 +37,12 @@ async function getKubeToken({
     throw new Error('Authentication error: invalid token parsed from cookie');
   }
 
-  console.log('idToken: ', idToken); // eslint-disable-line
   return idToken;
 }
 
 // Get the namespaces authorized for the access_token.
 // usertoken - could be from a user or service id.
 async function getNamespaces(usertoken) {
-  console.log('>>> Getting namespaces. token: ', usertoken); // eslint-disable-line
   const options = {
     url: `${config.get('API_SERVER_URL')}/apis/project.openshift.io/v1/projects`,
     headers: {
@@ -60,8 +58,6 @@ async function getNamespaces(usertoken) {
     return mockReq(options);
   }
   const nsResponse = await request(options);
-  console.log('  >> nsResponse: ', nsResponse); // eslint-disable-line
-  console.log('    >> namespaces:', Array.isArray(nsResponse.items) ? nsResponse.items.map(ns => ns.metadata.name) : []); // eslint-disable-line
   return Array.isArray(nsResponse.items) ? nsResponse.items.map(ns => ns.metadata.name) : [];
 }
 
