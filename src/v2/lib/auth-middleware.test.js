@@ -16,7 +16,7 @@ describe('Auth Middleware', () => {
 
     authMiddleware(mockRequest, null, (err) => {
       expect(err).not.toBeDefined();
-      expect(mockRequest.kubeToken).toBe('Bearer localdev');
+      expect(mockRequest.kubeToken).toBe('localdev');
       done();
     });
   });
