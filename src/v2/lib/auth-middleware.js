@@ -43,7 +43,7 @@ async function getKubeToken({
 // Get the namespaces authorized for the access_token.
 // usertoken - could be from a user or service id.
 async function getNamespaces(usertoken) {
-  console.log('>>> Getting namespaces')
+  console.log('>>> Getting namespaces'); // eslint-disable-line
   const options = {
     url: `${config.get('API_SERVER_URL')}/apis/project.openshift.io/v1/projects`,
     headers: {
@@ -59,7 +59,7 @@ async function getNamespaces(usertoken) {
     return mockReq(options);
   }
   const nsResponse = await request(options);
-  console.log('   >>> nsResponse: ', nsResponse)
+  console.log('   >>> nsResponse: ', nsResponse); // eslint-disable-line
   return Array.isArray(nsResponse.items) ? nsResponse.items.map(ns => ns.metadata.name) : [];
 }
 
@@ -86,7 +86,7 @@ export default function createAuthMiddleWare({
     let nsPromise = cache.get(`namespaces_${idToken}`);
     if (!nsPromise) {
       nsPromise = getNamespaces(idToken);
-      console.log('Saving nsPromise to cache.')
+      console.log('Saving nsPromise to cache.'); // eslint-disable-line
       cache.set(`namespaces_${idToken}`, nsPromise);
     }
     req.user = {
