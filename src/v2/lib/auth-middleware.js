@@ -49,7 +49,7 @@ async function getNamespaces(usertoken) {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
-      Authorization: `Bearer ${usertoken}`,
+      Authorization: `${usertoken}`,
     },
     json: true,
     fullResponse: false,
