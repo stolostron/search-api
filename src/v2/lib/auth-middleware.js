@@ -32,7 +32,7 @@ async function getKubeToken({
     // do not exchange for idtoken since authorization header is empty
     return process.env.SERVICEACCT_TOKEN || 'localdev';
   }
-  const idToken = authorization.substring(authorization.indexOf('Bearer '));
+  const idToken = authorization.replace('Bearer ', '');
   if (!idToken) {
     throw new Error('Authentication error: invalid token parsed from cookie');
   }
