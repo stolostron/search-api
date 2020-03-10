@@ -60,7 +60,8 @@ async function getNamespaces(usertoken) {
     return mockReq(options);
   }
   const nsResponse = await request(options);
-  console.log('   >>> nsResponse: ', nsResponse); // eslint-disable-line
+  console.log('  >> nsResponse: ', nsResponse); // eslint-disable-line
+  console.log('    >> namespaces:', Array.isArray(nsResponse.items) ? nsResponse.items.map(ns => ns.metadata.name) : []); // eslint-disable-line
   return Array.isArray(nsResponse.items) ? nsResponse.items.map(ns => ns.metadata.name) : [];
 }
 
