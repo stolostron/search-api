@@ -187,6 +187,7 @@ export default class RedisGraphConnector {
       return '';
     }
     logger.perfLog(startTime, 1000, 'getRbacString()');
+    console.log('>>> RBAC filter: ', rbacFilter); // eslint-disable-line
     return rbacFilter;
   }
 
@@ -347,7 +348,7 @@ export default class RedisGraphConnector {
   }
 
   async runSearchQueryCountOnly(filters) {
-    // logger.info('runSearchQueryCountOnly()', filters);
+    logger.info('runSearchQueryCountOnly()', filters);
 
     if (this.rbac.length > 0) {
       // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we

@@ -226,7 +226,7 @@ export default function pollUserAccess() {
   asyncPolling(async (end) => {
     if (config.get('NODE_ENV') !== 'test') {
       const startTime = Date.now();
-      logger.info('Polling - Revalidating user access to determine if rbac needs to be updated');
+      logger.debug('Polling - Revalidating user access to determine if rbac needs to be updated');
       // filter out inactive users and remove them from cache
       Object.entries(activeUsers).forEach((user) => {
         const active = Date.now() - user[1] < config.get('RBAC_INACTIVITY_TIMEOUT');
