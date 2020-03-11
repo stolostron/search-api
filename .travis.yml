@@ -32,8 +32,9 @@ env:
     - COMPONENT_E2E_TEST_COMMAND=${TRAVIS_BUILD_DIR}/build/run-e2e-tests.sh
 
 stages:
-  - build
+
   - unit-test
+  - build
   - test-e2e
   - publish
 
@@ -56,8 +57,8 @@ jobs:
         - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
         # Bootstrap the build harness, pull test image, and run unit tests.   
         - make component/pull 
-        - make component/test/unit
         - make sonar/js/jest-init
+        - make component/test/unit
         - make sonar/js
         # - sonar-scanner --debug
     - stage: test-e2e
