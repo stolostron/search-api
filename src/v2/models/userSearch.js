@@ -20,11 +20,10 @@ export default class QueryModel {
   async getUserPreferences(args) {
     const { req: { user } } = args;
     const response = await this.kubeConnector.get(`/apis/${this.userPreferenceApi}${user.name}`);
-    console.log('>>> User pref response', response); // eslint-disable-line
     if (response.status === 'Failure' && response.reason === 'NotFound') {
       return {};
     } else if (response.code || response.message) {
-      throw new Error(`ACM ERROR ${response.error.code} - ${response.error.message}`);
+      throw new Error(`ERROR ${response.error.code} - ${response.error.message}`);
     }
     return response;
   }

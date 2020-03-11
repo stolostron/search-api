@@ -104,10 +104,8 @@ export default class SearchModel {
     await this.checkSearchServiceAvailable();
     if (keywords && keywords.length > 0) {
       const results = await this.searchQueryLimiter(keywords, filters, -1);
-      console.log('>>> DONE Resolving search count.', results); // eslint-disable-line
       return results.length;
     }
-    console.log('>>> DONE(2) Resolving search count.'); // eslint-disable-line
     return this.searchConnector.runSearchQueryCountOnly(filters);
   }
 
@@ -125,7 +123,6 @@ export default class SearchModel {
   async resolveRelated(input, countOnly) {
     const { filters, relatedKinds } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
-    // eslint-disable-next-line max-len
     const relationships = await this.searchConnector.findRelationships({ filters, countOnly, relatedKinds });
 
     const result = {};
@@ -156,7 +153,6 @@ export default class SearchModel {
 
   async searchSchema() {
     await this.checkSearchServiceAvailable();
-    console.log('>>> DONE Resolving search schema.'); // eslint-disable-line
     return {
       allProperties: await this.searchConnector.getAllProperties(),
     };
