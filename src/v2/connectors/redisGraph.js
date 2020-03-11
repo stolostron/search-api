@@ -134,13 +134,8 @@ function getRedisClient() {
       dns.lookup(redisHost, (err, address, family) =>
         logger.info('option3 address: %j family: IPv%s', address, family));
       const redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
-      if (net.isIPv6(redisHost) === true) {
-        logger.info('** Trying to connect with family ipv6');
-        redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] }, family: 'IPv6' });
-      } else {
-        logger.info('** Trying to connect with family ipv4');
-        redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] } });
-      }
+      logger.info('** Trying to connect with family ipv6');
+      redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] }, family: 'IPv6' });
     }
     redisClient.ping((error, result) => {
       if (error) logger.error('Error with Redis SSL connection: ', error);
