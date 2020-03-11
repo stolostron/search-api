@@ -18,6 +18,7 @@ import { isRequired } from '../lib/utils';
 import pollRbacCache, { getUserRbacFilter } from '../lib/rbacCaching';
 
 const dns = require('dns');
+const net = require('net');
 
 // FIXME: Is there a more efficient way?
 function formatResult(results, removePrefix = true) {
@@ -129,10 +130,17 @@ function getRedisClient() {
       const redisHost = redisInfo[0];
       const redisPort = redisInfo[1];
       logger.info('Starting Redis client using endpoint: ', redisHost, redisPort);
+      logger.info('***Using net isIPv6? ', net.isIPv6(redisHost));
       dns.lookup(redisHost, (err, address, family) =>
         logger.info('option3 address: %j family: IPv%s', address, family));
       const redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
-      redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] } });
+      if (net.isIPv6(redisHost) === true) {
+        logger.info('** Trying to connect with family ipv6');
+        redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] }, family: 'IPv6' });
+      } else {
+        logger.info('** Trying to connect with family ipv4');
+        redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] } });
+      }
     }
     redisClient.ping((error, result) => {
       if (error) logger.error('Error with Redis SSL connection: ', error);
