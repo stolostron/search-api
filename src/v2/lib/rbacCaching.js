@@ -232,8 +232,8 @@ export default function pollUserAccess() {
         const active = Date.now() - user[1] < config.get('RBAC_INACTIVITY_TIMEOUT');
         if (!active) {
           logger.info('User is no longer active, removing from cache');
-          // delete activeUsers[user[0]];
-          // cache.del(user[0]);
+          delete activeUsers[user[0]];
+          cache.del(user[0]);
         }
       });
       // If role/roleBinding/clusterRole/clusterRoleBinding resources changed -> need to delete all active user RBAC cache
