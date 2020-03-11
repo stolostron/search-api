@@ -13,7 +13,7 @@ import config from '../../../config';
 
 export default class KubeConnector {
   constructor({
-    token = 'Bearer localdev',
+    token = 'localdev',
     kubeApiEndpoint = `${config.get('API_SERVER_URL')}` || 'https://kubernetes.default.svc',
     httpLib = request,
   } = {}) {
@@ -34,7 +34,7 @@ export default class KubeConnector {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'GET',
       headers: {
-        Authorization: this.token,
+        Authorization: `Bearer ${this.token}`,
       },
     }, opts);
 
@@ -46,7 +46,7 @@ export default class KubeConnector {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'POST',
       headers: {
-        Authorization: this.token,
+        Authorization: `Bearer ${this.token}`,
       },
       json: jsonBody,
     };
@@ -59,7 +59,7 @@ export default class KubeConnector {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'PATCH',
       headers: {
-        Authorization: this.token,
+        Authorization: `Bearer ${this.token}`,
         'Content-Type': 'application/json-patch+json',
       },
       json: jsonBody,

@@ -33,7 +33,7 @@ describe('KubeConnector', () => {
 
       const connector = new KubeConnector({
         kubeApiEndpoint: 'https://testURL/kubernetes',
-        token: 'Bearer localdev',
+        token: 'localdev',
         httpLib: mockHttp,
       });
 
@@ -50,7 +50,7 @@ describe('KubeConnector', () => {
 
       const connector = new KubeConnector({
         kubeApiEndpoint: 'https://testURL/kubernetes',
-        token: 'Bearer localdev',
+        token: 'localdev',
         httpLib: mockHttp,
       });
 
@@ -67,7 +67,7 @@ describe('KubeConnector', () => {
 
       const connector = new KubeConnector({
         kubeApiEndpoint: 'https://testURL/kubernetes',
-        token: 'Bearer localdev',
+        token: 'localdev',
         httpLib: mockHttp,
       });
 
