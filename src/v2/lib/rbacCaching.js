@@ -29,7 +29,7 @@ const cache = lru({
 export async function getClusterRbacConfig(kubeToken) {
   if (kubeToken !== undefined) {
     const kubeConnector = !isTest
-      ? new KubeConnector({ token: `Bearer ${kubeToken}` })
+      ? new KubeConnector({ token: `${kubeToken}` })
       : new MockKubeConnector();
     // eslint-disable-next-line prefer-const
     let [roles, roleBindings, clusterRoles, clusterRoleBindings] = await Promise.all([
@@ -57,7 +57,7 @@ export async function getClusterRbacConfig(kubeToken) {
 async function checkIfOpenShiftPlatform(kubeToken) {
   const url = '/apis/authorization.openshift.io/v1';
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: `Bearer ${kubeToken}` })
+    ? new KubeConnector({ token: `${kubeToken}` })
     : new MockKubeConnector();
   const res = await kubeConnector.get(url);
 
@@ -77,7 +77,7 @@ async function getNonNamespacedResources(kubeToken) {
   const startTime = Date.now();
   const resources = [];
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: `Bearer ${kubeToken}` })
+    ? new KubeConnector({ token: `${kubeToken}` })
     : new MockKubeConnector();
 
   // Get non-namespaced resources WITH an api group
@@ -114,7 +114,7 @@ async function getNonNamespacedResources(kubeToken) {
 async function getNonNamespacedAccess(kubeToken) {
   const startTime = Date.now();
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: `Bearer ${kubeToken}` })
+    ? new KubeConnector({ token: `${kubeToken}` })
     : new MockKubeConnector();
   const nonNamespacedResources = await getNonNamespacedResources(kubeToken);
   const results = await Promise.all(nonNamespacedResources.map((resource) => {
@@ -141,7 +141,7 @@ async function getNonNamespacedAccess(kubeToken) {
 
 async function getUserAccess(kubeToken, namespace) {
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: `Bearer ${kubeToken}` })
+    ? new KubeConnector({ token: `${kubeToken}` })
     : new MockKubeConnector();
   const url = `/apis/authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
   const jsonBody = {
