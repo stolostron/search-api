@@ -109,16 +109,18 @@ function getRedisClient() {
     }
 
     logger.info('Initializing new Redis client.');
-    dns.lookup(config.get('redisHost'), (err, address, family) =>
-      logger.info('address: %j family: IPv%s', address, family));
     if (config.get('redisPassword') === '') {
       logger.info('***Search, option 1');
       logger.warn('Starting redis client without authentication. redisPassword was not provided in config.');
+      dns.lookup(config.get('redisHost'), (err, address, family) =>
+        logger.info('option1 address: %j family: IPv%s', address, family));
       redisClient = redis.createClient(config.get('redisPort'), config.get('redisHost'));
     } else if (config.get('redisSSLEndpoint') === '') {
       logger.info('***Search, option 2');
       logger.info('Starting Redis client using endpoint: ', config.get('redisHost'), config.get('redisPort'));
       redisClient = redis.createClient(config.get('redisPort'), config.get('redisHost'), { password: config.get('redisPassword') });
+      dns.lookup(config.get('redisHost'), (err, address, family) =>
+        logger.info('option2 address: %j family: IPv%s', address, family));
     } else {
       logger.info('***Search, option 3');
       logger.info('Starting Redis client using SSL endpoint: ', config.get('redisSSLEndpoint'));
@@ -126,6 +128,9 @@ function getRedisClient() {
       const redisInfo = redisUrl.split(':');
       const redisHost = redisInfo[0];
       const redisPort = redisInfo[1];
+      logger.info('Starting Redis client using endpoint: ', redisHost, redisPort);
+      dns.lookup(redisHost, (err, address, family) =>
+        logger.info('option3 address: %j family: IPv%s', address, family));
       const redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
       redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] } });
     }
