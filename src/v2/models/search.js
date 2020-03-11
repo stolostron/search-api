@@ -123,7 +123,6 @@ export default class SearchModel {
   async resolveRelated(input, countOnly) {
     const { filters, relatedKinds } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
-    // eslint-disable-next-line max-len
     const relationships = await this.searchConnector.findRelationships({ filters, countOnly, relatedKinds });
 
     const result = {};
