@@ -112,7 +112,7 @@ function getIPvFamily(redisHost) {
 }
 
 let redisClient;
-async function getRedisClient() {
+function getRedisClient() {
   return new Promise(async (resolve) => {
     if (redisClient) {
       resolve(redisClient);
