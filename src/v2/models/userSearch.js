@@ -75,7 +75,7 @@ export default class QueryModel {
       updatedSearches = await this.kubeConnector.patch(`/apis/${this.userPreferenceApi}${user.name}`, json);
     } else { // Create the userpreference CR and add savedSearch
       json = {
-        apiVersion: 'acm.openshift.io/v1',
+        apiVersion: 'console.acm.io/v1',
         kind: 'UserPreference',
         metadata: {
           name: user.name,
