@@ -102,7 +102,7 @@ export function getFilterString(filters) {
 function getIPvFamily(redisHost) {
   return new Promise((resolve) => {
     dns.lookup(redisHost, (err, address, family) => {
-      logger.info('address: %j family: IPv%s', address, family);
+      logger.info('RedisGraph address: %j family: IPv%s', address, family);
       if (family === 6) {
         resolve('IPv6');
       }
