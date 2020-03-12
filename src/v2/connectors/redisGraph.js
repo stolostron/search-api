@@ -164,6 +164,8 @@ async function getRedisClient() {
       logger.info('The Redis connection has ended.', msg);
     });
   });
+
+  return redisClient;
 }
 
 // Skip while running tests until we can mock Redis.
