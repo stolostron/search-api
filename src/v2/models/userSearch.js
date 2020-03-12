@@ -15,13 +15,14 @@ import logger from '../lib/logger';
 export default class QueryModel {
   constructor({ kubeConnector = isRequired('kubeConnector') }) {
     this.kubeConnector = kubeConnector;
-    this.userPreferenceApi = config.get('userPreferenceApi') || 'console.acm.io/v1beta1/userpreferences/';
+    this.userPreferenceApi = config.get('userPreferenceApi') || 'console.acm.io/v1/userpreferences/';
   }
 
   async getUserPreferences(args) {
     const { req: { user } } = args;
+    logger.info('>>> getUserPreferences() - args', args);
     const response = await this.kubeConnector.get(`/apis/${this.userPreferenceApi}${user.name}`);
-    logger.info('>>> getUserPreferences()', response);
+    logger.info('>>> getUserPreferences() response', response);
     if (response.status === 'Failure' && response.reason === 'NotFound') {
       return {};
     } else if (response.code || response.message) {
