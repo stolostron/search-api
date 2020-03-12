@@ -10,6 +10,7 @@
 import _ from 'lodash';
 import config from '../../../config';
 import { isRequired } from '../lib/utils';
+import logger from '../lib/logger';
 
 export default class QueryModel {
   constructor({ kubeConnector = isRequired('kubeConnector') }) {
@@ -20,6 +21,7 @@ export default class QueryModel {
   async getUserPreferences(args) {
     const { req: { user } } = args;
     const response = await this.kubeConnector.get(`/apis/${this.userPreferenceApi}${user.name}`);
+    logger.info('>>> getUserPreferences()', response);
     if (response.status === 'Failure' && response.reason === 'NotFound') {
       return {};
     } else if (response.code || response.message) {
@@ -34,6 +36,7 @@ export default class QueryModel {
   }
 
   async saveSearch(args) {
+    logger.info('>>> saving search.', args);
     const { req: { user }, resource } = args;
     const response = await this.getUserPreferences(args);
     let json = {};
