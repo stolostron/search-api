@@ -99,9 +99,21 @@ export function getFilterString(filters) {
   return resultString;
 }
 
-let redisClient;
-function getRedisClient() {
+function getIPvFamily(redisHost) {
   return new Promise((resolve) => {
+    dns.lookup(redisHost, (err, address, family) => {
+      logger.info('address: %j family: IPv%s', address, family);
+      if (family === 6) {
+        resolve('IPv6');
+      }
+      resolve('IPv4');
+    });
+  });
+}
+
+let redisClient;
+async function getRedisClient() {
+  redisClient = await new Promise(async (resolve) => {
     if (redisClient) {
       resolve(redisClient);
       return;
@@ -122,25 +134,19 @@ function getRedisClient() {
       const redisHost = redisInfo[0];
       const redisPort = redisInfo[1];
       const redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
-      dns.lookup(redisHost, (err, address, family) => {
-        logger.info('address: %j family: IPv%s', address, family);
-        let ipFamily = 'IPv4';
-        if (family === 6) {
-          ipFamily = 'IPv6';
-        }
-        redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] }, family: ipFamily });
-        redisClient.ping((error, result) => {
-          if (error) logger.error('Error with Redis SSL connection: ', error);
-          else {
-            logger.info('Redis SSL connection respone : ', result);
-            if (result === 'PONG') {
-              resolve(redisClient);
-            }
-          }
-        });
-      });
+      const ipFamily = await getIPvFamily(redisHost);
+      redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] }, family: ipFamily });
     }
 
+    redisClient.ping((error, result) => {
+      if (error) logger.error('Error with Redis SSL connection: ', error);
+      else {
+        logger.info('Redis SSL connection respone : ', result);
+        if (result === 'PONG') {
+          resolve(redisClient);
+        }
+      }
+    });
 
     // Wait until the client connects and is ready to resolve with the connecction.
     redisClient.on('connect', () => {
@@ -168,7 +174,6 @@ if (process.env.NODE_ENV !== 'test') {
   // Check if user access has changed for any logged in user - if so remove them from the cache so the rbac string is regenerated
   pollRbacCache();
 }
-
 
 export default class RedisGraphConnector {
   constructor({
