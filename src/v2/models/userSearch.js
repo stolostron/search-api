@@ -20,7 +20,6 @@ export default class QueryModel {
 
   async getUserPreferences(args) {
     const { req: { user } } = args;
-    logger.info('>>> getUserPreferences() - user', user);
     const response = await this.kubeConnector.get(`/apis/${this.userPreferenceApi}${user.name}`);
     logger.info('>>> getUserPreferences() response', response);
     if (response.status === 'Failure' && response.reason === 'NotFound') {
@@ -75,7 +74,7 @@ export default class QueryModel {
       updatedSearches = await this.kubeConnector.patch(`/apis/${this.userPreferenceApi}${user.name}`, json);
     } else { // Create the userpreference CR and add savedSearch
       json = {
-        apiVersion: 'v1',
+        apiVersion: 'console.acm.io/v1',
         kind: 'UserPreference',
         metadata: {
           name: user.name,
