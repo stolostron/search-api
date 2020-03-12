@@ -122,13 +122,13 @@ function getRedisClient() {
       const redisHost = redisInfo[0];
       const redisPort = redisInfo[1];
       const redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
-      dns.lookup(config.get('redisHost'), (err, address, family) => {
+      redisClient = dns.lookup(config.get('redisHost'), (err, address, family) => {
         logger.info('address: %j family: IPv%s', address, family);
         let ipFamily = 'IPv4';
         if (family === 6) {
           ipFamily = 'IPv6';
         }
-        redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] }, family: ipFamily });
+        return redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] }, family: ipFamily });
       });
       redisClient.ping((error, result) => {
         if (error) logger.error('Error with Redis SSL connection: ', error);
