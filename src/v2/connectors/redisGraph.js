@@ -154,7 +154,6 @@ async function getRedisClient() {
     });
     redisClient.on('ready', () => {
       logger.info('Redis Client ready.');
-      resolve(redisClient);
     });
 
     // Log redis connection events.
