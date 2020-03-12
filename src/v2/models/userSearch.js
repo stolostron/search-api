@@ -75,7 +75,7 @@ export default class QueryModel {
       updatedSearches = await this.kubeConnector.patch(`/apis/${this.userPreferenceApi}${user.name}`, json);
     } else { // Create the userpreference CR and add savedSearch
       json = {
-        apiVersion: 'console.acm.io/v1',
+        apiVersion: 'v1',
         kind: 'UserPreference',
         metadata: {
           name: user.name,
@@ -86,6 +86,7 @@ export default class QueryModel {
       };
       logger.info('>>> saving search :: creating new CR: ', json);
       updatedSearches = await this.kubeConnector.post(`/apis/${this.userPreferenceApi}${user.name}`, json);
+      logger.info('>>> saving search :: creating new CR :: response ', updatedSearches);
     }
     if (updatedSearches.error &&
       (updatedSearches.error.code || updatedSearches.error.statusCode || updatedSearches.error.message)) {
