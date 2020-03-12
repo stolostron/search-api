@@ -113,7 +113,7 @@ function getIPvFamily(redisHost) {
 
 let redisClient;
 async function getRedisClient() {
-  redisClient = await new Promise(async (resolve) => {
+  return new Promise(async (resolve) => {
     if (redisClient) {
       resolve(redisClient);
       return;
@@ -164,8 +164,6 @@ async function getRedisClient() {
       logger.info('The Redis connection has ended.', msg);
     });
   });
-
-  return redisClient;
 }
 
 // Skip while running tests until we can mock Redis.
