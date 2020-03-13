@@ -10,7 +10,6 @@
 import _ from 'lodash';
 import config from '../../../config';
 import { isRequired } from '../lib/utils';
-import logger from '../lib/logger';
 
 export default class QueryModel {
   constructor({ kubeConnector = isRequired('kubeConnector') }) {
@@ -82,11 +81,9 @@ export default class QueryModel {
     }
     if (updatedSearches.error &&
       (updatedSearches.error.code || updatedSearches.error.statusCode || updatedSearches.error.message)) {
-      logger.info('>>> saving search :: error: ', updatedSearches);
       // eslint-disable-next-line max-len
       throw new Error(`ERROR ${updatedSearches.error.code || updatedSearches.error.statusCode} - ${updatedSearches.error.message}`);
     }
-    logger.info('>>> saving search :: response ', updatedSearches);
     return updatedSearches;
   }
 
