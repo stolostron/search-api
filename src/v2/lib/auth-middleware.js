@@ -12,6 +12,8 @@ import lru from 'lru-cache';
 import config from '../../../config';
 import createMockIAMHTTP from '../mocks/iam-http';
 import request from './request';
+import logger from './logger';
+import getOauthInfo from './oauth-info-client';
 
 // Async middleware error handler
 const asyncMiddleware = fn => (req, res, next) => {
@@ -61,6 +63,13 @@ async function getNamespaces(usertoken) {
   return Array.isArray(nsResponse.items) ? nsResponse.items.map(ns => ns.metadata.name) : [];
 }
 
+async function getUsername(req) {
+  logger.info('getting username');
+  getOauthInfo(req, (a, b) => {
+    logger.info('>> user info:', a, b);
+    return 'userName123';
+  });
+}
 
 // Middleware to:
 // - Set namespaces to filter this request.
@@ -86,9 +95,11 @@ export default function createAuthMiddleWare({
       nsPromise = getNamespaces(idToken);
       cache.set(`namespaces_${idToken}`, nsPromise);
     }
+
     req.user = {
       // temporarily using the idToken as userName until we figure out how to exchange token for name
-      name: idToken.replace('_', '').toLowerCase(),
+      // name: idToken.replace('_', '').toLowerCase(),
+      name: await getUsername(req),
       namespaces: await nsPromise,
       idToken,
     };

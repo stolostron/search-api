@@ -21,7 +21,6 @@ export default class QueryModel {
   async getUserPreferences(args) {
     const { req: { user } } = args;
     const response = await this.kubeConnector.get(`/apis/${this.userPreferenceApi}${user.name}`);
-    logger.info('>>> getUserPreferences() response', response);
     if (response.status === 'Failure' && response.reason === 'NotFound') {
       return {};
     } else if (response.code || response.message) {
@@ -36,13 +35,11 @@ export default class QueryModel {
   }
 
   async saveSearch(args) {
-    logger.info('>>> saving search :: resource:', args.resource);
     const { req: { user }, resource } = args;
     const response = await this.getUserPreferences(args);
     let json = {};
     let updatedSearches = null;
     const queries = _.get(response, 'spec.savedSearches', []);
-    logger.info('>>> saving search :: queries', queries);
     // check Id and Name for backwards compatibility
     const target = queries.find(query => query.id === resource.id) ||
       queries.find(query => query.name === resource.name);
@@ -60,7 +57,6 @@ export default class QueryModel {
           value: queries,
         },
       ];
-      logger.info('>>> saving search :: editing existing entry: ', json);
       updatedSearches = await this.kubeConnector.patch(`/apis/${this.userPreferenceApi}${user.name}`, json);
     } else if (_.get(response, 'metadata.resourceVersion', '') !== '') { // Adding new savedSearch
       json = [
@@ -70,7 +66,6 @@ export default class QueryModel {
           value: resource,
         },
       ];
-      logger.info('>>> saving search :: adding new entry: ', json);
       updatedSearches = await this.kubeConnector.patch(`/apis/${this.userPreferenceApi}${user.name}`, json);
     } else { // Create the userpreference CR and add savedSearch
       json = {
@@ -83,15 +78,15 @@ export default class QueryModel {
           savedSearches: [...queries, resource],
         },
       };
-      logger.info('>>> saving search :: creating new CR: ', json);
       updatedSearches = await this.kubeConnector.post(`/apis/${this.userPreferenceApi}${user.name}`, json);
-      logger.info('>>> saving search :: creating new CR :: response ', updatedSearches);
     }
     if (updatedSearches.error &&
       (updatedSearches.error.code || updatedSearches.error.statusCode || updatedSearches.error.message)) {
+      logger.info('>>> saving search :: error: ', updatedSearches);
       // eslint-disable-next-line max-len
       throw new Error(`ERROR ${updatedSearches.error.code || updatedSearches.error.statusCode} - ${updatedSearches.error.message}`);
     }
+    logger.info('>>> saving search :: response ', updatedSearches);
     return updatedSearches;
   }
 
