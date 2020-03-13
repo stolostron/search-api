@@ -96,6 +96,8 @@ export default function createAuthMiddleWare({
       cache.set(`namespaces_${idToken}`, nsPromise);
     }
 
+    req.idToken = idToken;
+
     req.user = {
       // temporarily using the idToken as userName until we figure out how to exchange token for name
       // name: idToken.replace('_', '').toLowerCase(),

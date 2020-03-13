@@ -23,7 +23,7 @@ module.exports.getOauthInfo = (req, cb) => {
   // for both running local and inside cluster, the below endpoint can be used to
   // get the oauth2 server and authorizepath  and tokenpath endpoints.
   const options = {
-    url: `${config.get('API_SERVER_URL')}/.well-known/oauth-authorization-server`,
+    url: `${config.get('API_SERVER_URL')}/.well-known/oauth-authorization-server/userinfo?access_token=${req.idToken}`,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
