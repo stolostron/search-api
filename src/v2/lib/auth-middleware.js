@@ -13,7 +13,7 @@ import config from '../../../config';
 import createMockIAMHTTP from '../mocks/iam-http';
 import request from './request';
 import logger from './logger';
-import getOauthInfo from './oauth-info-client';
+import { getOauthInfo } from './oauth-info-client';
 
 // Async middleware error handler
 const asyncMiddleware = fn => (req, res, next) => {
