@@ -45,7 +45,7 @@ export default function createMockHttp() {
         apiVersion: 'authentication.k8s.io/v1',
         metadata: { creationTimestamp: null },
         spec: {
-          token: 'J0frYj17gPAWWYFQ55eCIo_JD4bmN-5z6DoBgBiFJhM',
+          token: 'testToken',
         },
         status: {
           authenticated: true,
