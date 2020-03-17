@@ -12,8 +12,6 @@ import lru from 'lru-cache';
 import config from '../../../config';
 import createMockIAMHTTP from '../mocks/iam-http';
 import request from './request';
-import logger from './logger';
-import { getOauthInfo } from './oauth-info-client';
 
 // Async middleware error handler
 const asyncMiddleware = fn => (req, res, next) => {
@@ -63,12 +61,30 @@ async function getNamespaces(usertoken) {
   return Array.isArray(nsResponse.items) ? nsResponse.items.map(ns => ns.metadata.name) : [];
 }
 
-async function getUsername(req) {
-  logger.info('getting username');
-  getOauthInfo(req, (a, b) => {
-    logger.info('>> user info:', a, b);
-    return 'userName123';
-  });
+async function getUsername(token) {
+  const options = {
+    url: `${config.get('API_SERVER_URL')}/apis/authentication.k8s.io/v1/tokenreviews`,
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    method: 'POST',
+    json: true,
+    body: {
+      apiVersion: 'authentication.k8s.io/v1',
+      kind: 'TokenReview',
+      spec: {
+        token,
+      },
+    },
+  };
+  if (process.env.NODE_ENV === 'test') {
+    const mockReq = createMockIAMHTTP();
+    return mockReq(options);
+  }
+  const userNameResponse = await request(options);
+  return userNameResponse.body.status.user.username;
 }
 
 // Middleware to:
@@ -96,12 +112,14 @@ export default function createAuthMiddleWare({
       cache.set(`namespaces_${idToken}`, nsPromise);
     }
 
-    req.idToken = idToken;
+    let userNamePromise = cache.get(`userName_${idToken}`);
+    if (!userNamePromise) {
+      userNamePromise = getUsername(idToken);
+      cache.set(`userName_${idToken}`, userNamePromise);
+    }
 
     req.user = {
-      // temporarily using the idToken as userName until we figure out how to exchange token for name
-      // name: idToken.replace('_', '').toLowerCase(),
-      name: await getUsername(req),
+      name: await userNamePromise,
       namespaces: await nsPromise,
       idToken,
     };

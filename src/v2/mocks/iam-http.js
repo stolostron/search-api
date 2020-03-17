@@ -39,12 +39,31 @@ export default function createMockHttp() {
         },
       ],
     },
+    username: {
+      body: {
+        kind: 'TokenReview',
+        apiVersion: 'authentication.k8s.io/v1',
+        metadata: { creationTimestamp: null },
+        spec: {
+          token: 'J0frYj17gPAWWYFQ55eCIo_JD4bmN-5z6DoBgBiFJhM',
+        },
+        status: {
+          authenticated: true,
+          user: {
+            username: 'kube:admin',
+          },
+        },
+      },
+      attempts: 1,
+    },
   };
 
   return async function MockLib(params) {
     switch (true) {
       case params.url.includes('project.openshift.io/v1/projects'):
         return state.namespaces;
+      case params.url.includes('/apis/authentication.k8s.io/v1/tokenreviews'):
+        return state.username;
       default:
         return state.namespaces;
     }
