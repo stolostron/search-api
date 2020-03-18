@@ -11,6 +11,9 @@ import _ from 'lodash';
 import config from '../../../config';
 import { isRequired } from '../lib/utils';
 
+function formatName(name) {
+  return name.replace(':', '-');
+}
 export default class QueryModel {
   constructor({ kubeConnector = isRequired('kubeConnector') }) {
     this.kubeConnector = kubeConnector;
@@ -19,8 +22,7 @@ export default class QueryModel {
 
   async getUserPreferences(args) {
     const { req: { user } } = args;
-    const formattedName = user.name.replace(':', '-');
-    const response = await this.kubeConnector.get(`/apis/${this.userPreferenceApi}${formattedName}`);
+    const response = await this.kubeConnector.get(`/apis/${this.userPreferenceApi}${formatName(user.name)}`);
     if (response.status === 'Failure' && response.reason === 'NotFound') {
       return {};
     } else if (response.code || response.message) {
@@ -36,7 +38,6 @@ export default class QueryModel {
 
   async saveSearch(args) {
     const { req: { user }, resource } = args;
-    const formattedName = user.name.replace(':', '-');
     const response = await this.getUserPreferences(args);
     let json = {};
     let updatedSearches = null;
@@ -58,7 +59,7 @@ export default class QueryModel {
           value: queries,
         },
       ];
-      updatedSearches = await this.kubeConnector.patch(`/apis/${this.userPreferenceApi}${formattedName}`, json);
+      updatedSearches = await this.kubeConnector.patch(`/apis/${this.userPreferenceApi}${formatName(user.name)}`, json);
     } else if (_.get(response, 'metadata.resourceVersion', '') !== '') { // Adding new savedSearch
       json = [
         {
@@ -67,19 +68,19 @@ export default class QueryModel {
           value: resource,
         },
       ];
-      updatedSearches = await this.kubeConnector.patch(`/apis/${this.userPreferenceApi}${formattedName}`, json);
+      updatedSearches = await this.kubeConnector.patch(`/apis/${this.userPreferenceApi}${formatName(user.name)}`, json);
     } else { // Create the userpreference CR and add savedSearch
       json = {
         apiVersion: 'console.acm.io/v1',
         kind: 'UserPreference',
         metadata: {
-          name: formattedName,
+          name: formatName(user.name),
         },
         spec: {
           savedSearches: [...queries, resource],
         },
       };
-      updatedSearches = await this.kubeConnector.post(`/apis/${this.userPreferenceApi}${formattedName}`, json);
+      updatedSearches = await this.kubeConnector.post(`/apis/${this.userPreferenceApi}${formatName(user.name)}`, json);
     }
     if (updatedSearches.error &&
       (updatedSearches.error.code || updatedSearches.error.statusCode || updatedSearches.error.message)) {
@@ -91,8 +92,7 @@ export default class QueryModel {
 
   async deleteSearch(args) {
     const { req: { user }, resource } = args;
-    const formattedName = user.name.replace(':', '-');
-    const url = `/apis/${this.userPreferenceApi}${formattedName}`;
+    const url = `/apis/${this.userPreferenceApi}${formatName(user.name)}`;
     const response = await this.getUserPreferences(args);
     const queries = _.get(response, 'spec.savedSearches', []);
     const removeIdx = queries.findIndex(object => object.name === resource.name);

@@ -84,7 +84,7 @@ async function getUsername(token) {
     return mockReq(options);
   }
   const userNameResponse = await request(options);
-  return userNameResponse.body.status.user.username;
+  return _.get(userNameResponse, 'body.status.user.username');
 }
 
 // Middleware to:
