@@ -12,7 +12,7 @@ import config from '../../../config';
 import { isRequired } from '../lib/utils';
 
 function formatName(name) {
-  return name.replace(':', '-');
+  return name.toLowerCase().replace(/[^a-z0-9-.]/g, '-');
 }
 export default class QueryModel {
   constructor({ kubeConnector = isRequired('kubeConnector') }) {
