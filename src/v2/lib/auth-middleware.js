@@ -68,8 +68,6 @@ async function getUsername() {
   try {
     if (process.env.NODE_ENV === 'production') {
       serviceaccountToken = fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
-      console.log(serviceaccountToken);
-      logger.info(serviceaccountToken);
     } else {
       serviceaccountToken = process.env.SERVICEACCT_TOKEN || '';
     }
@@ -93,8 +91,7 @@ async function getUsername() {
       },
     },
   };
-  console.log(options);
-  logger.info(options);
+
   if (process.env.NODE_ENV === 'test') {
     const mockReq = createMockIAMHTTP();
     return mockReq(options);
