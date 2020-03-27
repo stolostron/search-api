@@ -13,6 +13,7 @@ import lru from 'lru-cache';
 import config from '../../../config';
 import createMockIAMHTTP from '../mocks/iam-http';
 import request from './request';
+import logger from '../lib/logger';
 
 // Async middleware error handler
 const asyncMiddleware = fn => (req, res, next) => {
@@ -63,15 +64,22 @@ async function getNamespaces(usertoken) {
 }
 
 async function getUsername() {
-  const adminAccessToken = process.env.NODE_ENV === 'production'
-    ? fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8')
-    : process.env.SERVICEACCT_TOKEN || 'localdev';
+  let serviceaccountToken = null;
+  try {
+    if (process.env.NODE_ENV === 'production') {
+      serviceaccountToken = fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
+    } else {
+      serviceaccountToken = process.env.SERVICEACCT_TOKEN || '';
+    }
+  } catch (err) {
+    logger.error('Error reading service account token', err && err.message);
+  }
   const options = {
     url: `${config.get('API_SERVER_URL')}/apis/authentication.k8s.io/v1/tokenreviews`,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
-      Authorization: `Bearer ${adminAccessToken}`,
+      Authorization: `Bearer ${serviceaccountToken}`,
     },
     method: 'POST',
     json: true,
@@ -79,7 +87,7 @@ async function getUsername() {
       apiVersion: 'authentication.k8s.io/v1',
       kind: 'TokenReview',
       spec: {
-        adminAccessToken,
+        serviceaccountToken,
       },
     },
   };

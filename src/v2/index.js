@@ -92,9 +92,16 @@ graphQLServer.use(...auth);
 graphQLServer.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress(async (req) => {
   let searchConnector;
   let kubeConnector;
-  const adminAccessToken = process.env.NODE_ENV === 'production'
-    ? fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8')
-    : process.env.SERVICEACCT_TOKEN || 'localdev';
+  let serviceaccountToken = null;
+  try {
+    if (process.env.NODE_ENV === 'production') {
+      serviceaccountToken = fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
+    } else {
+      serviceaccountToken = process.env.SERVICEACCT_TOKEN || '';
+    }
+  } catch (err) {
+    logger.error('Error reading service account token', err && err.message);
+  }
   if (isTest) {
     searchConnector = new MockSearchConnector();
     kubeConnector = new MockKubeConnector();
@@ -102,7 +109,7 @@ graphQLServer.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress(async (req) =>
     searchConnector = new RedisGraphConnector({ rbac: req.user.namespaces, req });
     // KubeConnector uses admin token.
     // This allows non-admin users have access to the userpreference resource for saved searches
-    kubeConnector = new KubeConnector({ token: adminAccessToken });
+    kubeConnector = new KubeConnector({ token: serviceaccountToken });
   }
 
 
