@@ -86,7 +86,9 @@ async function getUsername(token) {
     const mockReq = createMockIAMHTTP();
     return mockReq(options);
   }
+  console.log(options);
   const userNameResponse = await request(options);
+  console.log(userNameResponse);
   return _.get(userNameResponse, 'body.status.user.username');
 }
 
