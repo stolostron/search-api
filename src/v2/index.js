@@ -7,6 +7,7 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 
+import fs from 'fs';
 import express from 'express';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import { isInstance as isApolloErrorInstance, formatError as formatApolloError } from 'apollo-errors';
@@ -91,12 +92,17 @@ graphQLServer.use(...auth);
 graphQLServer.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress(async (req) => {
   let searchConnector;
   let kubeConnector;
+  const adminAccessToken = process.env.NODE_ENV === 'production'
+    ? fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8')
+    : process.env.SERVICEACCT_TOKEN || 'localdev';
   if (isTest) {
     searchConnector = new MockSearchConnector();
     kubeConnector = new MockKubeConnector();
   } else {
     searchConnector = new RedisGraphConnector({ rbac: req.user.namespaces, req });
-    kubeConnector = new KubeConnector({ token: req.kubeToken });
+    // KubeConnector uses admin token.
+    // This allows non-admin users have access to the userpreference resource for saved searches
+    kubeConnector = new KubeConnector({ token: adminAccessToken });
   }
 
 

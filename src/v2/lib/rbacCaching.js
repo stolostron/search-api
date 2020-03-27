@@ -242,7 +242,7 @@ export default function pollUserAccess() {
       if (!adminAccessToken) {
         adminAccessToken = process.env.NODE_ENV === 'production'
           ? fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8')
-          : process.env.SERVICEACCT_TOKEN || '';
+          : process.env.SERVICEACCT_TOKEN || 'localdev';
       }
       getClusterRbacConfig(adminAccessToken).then((res) => {
         // If we dont have this cached we need to set it

@@ -8,6 +8,7 @@
  ****************************************************************************** */
 
 import _ from 'lodash';
+import fs from 'fs';
 import lru from 'lru-cache';
 import config from '../../../config';
 import createMockIAMHTTP from '../mocks/iam-http';
@@ -61,13 +62,16 @@ async function getNamespaces(usertoken) {
   return Array.isArray(nsResponse.items) ? nsResponse.items.map(ns => ns.metadata.name) : [];
 }
 
-async function getUsername(token) {
+async function getUsername() {
+  const adminAccessToken = process.env.NODE_ENV === 'production'
+    ? fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8')
+    : process.env.SERVICEACCT_TOKEN || 'localdev';
   const options = {
     url: `${config.get('API_SERVER_URL')}/apis/authentication.k8s.io/v1/tokenreviews`,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${adminAccessToken}`,
     },
     method: 'POST',
     json: true,
@@ -75,7 +79,7 @@ async function getUsername(token) {
       apiVersion: 'authentication.k8s.io/v1',
       kind: 'TokenReview',
       spec: {
-        token,
+        adminAccessToken,
       },
     },
   };
@@ -114,7 +118,7 @@ export default function createAuthMiddleWare({
 
     let userNamePromise = cache.get(`userName_${idToken}`);
     if (!userNamePromise) {
-      userNamePromise = getUsername(idToken);
+      userNamePromise = getUsername();
       cache.set(`userName_${idToken}`, userNamePromise);
     }
 
