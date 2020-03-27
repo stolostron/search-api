@@ -8,10 +8,10 @@
  ****************************************************************************** */
 /* eslint-disable max-len */
 import _ from 'lodash';
-import fs from 'fs';
 import lru from 'lru-cache';
 import asyncPolling from 'async-polling';
 import config from '../../../config';
+import { getServiceAccountToken } from '../lib/utils';
 import logger from '../lib/logger';
 import KubeConnector from '../connectors/kube';
 // Mocked connectors for testing
@@ -240,15 +240,7 @@ export default function pollUserAccess() {
       const roleAccessCache = cache.get('user-role-access-data');
       // Need to use admin token to retrieve role data as admin has access to all data.
       if (!serviceaccountToken) {
-        try {
-          if (process.env.NODE_ENV === 'production') {
-            serviceaccountToken = fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
-          } else {
-            serviceaccountToken = process.env.SERVICEACCT_TOKEN || '';
-          }
-        } catch (err) {
-          logger.error('Error reading service account token', err && err.message);
-        }
+        serviceaccountToken = getServiceAccountToken();
       }
       getClusterRbacConfig(serviceaccountToken).then((res) => {
         // If we dont have this cached we need to set it

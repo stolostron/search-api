@@ -8,12 +8,11 @@
  ****************************************************************************** */
 
 import _ from 'lodash';
-import fs from 'fs';
 import lru from 'lru-cache';
 import config from '../../../config';
 import createMockIAMHTTP from '../mocks/iam-http';
 import request from './request';
-import logger from '../lib/logger';
+import { getServiceAccountToken } from '../lib/utils';
 
 // Async middleware error handler
 const asyncMiddleware = fn => (req, res, next) => {
@@ -63,17 +62,8 @@ async function getNamespaces(usertoken) {
   return Array.isArray(nsResponse.items) ? nsResponse.items.map(ns => ns.metadata.name) : [];
 }
 
-async function getUsername() {
-  let serviceaccountToken = null;
-  try {
-    if (process.env.NODE_ENV === 'production') {
-      serviceaccountToken = fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
-    } else {
-      serviceaccountToken = process.env.SERVICEACCT_TOKEN || '';
-    }
-  } catch (err) {
-    logger.error('Error reading service account token', err && err.message);
-  }
+async function getUsername(token) {
+  const serviceaccountToken = getServiceAccountToken();
   const options = {
     url: `${config.get('API_SERVER_URL')}/apis/authentication.k8s.io/v1/tokenreviews`,
     headers: {
@@ -87,7 +77,7 @@ async function getUsername() {
       apiVersion: 'authentication.k8s.io/v1',
       kind: 'TokenReview',
       spec: {
-        token: serviceaccountToken,
+        token,
       },
     },
   };
@@ -127,7 +117,7 @@ export default function createAuthMiddleWare({
 
     let userNamePromise = cache.get(`userName_${idToken}`);
     if (!userNamePromise) {
-      userNamePromise = getUsername();
+      userNamePromise = getUsername(idToken);
       cache.set(`userName_${idToken}`, userNamePromise);
     }
 

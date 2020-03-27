@@ -7,7 +7,6 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 
-import fs from 'fs';
 import express from 'express';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import { isInstance as isApolloErrorInstance, formatError as formatApolloError } from 'apollo-errors';
@@ -19,6 +18,7 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 
 import logger from './lib/logger';
+import { getServiceAccountToken } from './lib/utils';
 
 import RedisGraphConnector from './connectors/redisGraph';
 
@@ -38,6 +38,7 @@ export const GRAPHIQL_PATH = `${config.get('contextPath')}/graphiql`;
 
 const isProd = config.get('NODE_ENV') === 'production';
 const isTest = config.get('NODE_ENV') === 'test';
+const serviceaccountToken = getServiceAccountToken();
 
 const formatError = (error) => {
   const { originalError } = error;
@@ -92,16 +93,6 @@ graphQLServer.use(...auth);
 graphQLServer.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress(async (req) => {
   let searchConnector;
   let kubeConnector;
-  let serviceaccountToken = null;
-  try {
-    if (process.env.NODE_ENV === 'production') {
-      serviceaccountToken = fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
-    } else {
-      serviceaccountToken = process.env.SERVICEACCT_TOKEN || '';
-    }
-  } catch (err) {
-    logger.error('Error reading service account token', err && err.message);
-  }
   if (isTest) {
     searchConnector = new MockSearchConnector();
     kubeConnector = new MockKubeConnector();
