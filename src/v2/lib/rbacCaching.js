@@ -8,10 +8,10 @@
  ****************************************************************************** */
 /* eslint-disable max-len */
 import _ from 'lodash';
-import fs from 'fs';
 import lru from 'lru-cache';
 import asyncPolling from 'async-polling';
 import config from '../../../config';
+import { getServiceAccountToken } from '../lib/utils';
 import logger from '../lib/logger';
 import KubeConnector from '../connectors/kube';
 // Mocked connectors for testing
@@ -20,7 +20,7 @@ import MockKubeConnector from '../mocks/kube';
 let isOpenshift = null;
 const isTest = config.get('NODE_ENV') === 'test';
 let activeUsers = [];
-let adminAccessToken;
+let serviceaccountToken;
 const cache = lru({
   max: 1000,
   maxAge: config.get('RBAC_INACTIVITY_TIMEOUT'), // default is 10 mins
@@ -239,12 +239,10 @@ export default function pollUserAccess() {
       // If role/roleBinding/clusterRole/clusterRoleBinding resources changed -> need to delete all active user RBAC cache
       const roleAccessCache = cache.get('user-role-access-data');
       // Need to use admin token to retrieve role data as admin has access to all data.
-      if (!adminAccessToken) {
-        adminAccessToken = process.env.NODE_ENV === 'production'
-          ? fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8')
-          : process.env.SERVICEACCT_TOKEN || '';
+      if (!serviceaccountToken) {
+        serviceaccountToken = getServiceAccountToken();
       }
-      getClusterRbacConfig(adminAccessToken).then((res) => {
+      getClusterRbacConfig(serviceaccountToken).then((res) => {
         // If we dont have this cached we need to set it
         if (!roleAccessCache) {
           cache.set('user-role-access-data', res);
