@@ -15,13 +15,8 @@ export function isRequired(paramName) {
 }
 
 export function getServiceAccountToken() {
-  console.log(`SERVICEACCT_TOKEN (process env): ${process.env.SERVICEACCT_TOKEN}`);
-  console.log('lodash get: ', _.get(process, 'env.SERVICEACCT_TOKEN'));
-  if (process.env.NODE_ENV !== 'test') {
-    console.log(`token from secret: ${fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8')}`);
-  }
   try {
-    return (process.env.SERVICEACCT_TOKEN && process.env.SERVICEACCT_TOKEN !== '')
+    return _.get(process, 'env.SERVICEACCT_TOKEN', '') !== ''
       ? process.env.SERVICEACCT_TOKEN
       : fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
   } catch (err) {
