@@ -88,7 +88,7 @@ async function getUsername(token) {
   }
   console.log(options);
   const userNameResponse = await request(options);
-  console.log(userNameResponse);
+  console.log(userNameResponse.body);
   return _.get(userNameResponse, 'body.status.user.username');
 }
 
