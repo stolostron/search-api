@@ -17,7 +17,7 @@ function formatName(name) {
 export default class QueryModel {
   constructor({ kubeConnector = isRequired('kubeConnector') }) {
     this.kubeConnector = kubeConnector;
-    this.userPreferenceApi = config.get('userPreferenceApi') || 'console.acm.io/v1/userpreferences/';
+    this.userPreferenceApi = config.get('userPreferenceApi') || 'console.open-cluster-management.io/v1/userpreferences/';
   }
 
   async getUserPreferences(args) {
