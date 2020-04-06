@@ -6,6 +6,8 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// Copyright (c) 2020 Red Hat, Inc.
+
 /* eslint-disable max-len */
 import _ from 'lodash';
 import lru from 'lru-cache';
@@ -83,12 +85,14 @@ async function getNonNamespacedResources(kubeToken) {
   // Get non-namespaced resources WITH an api group
   resources.push(kubeConnector.post('/apis', {}).then(async (res) => {
     if (res) {
-      const apiGroups = res.groups.map(group => group.preferredVersion.groupVersion);
+      console.log('>> res.groups: ', res.groups); // eslint-disable-line no-console
+      const apiGroups = (res.groups || []).map(group => group.preferredVersion.groupVersion);
       const results = await Promise.all(apiGroups.map((group) => {
         const mappedResources = kubeConnector.get(`/apis/${group}`).then((result) => {
           const groupResources = _.get(result, 'resources', []);
           const nonNamespaced = groupResources.filter(resource => resource.namespaced === false)
             .map(resource => resource.name);
+          console.log('>> Non-namespaced:', nonNamespaced); // eslint-disable-line no-console
           return nonNamespaced.filter(item => item.length > 0)
             .map(item => ({ name: item, apiGroup: group }));
         });
