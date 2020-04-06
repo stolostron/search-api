@@ -17,7 +17,7 @@ import KubeConnector from '../connectors/kube';
 // Mocked connectors for testing
 import MockKubeConnector from '../mocks/kube';
 
-let isOpenshift = null;
+const isOpenshift = true;
 const isTest = config.get('NODE_ENV') === 'test';
 let activeUsers = [];
 let serviceaccountToken;
@@ -54,24 +54,24 @@ export async function getClusterRbacConfig(kubeToken) {
   return {};
 }
 
-async function checkIfOpenShiftPlatform(kubeToken) {
-  const url = '/apis/authorization.openshift.io/v1';
-  const kubeConnector = !isTest
-    ? new KubeConnector({ token: `${kubeToken}` })
-    : new MockKubeConnector();
-  const res = await kubeConnector.get(url);
+// async function checkIfOpenShiftPlatform(kubeToken) {
+//   const url = '/apis/authorization.openshift.io/v1';
+//   const kubeConnector = !isTest
+//     ? new KubeConnector({ token: `${kubeToken}` })
+//     : new MockKubeConnector();
+//   const res = await kubeConnector.get(url);
 
-  if (res && res.resources) {
-    const selfReview = res.resources.filter(r => r.kind === 'SelfSubjectRulesReview');
-    logger.debug('SelfSubjectRulesReview:', selfReview);
-    if (selfReview.length > 0) {
-      logger.debug('Found API "authorization.openshift.io/v1" so assuming that we are running in OpenShift');
-      isOpenshift = true;
-      return;
-    }
-  }
-  isOpenshift = false;
-}
+//   if (res && res.resources) {
+//     const selfReview = res.resources.filter(r => r.kind === 'SelfSubjectRulesReview');
+//     logger.debug('SelfSubjectRulesReview:', selfReview);
+//     if (selfReview.length > 0) {
+//       logger.debug('Found API "authorization.openshift.io/v1" so assuming that we are running in OpenShift');
+//       isOpenshift = true;
+//       return;
+//     }
+//   }
+//   isOpenshift = false;
+// }
 
 async function getNonNamespacedResources(kubeToken) {
   const startTime = Date.now();
@@ -181,7 +181,7 @@ async function getUserAccess(kubeToken, namespace) {
 async function buildRbacString(req, objAliases) {
   const { user: { namespaces, idToken } } = req;
   const startTime = Date.now();
-  if (isOpenshift === null) await checkIfOpenShiftPlatform(idToken);
+  // if (isOpenshift === null) await checkIfOpenShiftPlatform(idToken);
   const userCache = cache.get(idToken);
   let data = [];
   if (!userCache || !userCache.userAccessPromise || !userCache.userNonNamespacedAccessPromise) {
