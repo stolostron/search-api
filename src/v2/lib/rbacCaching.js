@@ -92,7 +92,7 @@ async function getNonNamespacedResources(kubeToken) {
           const groupResources = _.get(result, 'resources', []);
           const nonNamespaced = groupResources.filter(resource => resource.namespaced === false)
             .map(resource => resource.name);
-          console.log('>> Non-namespaced:', nonNamespaced); // eslint-disable-line no-console
+          // console.log('>> Non-namespaced:', nonNamespaced); // eslint-disable-line no-console
           return nonNamespaced.filter(item => item.length > 0)
             .map(item => ({ name: item, apiGroup: group }));
         });
@@ -133,6 +133,7 @@ async function getNonNamespacedAccess(kubeToken) {
       },
     };
     return kubeConnector.post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', jsonBody).then((res) => {
+      console.log('SelfSubject ACCESS review result.', res); // eslint-disable-line no-console
       if (res && res.status && res.status.allowed) {
         return `'null_${resource.apiGroup}_${resource.name}'`;
       }
@@ -156,6 +157,7 @@ async function getUserAccess(kubeToken, namespace) {
     },
   };
   return kubeConnector.post(url, jsonBody).then((res) => {
+    console.log('SelfSubject RULES review result.', res); // eslint-disable-line no-console
     let userResources = [];
     if (res && res.status) {
       const results = isOpenshift ? res.status.rules : res.status.resourceRules;
