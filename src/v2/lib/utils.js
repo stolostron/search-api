@@ -7,8 +7,8 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 import fs from 'fs';
-import _ from 'lodash';
 import logger from './logger';
+import config from '../../../config';
 
 export function isRequired(paramName) {
   throw new Error(`${paramName} is required`);
@@ -16,7 +16,7 @@ export function isRequired(paramName) {
 
 export function getServiceAccountToken() {
   try {
-    return _.get(process, 'env.SERVICEACCT_TOKEN', '') !== ''
+    return config.get('SERVICEACCT_TOKEN') !== ''
       ? process.env.SERVICEACCT_TOKEN
       : fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
   } catch (err) {

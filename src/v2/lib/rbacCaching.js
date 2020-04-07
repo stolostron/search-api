@@ -18,7 +18,7 @@ import KubeConnector from '../connectors/kube';
 // Mocked connectors for testing
 import MockKubeConnector from '../mocks/kube';
 
-const isOpenshift = true;
+let isOpenshift = null;
 const isTest = config.get('NODE_ENV') === 'test';
 let activeUsers = [];
 let serviceaccountToken;
@@ -30,7 +30,7 @@ const cache = lru({
 export async function getClusterRbacConfig(kubeToken) {
   if (kubeToken !== undefined) {
     const kubeConnector = !isTest
-      ? new KubeConnector({ token: `${kubeToken}` })
+      ? new KubeConnector({ token: kubeToken })
       : new MockKubeConnector();
     // eslint-disable-next-line prefer-const
     let [roles, roleBindings, clusterRoles, clusterRoleBindings] = await Promise.all([
@@ -55,24 +55,24 @@ export async function getClusterRbacConfig(kubeToken) {
   return {};
 }
 
-// async function checkIfOpenShiftPlatform(kubeToken) {
-//   const url = '/apis/authorization.openshift.io/v1';
-//   const kubeConnector = !isTest
-//     ? new KubeConnector({ token: `${kubeToken}` })
-//     : new MockKubeConnector();
-//   const res = await kubeConnector.get(url);
+async function checkIfOpenShiftPlatform(kubeToken) {
+  const url = '/apis/authorization.openshift.io/v1';
+  const kubeConnector = !isTest
+    ? new KubeConnector({ token: `${kubeToken}` })
+    : new MockKubeConnector();
+  const res = await kubeConnector.get(url);
 
-//   if (res && res.resources) {
-//     const selfReview = res.resources.filter(r => r.kind === 'SelfSubjectRulesReview');
-//     logger.debug('SelfSubjectRulesReview:', selfReview);
-//     if (selfReview.length > 0) {
-//       logger.debug('Found API "authorization.openshift.io/v1" so assuming that we are running in OpenShift');
-//       isOpenshift = true;
-//       return;
-//     }
-//   }
-//   isOpenshift = false;
-// }
+  if (res && res.resources) {
+    const selfReview = res.resources.filter(r => r.kind === 'SelfSubjectRulesReview');
+    logger.debug('SelfSubjectRulesReview:', selfReview);
+    if (selfReview.length > 0) {
+      logger.debug('Found API "authorization.openshift.io/v1" so assuming that we are running in OpenShift');
+      isOpenshift = true;
+      return;
+    }
+  }
+  isOpenshift = false;
+}
 
 async function getNonNamespacedResources(kubeToken) {
   const startTime = Date.now();
@@ -145,7 +145,7 @@ async function getNonNamespacedAccess(kubeToken) {
 
 async function getUserAccess(kubeToken, namespace) {
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: kubeToken }) // getServiceAccountToken() })
+    ? new KubeConnector({ token: kubeToken })
     : new MockKubeConnector();
   // console.log('^^^ Getting user acces for namespace: ', namespace); // eslint-disable-line no-console
   const url = `/apis/authorization.openshift.io/v1/${namespace}/selfsubjectrulesreviews`;
@@ -156,12 +156,8 @@ async function getUserAccess(kubeToken, namespace) {
       namespace,
     },
   };
-  const opts = {
-    headers: {
-      'Impersonate-User': 'user1', // <<< UPDATE
-    },
-  };
-  return kubeConnector.post(url, jsonBody, opts).then((res) => {
+
+  return kubeConnector.post(url, jsonBody).then((res) => {
     let userResources = [];
     if (res && res.status) {
       // console.log('SelfSubject RULES review result.', res.status); // eslint-disable-line no-console
@@ -192,8 +188,9 @@ async function getUserAccess(kubeToken, namespace) {
 async function buildRbacString(req, objAliases) {
   const { user: { namespaces, idToken } } = req;
   const startTime = Date.now();
-  // if (isOpenshift === null) await checkIfOpenShiftPlatform(idToken);
+  if (isOpenshift === null) await checkIfOpenShiftPlatform(idToken);
   const userCache = cache.get(idToken);
+  console.log('User: ', req.user); // eslint-disable-line
   let data = [];
   if (!userCache || !userCache.userAccessPromise || !userCache.userNonNamespacedAccessPromise) {
     const userAccessPromise = Promise.all(namespaces.map(namespace => getUserAccess(idToken, namespace)));
