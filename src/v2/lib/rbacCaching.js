@@ -133,7 +133,7 @@ async function getNonNamespacedAccess(kubeToken) {
       },
     };
     return kubeConnector.post('/apis/authorization.openshift.io/v1/selfsubjectaccessreviews', jsonBody).then((res) => {
-      console.log('SelfSubject ACCESS review result.', res); // eslint-disable-line no-console
+      // console.log('SelfSubject ACCESS review result.', res); // eslint-disable-line no-console
       if (res && res.status && res.status.allowed) {
         return `'null_${resource.apiGroup}_${resource.name}'`;
       }
@@ -148,9 +148,10 @@ async function getUserAccess(kubeToken, namespace) {
   const kubeConnector = !isTest
     ? new KubeConnector({ token: `${kubeToken}` })
     : new MockKubeConnector();
-  const url = `/apis/authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
+  console.log('^^^ Getting user acces for namespace: ', namespace); // eslint-disable-line no-console
+  const url = `/apis/authorization.k8s.io/v1/${namespace}/selfsubjectrulesreviews`;
   const jsonBody = {
-    apiVersion: 'authorization.openshift.io/v1',
+    apiVersion: 'authorization.k8s.io/v1',
     kind: 'SelfSubjectRulesReview',
     spec: {
       namespace,
@@ -179,7 +180,6 @@ async function getUserAccess(kubeToken, namespace) {
         return null;
       });
     }
-    userResources.push(`'${namespace}_null_releases'`);
     return userResources.filter(r => r !== null);
   });
 }
