@@ -74,24 +74,19 @@ async function checkIfOpenShiftPlatform(kubeToken) {
   isOpenshift = false;
 }
 
-async function getNonNamespacedResources(kubeToken) {
+async function getNonNamespacedResources(kubeConnector) {
   const startTime = Date.now();
   const resources = [];
-  const kubeConnector = !isTest
-    ? new KubeConnector({ token: `${kubeToken}` })
-    : new MockKubeConnector();
 
   // Get non-namespaced resources WITH an api group
   resources.push(kubeConnector.post('/apis', {}).then(async (res) => {
     if (res && res.groups) {
-      // console.log('>> res.groups: ', res.groups); // eslint-disable-line no-console
       const apiGroups = res.groups.map(group => group.preferredVersion.groupVersion);
       const results = await Promise.all(apiGroups.map((group) => {
         const mappedResources = kubeConnector.get(`/apis/${group}`).then((result) => {
           const groupResources = _.get(result, 'resources', []);
           const nonNamespaced = groupResources.filter(resource => resource.namespaced === false)
             .map(resource => resource.name);
-          // console.log('>> Non-namespaced:', nonNamespaced); // eslint-disable-line no-console
           return nonNamespaced.filter(item => item.length > 0)
             .map(item => ({ name: item, apiGroup: group }));
         });
@@ -114,12 +109,9 @@ async function getNonNamespacedResources(kubeToken) {
   return _.flatten(resources);
 }
 
-async function getNonNamespacedAccess(kubeToken) {
+async function getNonNamespacedAccess(kubeConnector) {
   const startTime = Date.now();
-  const kubeConnector = !isTest
-    ? new KubeConnector({ token: `${kubeToken}` })
-    : new MockKubeConnector();
-  const nonNamespacedResources = await getNonNamespacedResources(kubeToken);
+  const nonNamespacedResources = await getNonNamespacedResources(kubeConnector);
   const results = await Promise.all(nonNamespacedResources.map((resource) => {
     const jsonBody = {
       apiVersion: 'authorization.k8s.io/v1',
@@ -131,8 +123,7 @@ async function getNonNamespacedAccess(kubeToken) {
         },
       },
     };
-    return kubeConnector.post('/apis/authorization.openshift.io/v1/selfsubjectaccessreviews', jsonBody).then((res) => {
-      // console.log('SelfSubject ACCESS review result.', res); // eslint-disable-line no-console
+    return kubeConnector.post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', jsonBody).then((res) => {
       if (res && res.status && res.status.allowed) {
         return `'null_${resource.apiGroup}_${resource.name}'`;
       }
@@ -143,11 +134,7 @@ async function getNonNamespacedAccess(kubeToken) {
   return results.filter(r => r !== null);
 }
 
-async function getUserAccess(kubeToken, namespace) {
-  const kubeConnector = !isTest
-    ? new KubeConnector({ token: kubeToken })
-    : new MockKubeConnector();
-  // console.log('^^^ Getting user acces for namespace: ', namespace); // eslint-disable-line no-console
+async function getUserAccess(kubeConnector, namespace) {
   const url = `/apis/authorization.${!isOpenshift ?
     'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
   const jsonBody = {
@@ -161,7 +148,6 @@ async function getUserAccess(kubeToken, namespace) {
   return kubeConnector.post(url, jsonBody).then((res) => {
     let userResources = [];
     if (res && res.status) {
-      // console.log('SelfSubject RULES review result.', res.status); // eslint-disable-line no-console
       const results = isOpenshift ? res.status.rules : res.status.resourceRules;
       (results || []).forEach((item) => {
         if (item.verbs.includes('*') && item.resources.includes('*')) {
@@ -187,15 +173,19 @@ async function getUserAccess(kubeToken, namespace) {
 }
 
 async function buildRbacString(req, objAliases) {
-  const { user: { namespaces, idToken } } = req;
+  const { user: { name, namespaces, idToken } } = req;
   const startTime = Date.now();
   if (isOpenshift === null) await checkIfOpenShiftPlatform(idToken);
   const userCache = cache.get(idToken);
-  console.log('User: ', req.user); // eslint-disable-line
+
+  const kubeConnector = !isTest
+    ? new KubeConnector({ token: getServiceAccountToken(), impersonateUser: name })
+    : new MockKubeConnector();
+
   let data = [];
   if (!userCache || !userCache.userAccessPromise || !userCache.userNonNamespacedAccessPromise) {
-    const userAccessPromise = Promise.all(namespaces.map(namespace => getUserAccess(idToken, namespace)));
-    const userNonNamespacedAccessPromise = getNonNamespacedAccess(idToken);
+    const userAccessPromise = Promise.all(namespaces.map(namespace => getUserAccess(kubeConnector, namespace)));
+    const userNonNamespacedAccessPromise = getNonNamespacedAccess(kubeConnector);
     cache.set(idToken, { ...userCache, userAccessPromise, userNonNamespacedAccessPromise });
     logger.info('Saved userAccess and nonNamespacesAccess promises to user cache.');
     data = [await userAccessPromise, await userNonNamespacedAccessPromise];
