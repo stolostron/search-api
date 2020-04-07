@@ -149,9 +149,9 @@ async function getUserAccess(kubeToken, namespace) {
     ? new KubeConnector({ token: `${kubeToken}` })
     : new MockKubeConnector();
   console.log('^^^ Getting user acces for namespace: ', namespace); // eslint-disable-line no-console
-  const url = `/apis/authorization.k8s.io/v1/${namespace}/selfsubjectrulesreviews`;
+  const url = `/apis/authorization.openshift.io/v1/${namespace}/selfsubjectrulesreviews`;
   const jsonBody = {
-    apiVersion: 'authorization.k8s.io/v1',
+    apiVersion: 'authorization.openshift.io/v1',
     kind: 'SelfSubjectRulesReview',
     spec: {
       namespace,
