@@ -157,9 +157,9 @@ async function getUserAccess(kubeToken, namespace) {
     },
   };
   return kubeConnector.post(url, jsonBody).then((res) => {
-    console.log('SelfSubject RULES review result.', res.status); // eslint-disable-line no-console
     let userResources = [];
     if (res && res.status) {
+      console.log('SelfSubject RULES review result.', res.status); // eslint-disable-line no-console
       const results = isOpenshift ? res.status.rules : res.status.resourceRules;
       results.forEach((item) => {
         if (item.verbs.includes('*') && item.resources.includes('*')) {
