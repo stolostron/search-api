@@ -148,9 +148,10 @@ async function getUserAccess(kubeToken, namespace) {
     ? new KubeConnector({ token: kubeToken })
     : new MockKubeConnector();
   // console.log('^^^ Getting user acces for namespace: ', namespace); // eslint-disable-line no-console
-  const url = `/apis/authorization.openshift.io/v1/${namespace}/selfsubjectrulesreviews`;
+  const url = `/apis/authorization.${!isOpenshift ?
+    'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
   const jsonBody = {
-    apiVersion: 'authorization.openshift.io/v1',
+    apiVersion: `authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1`,
     kind: 'SelfSubjectRulesReview',
     spec: {
       namespace,
