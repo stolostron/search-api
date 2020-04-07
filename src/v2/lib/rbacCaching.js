@@ -146,7 +146,7 @@ async function getNonNamespacedAccess(kubeToken) {
 
 async function getUserAccess(kubeToken, namespace) {
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: `${kubeToken}` })
+    ? new KubeConnector({ token: getServiceAccountToken() }) // `${kubeToken}` })
     : new MockKubeConnector();
   console.log('^^^ Getting user acces for namespace: ', namespace); // eslint-disable-line no-console
   const url = `/apis/authorization.openshift.io/v1/${namespace}/selfsubjectrulesreviews`;
@@ -157,7 +157,12 @@ async function getUserAccess(kubeToken, namespace) {
       namespace,
     },
   };
-  return kubeConnector.post(url, jsonBody).then((res) => {
+  const opts = {
+    headers: {
+      'Impersonate-User': 'user1', // <<< UPDATE
+    },
+  };
+  return kubeConnector.post(url, jsonBody, opts).then((res) => {
     let userResources = [];
     if (res && res.status) {
       console.log('SelfSubject RULES review result.', res.status); // eslint-disable-line no-console
