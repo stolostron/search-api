@@ -8,7 +8,6 @@
  ****************************************************************************** */
 // Copyright (c) 2020 Red Hat, Inc.
 
-/* eslint-disable max-len */
 import _ from 'lodash';
 import lru from 'lru-cache';
 import asyncPolling from 'async-polling';
@@ -84,9 +83,9 @@ async function getNonNamespacedResources(kubeToken) {
 
   // Get non-namespaced resources WITH an api group
   resources.push(kubeConnector.post('/apis', {}).then(async (res) => {
-    if (res) {
-      console.log('>> res.groups: ', res.groups); // eslint-disable-line no-console
-      const apiGroups = (res.groups || []).map(group => group.preferredVersion.groupVersion);
+    if (res && res.groups) {
+      // console.log('>> res.groups: ', res.groups); // eslint-disable-line no-console
+      const apiGroups = res.groups.map(group => group.preferredVersion.groupVersion);
       const results = await Promise.all(apiGroups.map((group) => {
         const mappedResources = kubeConnector.get(`/apis/${group}`).then((result) => {
           const groupResources = _.get(result, 'resources', []);
@@ -123,7 +122,7 @@ async function getNonNamespacedAccess(kubeToken) {
   const nonNamespacedResources = await getNonNamespacedResources(kubeToken);
   const results = await Promise.all(nonNamespacedResources.map((resource) => {
     const jsonBody = {
-      apiVersion: 'authorization.openshift.io/v1',
+      apiVersion: 'authorization.k8s.io/v1',
       kind: 'SelfSubjectAccessReview',
       spec: {
         resourceAttributes: {
@@ -146,9 +145,9 @@ async function getNonNamespacedAccess(kubeToken) {
 
 async function getUserAccess(kubeToken, namespace) {
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: getServiceAccountToken() }) // `${kubeToken}` })
+    ? new KubeConnector({ token: kubeToken }) // getServiceAccountToken() })
     : new MockKubeConnector();
-  console.log('^^^ Getting user acces for namespace: ', namespace); // eslint-disable-line no-console
+  // console.log('^^^ Getting user acces for namespace: ', namespace); // eslint-disable-line no-console
   const url = `/apis/authorization.openshift.io/v1/${namespace}/selfsubjectrulesreviews`;
   const jsonBody = {
     apiVersion: 'authorization.openshift.io/v1',
@@ -165,13 +164,13 @@ async function getUserAccess(kubeToken, namespace) {
   return kubeConnector.post(url, jsonBody, opts).then((res) => {
     let userResources = [];
     if (res && res.status) {
-      console.log('SelfSubject RULES review result.', res.status); // eslint-disable-line no-console
+      // console.log('SelfSubject RULES review result.', res.status); // eslint-disable-line no-console
       const results = isOpenshift ? res.status.rules : res.status.resourceRules;
-      results.forEach((item) => {
+      (results || []).forEach((item) => {
         if (item.verbs.includes('*') && item.resources.includes('*')) {
           // if user has access to everything then add just an *
           userResources = userResources.concat(['*']);
-        } else if (item.verbs.includes('get') && item.resources.length > 0) { // TODO need to include access for 'patch' and 'delete'
+        } else if (item.verbs.includes('get') && item.resources.length > 0) { // TODO: include access for PATCH and DELETE.
           // RBAC string is defined as "namespace_apigroup_kind"
           const resources = [];
           const ns = (namespace === '' || namespace === undefined) ? 'null_' : `${namespace}_`;
@@ -223,7 +222,8 @@ export async function getUserRbacFilter(req, objAliases) {
   if (currentUser) {
     rbacFilter = await buildRbacString(req, objAliases);
   }
-  // 2. if (users 1st time querying || they have been removed b/c inactivity || they otherwise dont have an rbacString) -> create the RBAC String
+  // 2. if (users 1st time querying || they have been removed b/c inactivity || they otherwise dont have an rbacString)
+  //    then  create the RBAC String
   if (!rbacFilter) {
     const currentUserCache = cache.get(req.user.idToken); // Get user cache again because it may have changed.
     cache.set(req.user.idToken, { ...currentUserCache });
