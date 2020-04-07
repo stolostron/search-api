@@ -180,6 +180,7 @@ async function getUserAccess(kubeToken, namespace) {
         return null;
       });
     }
+    userResources.push(`'${namespace}_null_releases'`);
     return userResources.filter(r => r !== null);
   });
 }
