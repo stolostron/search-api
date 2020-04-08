@@ -39,20 +39,18 @@ RBAC_INACTIVITY_TIMEOUT | 600000  | Stop revalidating RBAC cache after user is i
 
 ## Developing with RedisGraph in a live cluster.
 
-1. Create a route to expose the `search-search-redisgraph` service.
+1. Create a route to expose the `search-redisgraph` service.
 
-    - Log to the OpenShift console.
-    - On the left navigation, go to Networking -> Routes.
-    - Select project open-cluster-management (You should see 1 existing route)
-    - Create a new route with the following:
-        - Name: redisgraph
-        - Hostname: leave blank
-        - Path: leave blank
-        - Service: search-search-redisgraph
-        - Target Port: 6380 -> 6380 (TCP)
-        - Secure Route: enable
-        - TLS Termination: Passthrough
-        -  Insecure traffic: None
+    - Find the name of the redisgraph service.
+      
+        ```
+        oc get service -n open-cluster-management |grep search-redisgraph
+        ```
+    - Create the new route
+        
+        ```
+        oc create route passthrough redisgraph --service=<redisgraph-service-name> --insecure-policy='Redirect' --port='redisgraph' -n open-cluster-management
+        ```
     - Your route should look like this: https://redisgraph-open-cluster-management.apps.[your-ocp-hostname].com
 
 2. Set `redisSSLEndpoint` on your config.json. The format is `<redisgraph-route>:443`
