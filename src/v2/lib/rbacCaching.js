@@ -141,9 +141,9 @@ async function getNonNamespacedAccess(kubeToken) {
 }
 
 async function getUserAccess(req, namespace) {
-  // console.log('getting user access for namespace: ', namespace);
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: req.user.idToken, impersonateUser: req.user.name })
+    // ? new KubeConnector({ token: req.user.idToken, impersonateUser: req.user.name })
+    ? new KubeConnector({ token: req.user.idToken })
     : new MockKubeConnector();
   const url = `/apis/authorization.${!isOpenshift ?
     'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
@@ -159,12 +159,11 @@ async function getUserAccess(req, namespace) {
     if (res && res.status) {
       const results = isOpenshift ? res.status.rules : res.status.resourceRules;
       (results || []).forEach((item) => {
-        // console.log(`Namespace: ${namespace}  URL: ${url} item:\n`, item);
+        // FIXME: https://github.com/open-cluster-management/backlog/issues/1525
         if (item.verbs.includes('*') && item.resources.includes('*')) {
           // if user has access to everything then add just an *
           userResources = userResources.concat(['*']);
-        } else
-        if (item.verbs.includes('get') && item.resources.length > 0) { // TODO: include access for PATCH and DELETE.
+        } else if (item.verbs.includes('get') && item.resources.length > 0) { // TODO: include access for PATCH and DELETE.
           // RBAC string is defined as "namespace_apigroup_kind"
           const resources = [];
           const ns = (namespace === '' || namespace === undefined) ? 'null_' : `${namespace}_`;
@@ -173,7 +172,6 @@ async function getUserAccess(req, namespace) {
           item.resources.filter(r => r.indexOf('/') === -1).forEach((resource) => {
             resources.push(`'${ns + apiGroup + resource}'`);
           });
-          // console.log(`Namespace: ${namespace}  Resources: `, resources);
           userResources = userResources.concat(resources);
         }
         return null;
@@ -189,14 +187,10 @@ async function buildRbacString(req, objAliases) {
   if (isOpenshift === null) await checkIfOpenShiftPlatform(idToken);
   const userCache = cache.get(idToken);
 
-  const kubeConnector = !isTest
-    ? new KubeConnector({ token: req.user.idToken })
-    : new MockKubeConnector();
-
   let data = [];
   if (!userCache || !userCache.userAccessPromise || !userCache.userNonNamespacedAccessPromise) {
     const userAccessPromise = Promise.all(namespaces.map(namespace => getUserAccess(req, namespace)));
-    const userNonNamespacedAccessPromise = getNonNamespacedAccess(kubeConnector);
+    const userNonNamespacedAccessPromise = getNonNamespacedAccess(idToken);
     cache.set(idToken, { ...userCache, userAccessPromise, userNonNamespacedAccessPromise });
     logger.info('Saved userAccess and nonNamespacesAccess promises to user cache.');
     data = [await userAccessPromise, await userNonNamespacedAccessPromise];
