@@ -142,7 +142,6 @@ async function getNonNamespacedAccess(kubeToken) {
 
 async function getUserAccess(req, namespace) {
   const kubeConnector = !isTest
-    // ? new KubeConnector({ token: req.user.idToken, impersonateUser: req.user.name })
     ? new KubeConnector({ token: req.user.idToken })
     : new MockKubeConnector();
   const url = `/apis/authorization.${!isOpenshift ?

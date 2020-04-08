@@ -17,12 +17,10 @@ export default class KubeConnector {
     token = 'localdev',
     kubeApiEndpoint = `${config.get('API_SERVER_URL')}` || 'https://kubernetes.default.svc',
     httpLib = request,
-    impersonateUser = '',
   } = {}) {
     this.kubeApiEndpoint = kubeApiEndpoint;
     this.token = token;
     this.http = httpLib;
-    this.impersonateUser = impersonateUser;
   }
 
   /**
@@ -39,10 +37,6 @@ export default class KubeConnector {
         Authorization: `Bearer ${this.token}`,
       },
     };
-    if (this.impersonateUser !== '') {
-      defaults.headers['Imporsonate-User'] = this.impersonateUser;
-    }
-
     return this.http(_.merge(defaults, opts)).then(res => res.body);
   }
 
@@ -55,9 +49,6 @@ export default class KubeConnector {
       },
       json: jsonBody,
     };
-    if (this.impersonateUser !== '') {
-      defaults.headers['Imporsonate-User'] = this.impersonateUser;
-    }
     return this.http(_.merge(defaults, opts)).then(res => res.body);
   }
 
@@ -71,10 +62,6 @@ export default class KubeConnector {
       },
       json: jsonBody,
     };
-    if (this.impersonateUser !== '') {
-      defaults.headers['Imporsonate-User'] = this.impersonateUser;
-    }
-
     return this.http(_.merge(defaults, opts)).then(res => res.body);
   }
 }
