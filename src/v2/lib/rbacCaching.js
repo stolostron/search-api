@@ -141,9 +141,9 @@ async function getNonNamespacedAccess(kubeToken) {
 }
 
 async function getUserAccess(req, namespace) {
-  console.log('getting user access for namespace: ', namespace);
+  // console.log('getting user access for namespace: ', namespace);
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: getServiceAccountToken(), impersonateUser: req.user.name })
+    ? new KubeConnector({ token: req.user.idToken, impersonateUser: req.user.name })
     : new MockKubeConnector();
   const url = `/apis/authorization.${!isOpenshift ?
     'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
@@ -159,7 +159,7 @@ async function getUserAccess(req, namespace) {
     if (res && res.status) {
       const results = isOpenshift ? res.status.rules : res.status.resourceRules;
       (results || []).forEach((item) => {
-        console.log('item: ', item);
+        // console.log(`Namespace: ${namespace}  URL: ${url} item:\n`, item);
         if (item.verbs.includes('*') && item.resources.includes('*')) {
           // if user has access to everything then add just an *
           userResources = userResources.concat(['*']);
@@ -173,12 +173,12 @@ async function getUserAccess(req, namespace) {
           item.resources.filter(r => r.indexOf('/') === -1).forEach((resource) => {
             resources.push(`'${ns + apiGroup + resource}'`);
           });
+          // console.log(`Namespace: ${namespace}  Resources: `, resources);
           userResources = userResources.concat(resources);
         }
         return null;
       });
     }
-    userResources.push(`'${namespace}_null_releases'`);
     return userResources.filter(r => r !== null);
   });
 }
