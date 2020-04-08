@@ -41,16 +41,10 @@ RBAC_INACTIVITY_TIMEOUT | 600000  | Stop revalidating RBAC cache after user is i
 
 1. Create a route to expose the `search-redisgraph` service.
 
-    - Find the name of the redisgraph service.
-      
-        ```
-        oc get service -n open-cluster-management |grep search-redisgraph
-        ```
-    - Create the new route
-        
-        ```
-        oc create route passthrough redisgraph --service=<redisgraph-service-name> --insecure-policy='Redirect' --port='redisgraph' -n open-cluster-management
-        ```
+    ```bash
+    RG_SERVICE_NAME=$(oc get service -n open-cluster-management |grep search-redisgraph | awk '{print $1;}')
+    oc create route passthrough redisgraph --service=$RG_SERVICE_NAME --insecure-policy='Redirect' --port='redisgraph' -n open-cluster-management
+    ```
     - Your route should look like this: https://redisgraph-open-cluster-management.apps.[your-ocp-hostname].com
 
 2. Set `redisSSLEndpoint` on your config.json. The format is `<redisgraph-route>:443`

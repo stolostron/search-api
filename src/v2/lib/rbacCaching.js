@@ -140,9 +140,9 @@ async function getNonNamespacedAccess(kubeToken) {
   return results.filter(r => r !== null);
 }
 
-async function getUserAccess(req, namespace) {
+async function getUserAccess(kubeToken, namespace) {
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: req.user.idToken })
+    ? new KubeConnector({ token: kubeToken })
     : new MockKubeConnector();
   const url = `/apis/authorization.${!isOpenshift ?
     'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
@@ -185,10 +185,9 @@ async function buildRbacString(req, objAliases) {
   const startTime = Date.now();
   if (isOpenshift === null) await checkIfOpenShiftPlatform(idToken);
   const userCache = cache.get(idToken);
-
   let data = [];
   if (!userCache || !userCache.userAccessPromise || !userCache.userNonNamespacedAccessPromise) {
-    const userAccessPromise = Promise.all(namespaces.map(namespace => getUserAccess(req, namespace)));
+    const userAccessPromise = Promise.all(namespaces.map(namespace => getUserAccess(idToken, namespace)));
     const userNonNamespacedAccessPromise = getNonNamespacedAccess(idToken);
     cache.set(idToken, { ...userCache, userAccessPromise, userNonNamespacedAccessPromise });
     logger.info('Saved userAccess and nonNamespacesAccess promises to user cache.');
@@ -201,7 +200,6 @@ async function buildRbacString(req, objAliases) {
   const aliasesData = objAliases.map(alias => [...rbacData].map(item => `${alias}._rbac = ${item}`));
   const aliasesStrings = aliasesData.map(a => a.join(' OR '));
 
-  console.log(`(${aliasesStrings.join(') AND (')})`);
   logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaces && namespaces.length} )`);
   return `(${aliasesStrings.join(') AND (')})`;
 }
