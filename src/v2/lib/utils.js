@@ -6,9 +6,11 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// Copyright (c) 2020 Red Hat, Inc.
+
 import fs from 'fs';
-import _ from 'lodash';
 import logger from './logger';
+import config from '../../../config';
 
 export function isRequired(paramName) {
   throw new Error(`${paramName} is required`);
@@ -16,8 +18,8 @@ export function isRequired(paramName) {
 
 export function getServiceAccountToken() {
   try {
-    return _.get(process, 'env.SERVICEACCT_TOKEN', '') !== ''
-      ? process.env.SERVICEACCT_TOKEN
+    return config.get('SERVICEACCT_TOKEN') !== ''
+      ? config.get('SERVICEACCT_TOKEN')
       : fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8');
   } catch (err) {
     logger.error('Error reading service account token', err && err.message);

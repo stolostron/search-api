@@ -6,7 +6,8 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
-/* eslint-disable max-len */
+// Copyright (c) 2020 Red Hat, Inc.
+
 import _ from 'lodash';
 import lru from 'lru-cache';
 import asyncPolling from 'async-polling';
@@ -29,7 +30,7 @@ const cache = lru({
 export async function getClusterRbacConfig(kubeToken) {
   if (kubeToken !== undefined) {
     const kubeConnector = !isTest
-      ? new KubeConnector({ token: `${kubeToken}` })
+      ? new KubeConnector({ token: kubeToken })
       : new MockKubeConnector();
     // eslint-disable-next-line prefer-const
     let [roles, roleBindings, clusterRoles, clusterRoleBindings] = await Promise.all([
@@ -82,7 +83,7 @@ async function getNonNamespacedResources(kubeToken) {
 
   // Get non-namespaced resources WITH an api group
   resources.push(kubeConnector.post('/apis', {}).then(async (res) => {
-    if (res) {
+    if (res && res.groups) {
       const apiGroups = res.groups.map(group => group.preferredVersion.groupVersion);
       const results = await Promise.all(apiGroups.map((group) => {
         const mappedResources = kubeConnector.get(`/apis/${group}`).then((result) => {
@@ -101,7 +102,7 @@ async function getNonNamespacedResources(kubeToken) {
 
   // Get non-namespaced resources WITHOUT an api group
   resources.push(kubeConnector.get('/api/v1').then((res) => {
-    if (res) {
+    if (res && res.resources) {
       return res.resources.filter(resource => resource.namespaced === false)
         .map(item => ({ name: item.name, apiGroup: 'null' }));
     }
@@ -141,9 +142,10 @@ async function getNonNamespacedAccess(kubeToken) {
 
 async function getUserAccess(kubeToken, namespace) {
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: `${kubeToken}` })
+    ? new KubeConnector({ token: kubeToken })
     : new MockKubeConnector();
-  const url = `/apis/authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
+  const url = `/apis/authorization.${!isOpenshift ?
+    'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
   const jsonBody = {
     apiVersion: `authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1`,
     kind: 'SelfSubjectRulesReview',
@@ -155,11 +157,12 @@ async function getUserAccess(kubeToken, namespace) {
     let userResources = [];
     if (res && res.status) {
       const results = isOpenshift ? res.status.rules : res.status.resourceRules;
-      results.forEach((item) => {
+      (results || []).forEach((item) => {
+        // FIXME: https://github.com/open-cluster-management/backlog/issues/1525
         if (item.verbs.includes('*') && item.resources.includes('*')) {
           // if user has access to everything then add just an *
           userResources = userResources.concat(['*']);
-        } else if (item.verbs.includes('get') && item.resources.length > 0) { // TODO need to include access for 'patch' and 'delete'
+        } else if (item.verbs.includes('get') && item.resources.length > 0) { // TODO: include access for PATCH and DELETE.
           // RBAC string is defined as "namespace_apigroup_kind"
           const resources = [];
           const ns = (namespace === '' || namespace === undefined) ? 'null_' : `${namespace}_`;
@@ -173,7 +176,6 @@ async function getUserAccess(kubeToken, namespace) {
         return null;
       });
     }
-    userResources.push(`'${namespace}_null_releases'`);
     return userResources.filter(r => r !== null);
   });
 }
@@ -211,7 +213,8 @@ export async function getUserRbacFilter(req, objAliases) {
   if (currentUser) {
     rbacFilter = await buildRbacString(req, objAliases);
   }
-  // 2. if (users 1st time querying || they have been removed b/c inactivity || they otherwise dont have an rbacString) -> create the RBAC String
+  // 2. if (users 1st time querying || they have been removed b/c inactivity || they otherwise dont have an rbacString)
+  //    then  create the RBAC String
   if (!rbacFilter) {
     const currentUserCache = cache.get(req.user.idToken); // Get user cache again because it may have changed.
     cache.set(req.user.idToken, { ...currentUserCache });

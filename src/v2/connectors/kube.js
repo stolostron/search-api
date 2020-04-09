@@ -6,6 +6,7 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// Copyright (c) 2020 Red Hat, Inc.
 
 import _ from 'lodash';
 import request from '../lib/request';
@@ -27,18 +28,16 @@ export default class KubeConnector {
    *
    * @param {*} path - API path
    * @param {*} opts - HTTP request options
-   * @param {*} noCache - Don't use a previously cached request.
    */
   get(path = '', opts = {}) {
-    const options = _.merge({
+    const defaults = {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'GET',
       headers: {
         Authorization: `Bearer ${this.token}`,
       },
-    }, opts);
-
-    return this.http(_.merge(options, opts)).then(res => res.body);
+    };
+    return this.http(_.merge(defaults, opts)).then(res => res.body);
   }
 
   post(path = '', jsonBody, opts = {}) {
@@ -50,7 +49,6 @@ export default class KubeConnector {
       },
       json: jsonBody,
     };
-
     return this.http(_.merge(defaults, opts)).then(res => res.body);
   }
 
@@ -64,7 +62,6 @@ export default class KubeConnector {
       },
       json: jsonBody,
     };
-
     return this.http(_.merge(defaults, opts)).then(res => res.body);
   }
 }
