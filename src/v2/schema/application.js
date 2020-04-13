@@ -17,7 +17,7 @@ export const typeDef = `
 
     # Labels from kubernetes resource in this format: ["label1=value1", "label2=value2]
     labels: [String]
-    
+
     name: String
     namespace: String
     selfLink: String
