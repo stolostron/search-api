@@ -234,7 +234,7 @@ export default class RedisGraphConnector {
    */
   async runApplicationsQuery() {
     const whereClause = await this.createWhereClause([], ['app']);
-    const query = `MATCH (app:Application) ${whereClause} RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard, app.selfLink ORDER BY app.name ASC`;
+    const query = `MATCH (app:Application) ${whereClause} RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard, app.selfLink, app.label ORDER BY app.name ASC`;
     return this.executeQuery({ query, removePrefix: false });
   }
 

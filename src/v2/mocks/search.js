@@ -117,6 +117,7 @@ export default class MockSearchConnector {
         'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
         'app.created': '2020-01-23T13:56:32Z',
         'app.dashboard': 'localhost/grafana/dashboard/db/app01-dashboard-via-federated-prometheus?namespace=sample',
+        'app.label': 'label1=value1; label2=value2',
         'app.name': 'app01',
         'app.namespace': 'sample',
         'app.selfLink': '/apis/app.k8s.io/v1beta1/namespaces/sample/applications/app01',
