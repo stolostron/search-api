@@ -26,6 +26,10 @@ Object {
             "status": "Propagated",
           },
         ],
+        "labels": Array [
+          "label1=value1",
+          "label2=value2",
+        ],
         "name": "app01",
         "namespace": "sample",
         "podStatusCount": Object {
@@ -43,6 +47,7 @@ Object {
         "created": "2020-01-23T13:56:32Z",
         "dashboard": "localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test",
         "hubSubscriptions": Array [],
+        "labels": Array [],
         "name": "app02",
         "namespace": "test",
         "podStatusCount": Object {},
@@ -64,6 +69,7 @@ Object {
         "created": "2020-01-23T13:56:32Z",
         "dashboard": "localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test",
         "hubSubscriptions": Array [],
+        "labels": Array [],
         "name": "app02",
         "namespace": "test",
         "podStatusCount": Object {},
