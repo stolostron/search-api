@@ -198,8 +198,9 @@ async function buildRbacString(req, objAliases) {
 
   const rbacData = new Set(_.flattenDeep(data));
   const aliasesData = objAliases.map(alias => [...rbacData].map((item) => {
+    // If user can get all reasources in the namespace, we get an rbac string with the format `namespace_*_*`.
     if (item.endsWith('_*_*')) {
-      // User can get all reasources in the namespace.
+      // Adds the openCypher clause: `substring(n._rbac,0, 9) = 'namespace'`
       return `substring(${alias}._rbac, 0, ${item.length - 4}) = '${item.substring(0, item.length - 4)}'`;
     }
     return `${alias}._rbac = ${item}`;
