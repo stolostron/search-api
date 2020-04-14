@@ -103,13 +103,13 @@ async function getNonNamespacedResources(kubeToken) {
   // Get non-namespaced resources WITHOUT an api group
   resources.push(kubeConnector.get('/api/v1').then((res) => {
     if (res && res.resources) {
-      return res.resources.filter(resource => resource.namespaced === false)
+      return res.resources.filter(resource => resource.namespaced === false && resource.name.indexOf('/') === -1)
         .map(item => ({ name: item.name, apiGroup: 'null' }));
     }
     return 'Error getting available apis.';
   }));
   logger.perfLog(startTime, 500, 'getNonNamespacedResources()');
-  return _.flatten(resources);
+  return _.flatten(await Promise.all(resources));
 }
 
 async function getNonNamespacedAccess(kubeToken) {
@@ -153,31 +153,31 @@ async function getUserAccess(kubeToken, namespace) {
       namespace,
     },
   };
-  return kubeConnector.post(url, jsonBody).then((res) => {
-    let userResources = [];
-    if (res && res.status) {
-      const results = isOpenshift ? res.status.rules : res.status.resourceRules;
-      (results || []).forEach((item) => {
-        // FIXME: https://github.com/open-cluster-management/backlog/issues/1525
-        if (item.verbs.includes('*') && item.resources.includes('*')) {
-          // if user has access to everything then add just an *
-          userResources = userResources.concat(['*']);
-        } else if (item.verbs.includes('get') && item.resources.length > 0) { // TODO: include access for PATCH and DELETE.
-          // RBAC string is defined as "namespace_apigroup_kind"
-          const resources = [];
-          const ns = (namespace === '' || namespace === undefined) ? 'null_' : `${namespace}_`;
-          const apiGroup = (item.apiGroups[0] === '' || item.apiGroups[0] === undefined) ? 'null_' : `${item.apiGroups[0]}_`;
-          // Filter sub-resources, those contain '/'
-          item.resources.filter(r => r.indexOf('/') === -1).forEach((resource) => {
-            resources.push(`'${ns + apiGroup + resource}'`);
-          });
-          userResources = userResources.concat(resources);
-        }
-        return null;
+
+  const res = await kubeConnector.post(url, jsonBody);
+  const rules = (isOpenshift ? res.status.rules : res.status.resourceRules) || [];
+
+  // Check if user can get all resources in namespace.
+  if (rules.find(r =>
+    ((r.verbs.includes('*') || r.verbs.includes('get')) && r.apiGroups.includes('*') && r.resources.includes('*')))) {
+    return [`${namespace}_*_*`];
+  }
+
+  // Build rbac list for this namespace.
+  return rules.map((rule) => {
+    if (rule.verbs.includes('get')) {
+      // RBAC string is defined as "namespace_apigroup_kind"
+      const resources = [];
+      const ns = (namespace === '' || namespace === undefined) ? 'null_' : `${namespace}_`;
+      const apiGroup = (rule.apiGroups[0] === '' || rule.apiGroups[0] === undefined) ? 'null_' : `${rule.apiGroups[0]}_`;
+      // Filter sub-resources, those contain '/'
+      rule.resources.filter(r => r.indexOf('/') === -1).forEach((resource) => {
+        resources.push(`'${ns + apiGroup + resource}'`);
       });
+      return resources;
     }
-    return userResources.filter(r => r !== null);
-  });
+    return null;
+  }).filter(r => r !== null);
 }
 
 async function buildRbacString(req, objAliases) {
@@ -197,7 +197,14 @@ async function buildRbacString(req, objAliases) {
   }
 
   const rbacData = new Set(_.flattenDeep(data));
-  const aliasesData = objAliases.map(alias => [...rbacData].map(item => `${alias}._rbac = ${item}`));
+  const aliasesData = objAliases.map(alias => [...rbacData].map((item) => {
+    // If user can get all reasources in the namespace, we get an rbac string with the format `namespace_*_*`.
+    if (item.endsWith('_*_*')) {
+      // Adds the openCypher clause: `substring(n._rbac,0, 9) = 'namespace'`
+      return `substring(${alias}._rbac, 0, ${item.length - 4}) = '${item.substring(0, item.length - 4)}'`;
+    }
+    return `${alias}._rbac = ${item}`;
+  }));
   const aliasesStrings = aliasesData.map(a => a.join(' OR '));
 
   logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaces && namespaces.length} )`);

@@ -6,6 +6,7 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// Copyright (c) 2020 Red Hat, Inc.
 
 const tapReporter = [
   'jest-tap-reporter',
@@ -27,10 +28,10 @@ const jestConfig = {
   ],
   coverageThreshold: {
     global: {
-      branches: 35,
-      functions: 60,
-      lines: 48,
-      statements: 48,
+      branches: 39,
+      functions: 62,
+      lines: 51,
+      statements: 52,
     },
   },
   collectCoverageFrom: [
