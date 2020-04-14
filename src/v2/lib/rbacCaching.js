@@ -160,7 +160,7 @@ async function getUserAccess(kubeToken, namespace) {
   // Check if user can get all resources in namespace.
   if (rules.find(r =>
     ((r.verbs.includes('*') || r.verbs.includes('get')) && r.apiGroups.includes('*') && r.resources.includes('*')))) {
-    return `${namespace}_*_*`;
+    return [`${namespace}_*_*`];
   }
 
   // Build rbac list for this namespace.
