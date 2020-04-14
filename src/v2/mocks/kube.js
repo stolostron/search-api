@@ -295,6 +295,55 @@ export default class MockKubeConnector {
           ],
         },
       };
+    } else if (url.includes('kube-system/selfsubjectrulesreviews')) {
+      return {
+        kind: 'SelfSubjectRulesReview',
+        apiVersion: 'authorization.openshift.io/v1',
+        spec: {
+          scopes: null,
+        },
+        status: {
+          rules: [
+            {
+              verbs: [
+                '*',
+              ],
+              attributeRestrictions: null,
+              apiGroups: [
+                '*',
+              ],
+              resources: [
+                '*',
+              ],
+            },
+            {
+              verbs: [
+                'create',
+              ],
+              attributeRestrictions: null,
+              apiGroups: [
+                'authorization.openshift.io',
+              ],
+              resources: [
+                'selfsubjectrulesreviews',
+              ],
+            },
+            {
+              verbs: [
+                'get',
+                'list',
+              ],
+              attributeRestrictions: null,
+              apiGroups: [
+                'authorization.openshift.io',
+              ],
+              resources: [
+                'clusterroles',
+              ],
+            },
+          ],
+        },
+      };
     }
     // return null if request has not been mocked.
     return null;
