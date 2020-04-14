@@ -296,7 +296,7 @@ export default class MockKubeConnector {
           ],
         },
       };
-    } else if (url.includes('kube-system/selfsubjectrulesreviews')) {
+    } else if (url.includes('kube-public/selfsubjectrulesreviews')) {
       return {
         kind: 'SelfSubjectRulesReview',
         apiVersion: 'authorization.openshift.io/v1',
@@ -317,6 +317,18 @@ export default class MockKubeConnector {
                 '*',
               ],
             },
+          ],
+        },
+      };
+    } else if (url.includes('kube-system/selfsubjectrulesreviews')) {
+      return {
+        kind: 'SelfSubjectRulesReview',
+        apiVersion: 'authorization.openshift.io/v1',
+        spec: {
+          scopes: null,
+        },
+        status: {
+          rules: [
             {
               verbs: [
                 'create',

@@ -18,6 +18,7 @@ describe('RBAC Caching', () => {
         idToken: 'Bearer localdev',
         namespaces: [
           'default',
+          'kube-public',
           'kube-system',
         ],
       },
