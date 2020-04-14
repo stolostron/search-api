@@ -306,7 +306,7 @@ export default class MockKubeConnector {
           rules: [
             {
               verbs: [
-                '*',
+                'get',
               ],
               attributeRestrictions: null,
               apiGroups: [
