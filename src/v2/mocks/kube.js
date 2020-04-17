@@ -6,6 +6,7 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// Copyright (c) 2020 Red Hat, Inc.
 
 /**
  * NOTE: For brevity the response objects for user access infomation have been GREATLY reduced.
@@ -267,6 +268,67 @@ export default class MockKubeConnector {
                 '*',
               ],
             },
+            {
+              verbs: [
+                'create',
+              ],
+              attributeRestrictions: null,
+              apiGroups: [
+                'authorization.openshift.io',
+              ],
+              resources: [
+                'selfsubjectrulesreviews',
+              ],
+            },
+            {
+              verbs: [
+                'get',
+                'list',
+              ],
+              attributeRestrictions: null,
+              apiGroups: [
+                'authorization.openshift.io',
+              ],
+              resources: [
+                'clusterroles',
+              ],
+            },
+          ],
+        },
+      };
+    } else if (url.includes('kube-public/selfsubjectrulesreviews')) {
+      return {
+        kind: 'SelfSubjectRulesReview',
+        apiVersion: 'authorization.openshift.io/v1',
+        spec: {
+          scopes: null,
+        },
+        status: {
+          rules: [
+            {
+              verbs: [
+                'get',
+              ],
+              attributeRestrictions: null,
+              apiGroups: [
+                '*',
+              ],
+              resources: [
+                '*',
+              ],
+            },
+          ],
+        },
+      };
+    } else if (url.includes('kube-system/selfsubjectrulesreviews')) {
+      return {
+        kind: 'SelfSubjectRulesReview',
+        apiVersion: 'authorization.openshift.io/v1',
+        spec: {
+          scopes: null,
+        },
+        status: {
+          rules: [
             {
               verbs: [
                 'create',

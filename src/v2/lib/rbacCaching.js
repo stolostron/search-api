@@ -6,12 +6,13 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
-/* eslint-disable max-len */
+// Copyright (c) 2020 Red Hat, Inc.
+
 import _ from 'lodash';
-import fs from 'fs';
 import lru from 'lru-cache';
 import asyncPolling from 'async-polling';
 import config from '../../../config';
+import { getServiceAccountToken } from '../lib/utils';
 import logger from '../lib/logger';
 import KubeConnector from '../connectors/kube';
 // Mocked connectors for testing
@@ -20,7 +21,7 @@ import MockKubeConnector from '../mocks/kube';
 let isOpenshift = null;
 const isTest = config.get('NODE_ENV') === 'test';
 let activeUsers = [];
-let adminAccessToken;
+let serviceaccountToken;
 const cache = lru({
   max: 1000,
   maxAge: config.get('RBAC_INACTIVITY_TIMEOUT'), // default is 10 mins
@@ -29,7 +30,7 @@ const cache = lru({
 export async function getClusterRbacConfig(kubeToken) {
   if (kubeToken !== undefined) {
     const kubeConnector = !isTest
-      ? new KubeConnector({ token: `${kubeToken}` })
+      ? new KubeConnector({ token: kubeToken })
       : new MockKubeConnector();
     // eslint-disable-next-line prefer-const
     let [roles, roleBindings, clusterRoles, clusterRoleBindings] = await Promise.all([
@@ -82,7 +83,7 @@ async function getNonNamespacedResources(kubeToken) {
 
   // Get non-namespaced resources WITH an api group
   resources.push(kubeConnector.post('/apis', {}).then(async (res) => {
-    if (res) {
+    if (res && res.groups) {
       const apiGroups = res.groups.map(group => group.preferredVersion.groupVersion);
       const results = await Promise.all(apiGroups.map((group) => {
         const mappedResources = kubeConnector.get(`/apis/${group}`).then((result) => {
@@ -101,14 +102,14 @@ async function getNonNamespacedResources(kubeToken) {
 
   // Get non-namespaced resources WITHOUT an api group
   resources.push(kubeConnector.get('/api/v1').then((res) => {
-    if (res) {
-      return res.resources.filter(resource => resource.namespaced === false)
+    if (res && res.resources) {
+      return res.resources.filter(resource => resource.namespaced === false && resource.name.indexOf('/') === -1)
         .map(item => ({ name: item.name, apiGroup: 'null' }));
     }
     return 'Error getting available apis.';
   }));
   logger.perfLog(startTime, 500, 'getNonNamespacedResources()');
-  return _.flatten(resources);
+  return _.flatten(await Promise.all(resources));
 }
 
 async function getNonNamespacedAccess(kubeToken) {
@@ -141,9 +142,10 @@ async function getNonNamespacedAccess(kubeToken) {
 
 async function getUserAccess(kubeToken, namespace) {
   const kubeConnector = !isTest
-    ? new KubeConnector({ token: `${kubeToken}` })
+    ? new KubeConnector({ token: kubeToken })
     : new MockKubeConnector();
-  const url = `/apis/authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
+  const url = `/apis/authorization.${!isOpenshift ?
+    'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
   const jsonBody = {
     apiVersion: `authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1`,
     kind: 'SelfSubjectRulesReview',
@@ -151,31 +153,31 @@ async function getUserAccess(kubeToken, namespace) {
       namespace,
     },
   };
-  return kubeConnector.post(url, jsonBody).then((res) => {
-    let userResources = [];
-    if (res && res.status) {
-      const results = isOpenshift ? res.status.rules : res.status.resourceRules;
-      results.forEach((item) => {
-        if (item.verbs.includes('*') && item.resources.includes('*')) {
-          // if user has access to everything then add just an *
-          userResources = userResources.concat(['*']);
-        } else if (item.verbs.includes('get') && item.resources.length > 0) { // TODO need to include access for 'patch' and 'delete'
-          // RBAC string is defined as "namespace_apigroup_kind"
-          const resources = [];
-          const ns = (namespace === '' || namespace === undefined) ? 'null_' : `${namespace}_`;
-          const apiGroup = (item.apiGroups[0] === '' || item.apiGroups[0] === undefined) ? 'null_' : `${item.apiGroups[0]}_`;
-          // Filter sub-resources, those contain '/'
-          item.resources.filter(r => r.indexOf('/') === -1).forEach((resource) => {
-            resources.push(`'${ns + apiGroup + resource}'`);
-          });
-          userResources = userResources.concat(resources);
-        }
-        return null;
+
+  const res = await kubeConnector.post(url, jsonBody);
+  const rules = (isOpenshift ? res.status.rules : res.status.resourceRules) || [];
+
+  // Check if user can get all resources in namespace.
+  if (rules.find(r =>
+    ((r.verbs.includes('*') || r.verbs.includes('get')) && r.apiGroups.includes('*') && r.resources.includes('*')))) {
+    return [`${namespace}_*_*`];
+  }
+
+  // Build rbac list for this namespace.
+  return rules.map((rule) => {
+    if (rule.verbs.includes('get')) {
+      // RBAC string is defined as "namespace_apigroup_kind"
+      const resources = [];
+      const ns = (namespace === '' || namespace === undefined) ? 'null_' : `${namespace}_`;
+      const apiGroup = (rule.apiGroups[0] === '' || rule.apiGroups[0] === undefined) ? 'null_' : `${rule.apiGroups[0]}_`;
+      // Filter sub-resources, those contain '/'
+      rule.resources.filter(r => r.indexOf('/') === -1).forEach((resource) => {
+        resources.push(`'${ns + apiGroup + resource}'`);
       });
+      return resources;
     }
-    userResources.push(`'${namespace}_null_releases'`);
-    return userResources.filter(r => r !== null);
-  });
+    return null;
+  }).filter(r => r !== null);
 }
 
 async function buildRbacString(req, objAliases) {
@@ -195,7 +197,14 @@ async function buildRbacString(req, objAliases) {
   }
 
   const rbacData = new Set(_.flattenDeep(data));
-  const aliasesData = objAliases.map(alias => [...rbacData].map(item => `${alias}._rbac = ${item}`));
+  const aliasesData = objAliases.map(alias => [...rbacData].map((item) => {
+    // If user can get all reasources in the namespace, we get an rbac string with the format `namespace_*_*`.
+    if (item.endsWith('_*_*')) {
+      // Adds the openCypher clause: `substring(n._rbac,0, 9) = 'namespace'`
+      return `substring(${alias}._rbac, 0, ${item.length - 4}) = '${item.substring(0, item.length - 4)}'`;
+    }
+    return `${alias}._rbac = ${item}`;
+  }));
   const aliasesStrings = aliasesData.map(a => a.join(' OR '));
 
   logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaces && namespaces.length} )`);
@@ -211,7 +220,8 @@ export async function getUserRbacFilter(req, objAliases) {
   if (currentUser) {
     rbacFilter = await buildRbacString(req, objAliases);
   }
-  // 2. if (users 1st time querying || they have been removed b/c inactivity || they otherwise dont have an rbacString) -> create the RBAC String
+  // 2. if (users 1st time querying || they have been removed b/c inactivity || they otherwise dont have an rbacString)
+  //    then  create the RBAC String
   if (!rbacFilter) {
     const currentUserCache = cache.get(req.user.idToken); // Get user cache again because it may have changed.
     cache.set(req.user.idToken, { ...currentUserCache });
@@ -239,12 +249,10 @@ export default function pollUserAccess() {
       // If role/roleBinding/clusterRole/clusterRoleBinding resources changed -> need to delete all active user RBAC cache
       const roleAccessCache = cache.get('user-role-access-data');
       // Need to use admin token to retrieve role data as admin has access to all data.
-      if (!adminAccessToken) {
-        adminAccessToken = process.env.NODE_ENV === 'production'
-          ? fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf8')
-          : process.env.SERVICEACCT_TOKEN || '';
+      if (!serviceaccountToken) {
+        serviceaccountToken = getServiceAccountToken();
       }
-      getClusterRbacConfig(adminAccessToken).then((res) => {
+      getClusterRbacConfig(serviceaccountToken).then((res) => {
         // If we dont have this cached we need to set it
         if (!roleAccessCache) {
           cache.set('user-role-access-data', res);

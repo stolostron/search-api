@@ -5,4 +5,5 @@ coverage
 .build-harness-bootstrap
 build-harness-extensions/
 build-harness/
-
+output/
+test-report.xml

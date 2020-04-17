@@ -18,6 +18,7 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 
 import logger from './lib/logger';
+import { getServiceAccountToken } from './lib/utils';
 
 import RedisGraphConnector from './connectors/redisGraph';
 
@@ -37,6 +38,7 @@ export const GRAPHIQL_PATH = `${config.get('contextPath')}/graphiql`;
 
 const isProd = config.get('NODE_ENV') === 'production';
 const isTest = config.get('NODE_ENV') === 'test';
+const serviceaccountToken = getServiceAccountToken();
 
 const formatError = (error) => {
   const { originalError } = error;
@@ -96,7 +98,9 @@ graphQLServer.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress(async (req) =>
     kubeConnector = new MockKubeConnector();
   } else {
     searchConnector = new RedisGraphConnector({ rbac: req.user.namespaces, req });
-    kubeConnector = new KubeConnector({ token: req.kubeToken });
+    // KubeConnector uses admin token.
+    // This allows non-admin users have access to the userpreference resource for saved searches
+    kubeConnector = new KubeConnector({ token: serviceaccountToken });
   }
 
 

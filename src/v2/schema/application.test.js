@@ -22,6 +22,7 @@ describe('Application Resolver', () => {
             clusterCount
             created
             dashboard
+            labels
             name
             namespace
             selfLink
@@ -53,6 +54,7 @@ describe('Application Resolver', () => {
             clusterCount
             created
             dashboard
+            labels
             name
             namespace
             selfLink

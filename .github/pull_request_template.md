@@ -1,4 +1,4 @@
-**Related Issue:**  open-container-management/backlog#<ISSUE_NUMBER>
+**Related Issue:**  open-cluster-management/backlog#<ISSUE_NUMBER>
 
 **Description of Changes**
 

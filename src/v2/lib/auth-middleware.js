@@ -12,6 +12,7 @@ import lru from 'lru-cache';
 import config from '../../../config';
 import createMockIAMHTTP from '../mocks/iam-http';
 import request from './request';
+import { getServiceAccountToken } from '../lib/utils';
 
 // Async middleware error handler
 const asyncMiddleware = fn => (req, res, next) => {
@@ -61,6 +62,34 @@ async function getNamespaces(usertoken) {
   return Array.isArray(nsResponse.items) ? nsResponse.items.map(ns => ns.metadata.name) : [];
 }
 
+async function getUsername(token) {
+  const serviceaccountToken = getServiceAccountToken();
+  const options = {
+    url: `${config.get('API_SERVER_URL')}/apis/authentication.k8s.io/v1/tokenreviews`,
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${serviceaccountToken}`,
+    },
+    method: 'POST',
+    json: true,
+    body: {
+      apiVersion: 'authentication.k8s.io/v1',
+      kind: 'TokenReview',
+      spec: {
+        token,
+      },
+    },
+  };
+
+  if (process.env.NODE_ENV === 'test') {
+    const mockReq = createMockIAMHTTP();
+    return mockReq(options);
+  }
+
+  const userNameResponse = await request(options);
+  return _.get(userNameResponse, 'body.status.user.username');
+}
 
 // Middleware to:
 // - Set namespaces to filter this request.
@@ -86,9 +115,15 @@ export default function createAuthMiddleWare({
       nsPromise = getNamespaces(idToken);
       cache.set(`namespaces_${idToken}`, nsPromise);
     }
+
+    let userNamePromise = cache.get(`userName_${idToken}`);
+    if (!userNamePromise) {
+      userNamePromise = getUsername(idToken);
+      cache.set(`userName_${idToken}`, userNamePromise);
+    }
+
     req.user = {
-      // temporarily using the idToken as userName until we figure out how to exchange token for name
-      name: idToken,
+      name: await userNamePromise,
       namespaces: await nsPromise,
       idToken,
     };

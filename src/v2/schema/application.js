@@ -15,6 +15,9 @@ export const typeDef = `
     # Grafana dashboard for this application.
     dashboard: String
 
+    # Labels from kubernetes resource in this format: ["label1=value1", "label2=value2]
+    labels: [String]
+
     name: String
     namespace: String
     selfLink: String
@@ -67,6 +70,7 @@ export const resolver = {
     _uid: parent => parent['app._uid'],
     created: parent => parent['app.created'],
     dashboard: parent => parent['app.dashboard'],
+    labels: parent => (parent['app.label'] ? parent['app.label'].split(';').map(l => l.trim()) : []),
     name: parent => parent['app.name'],
     namespace: parent => parent['app.namespace'],
     selfLink: parent => parent['app.selfLink'],
