@@ -158,8 +158,7 @@ async function getUserAccess(kubeToken, namespace) {
   const rules = (isOpenshift ? res.status.rules : res.status.resourceRules) || [];
 
   // Check if user can get all resources in namespace.
-  if (rules.find((r) => {
-    const { verbs = [], apiGroups = [], resources = [] } = r;
+  if (rules.find(({ verbs = [], apiGroups = [], resources = [] }) => {
     if ((verbs.includes('*') || verbs.includes('get')) && (apiGroups && apiGroups.includes('*')) && resources.includes('*')) {
       return true;
     }
@@ -173,7 +172,7 @@ async function getUserAccess(kubeToken, namespace) {
     if (rule.verbs.includes('get')) {
       // RBAC string is defined as "namespace_apigroup_kind"
       const resources = [];
-      const ns = (namespace === '' || namespace === undefined) ? 'null' : `${namespace}`;
+      const ns = (namespace === '' || namespace === undefined) ? 'null' : namespace;
       // eslint-disable-next-line no-unused-expressions
       rule.apiGroups && rule.apiGroups.forEach((api) => {
         const apiGroup = (api === '') ? 'null' : api;
