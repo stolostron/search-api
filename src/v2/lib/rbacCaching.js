@@ -159,7 +159,7 @@ async function getUserAccess(kubeToken, namespace) {
 
   // Check if user can get all resources in namespace.
   if (rules.find(({ verbs = [], apiGroups = [], resources = [] }) => {
-    if ((verbs.includes('*') || verbs.includes('get')) && (apiGroups && apiGroups.includes('*')) && resources.includes('*')) {
+    if ((verbs.includes('*') || verbs.includes('get')) && apiGroups && apiGroups.includes('*') && resources.includes('*')) {
       return true;
     }
     return false;
