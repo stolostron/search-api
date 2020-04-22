@@ -158,11 +158,13 @@ async function getUserAccess(kubeToken, namespace) {
   const rules = (isOpenshift ? res.status.rules : res.status.resourceRules) || [];
 
   // Check if user can get all resources in namespace.
-  if (rules.find(r => (
-    r.verbs && (r.verbs.includes('*') || r.verbs.includes('get'))
-    && (r.apiGroups && r.apiGroups.includes('*'))
-    && (r.resources && r.resources.includes('*'))
-  ))) {
+  if (rules.find((r) => {
+    const { verbs = [], apiGroups = [], resources = [] } = r;
+    if ((verbs.includes('*') || verbs.includes('get')) && (apiGroups && apiGroups.includes('*')) && resources.includes('*')) {
+      return true;
+    }
+    return false;
+  })) {
     return [`${namespace}_*_*`];
   }
 
@@ -172,10 +174,13 @@ async function getUserAccess(kubeToken, namespace) {
       // RBAC string is defined as "namespace_apigroup_kind"
       const resources = [];
       const ns = (namespace === '' || namespace === undefined) ? 'null_' : `${namespace}_`;
-      const apiGroup = _.get(rule, 'apiGroups[0]', '') === '' ? 'null_' : `${rule.apiGroups[0]}_`;
-      // Filter sub-resources, those contain '/'
-      rule.resources.filter(r => r.indexOf('/') === -1).forEach((resource) => {
-        resources.push(`'${ns + apiGroup + resource}'`);
+      // eslint-disable-next-line no-unused-expressions
+      rule.apiGroups && rule.apiGroups.forEach((api) => {
+        const apiGroup = (api === '') ? 'null' : api;
+        // Filter sub-resources, those contain '/'
+        rule.resources.filter(r => r.indexOf('/') === -1).forEach((resource) => {
+          resources.push(`'${ns}_${apiGroup}_${resource}'`);
+        });
       });
       return resources;
     }
