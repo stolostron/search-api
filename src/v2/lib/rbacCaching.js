@@ -158,12 +158,8 @@ async function getUserAccess(kubeToken, namespace) {
   const rules = (isOpenshift ? res.status.rules : res.status.resourceRules) || [];
 
   // Check if user can get all resources in namespace.
-  if (rules.find(({ verbs = [], apiGroups = [], resources = [] }) => {
-    if ((verbs.includes('*') || verbs.includes('get')) && apiGroups && apiGroups.includes('*') && resources.includes('*')) {
-      return true;
-    }
-    return false;
-  })) {
+  if (rules.find(({ verbs = [], apiGroups = [], resources = [] }) =>
+    (verbs.includes('*') || verbs.includes('get')) && apiGroups && apiGroups.includes('*') && resources.includes('*')) ){
     return [`${namespace}_*_*`];
   }
 
