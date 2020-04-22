@@ -173,7 +173,7 @@ async function getUserAccess(kubeToken, namespace) {
     if (rule.verbs.includes('get')) {
       // RBAC string is defined as "namespace_apigroup_kind"
       const resources = [];
-      const ns = (namespace === '' || namespace === undefined) ? 'null_' : `${namespace}_`;
+      const ns = (namespace === '' || namespace === undefined) ? 'null' : `${namespace}`;
       // eslint-disable-next-line no-unused-expressions
       rule.apiGroups && rule.apiGroups.forEach((api) => {
         const apiGroup = (api === '') ? 'null' : api;
