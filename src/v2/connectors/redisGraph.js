@@ -312,7 +312,7 @@ export default class RedisGraphConnector {
    */
   async runGlobalAppRemoteSubscriptionsQuery() {
     const whereClause = await this.createWhereClause([], ['app', 'sub']);
-    const query = `MATCH (app:Application)<-[{_interCluster:true}]-(sub:Subscription) ${whereClause === '' ? 'WHERE' : `(${whereClause}) AND`} exists(sub._hostingSubscription)=true RETURN DISTINCT sub`;
+    const query = `MATCH (app:Application)<-[{_interCluster:true}]-(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hostingSubscription)=true RETURN DISTINCT sub`;
     return this.executeQuery({ query, removePrefix: false });
   }
 
