@@ -6,10 +6,10 @@
 # Contributors:
 #  IBM Corporation - initial API and implementation
 ###############################################################################
+# Copyright (c) 2020 Red Hat, Inc.
+
 
 include build/Configfile
-
-BEFORE_SCRIPT := $(shell build/before-make.sh)
 
 USE_VENDORIZED_BUILD_HARNESS ?=
 
