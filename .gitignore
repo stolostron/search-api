@@ -1,9 +1,10 @@
 .vscode
+/node_modules
 config/config-development.json
 .idea
 coverage
-.build-harness-bootstrap
-build-harness-extensions/
-build-harness/
+# .build-harness-bootstrap
+# build-harness-extensions/
+# build-harness/
 output/
 test-report.xml
