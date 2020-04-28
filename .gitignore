@@ -3,8 +3,10 @@ node_modules/
 config/config-development.json
 .idea
 coverage
-# .build-harness-bootstrap
-# build-harness-extensions/
-# build-harness/
 output/
 test-report.xml
+
+# override build harness vendoring
+!vbh/.build-harness-bootstrap
+!vbh/build-harness
+!vbh/build-harness-extensions
