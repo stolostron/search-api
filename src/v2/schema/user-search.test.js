@@ -10,7 +10,7 @@
 import supertest from 'supertest';
 import server, { GRAPHQL_PATH } from '../index';
 
-// eslint-ignore-next jest/no-disabled-tests
+// eslint-disable-next jest/no-disabled-tests
 describe.skip('UserSearch Resolver', () => {
   test('Correctly Resolves Saved Search Query', (done) => {
     supertest(server)
