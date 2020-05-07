@@ -3,7 +3,7 @@
 config/config-development.json
 .idea
 coverage
-output/
+./output
 test-report.xml
 
 # override build harness vendoring
