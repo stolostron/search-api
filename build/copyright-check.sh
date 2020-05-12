@@ -165,3 +165,4 @@ done
 
 echo "##### Copyright check ##### ReturnCode: ${RETURNCODE}"
 exit $RETURNCODE
+
