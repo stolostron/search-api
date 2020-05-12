@@ -41,3 +41,5 @@ unit-test:
 	fi
 	npm test
 
+copyright-check:
+	./build/copyright-check.sh
