@@ -40,6 +40,7 @@ const jestConfig = {
   ],
   testEnvironment: 'node',
   setupTestFrameworkScriptFile: './jest.setup.js',
+  modulePathIgnorePatterns: ['<rootDir>/vendor'],
   testResultsProcessor: 'jest-sonar-reporter',
 };
 
