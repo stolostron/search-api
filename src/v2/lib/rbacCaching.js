@@ -33,11 +33,12 @@ export async function getClusterRbacConfig(kubeToken) {
       ? new KubeConnector({ token: kubeToken })
       : new MockKubeConnector();
     // eslint-disable-next-line prefer-const
-    let [roles, roleBindings, clusterRoles, clusterRoleBindings] = await Promise.all([
+    let [roles, roleBindings, clusterRoles, clusterRoleBindings, namespaces] = await Promise.all([
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/roles'),
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/rolebindings'),
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/clusterroles'),
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/clusterrolebindings'),
+      kubeConnector.get('/apis/project.openshift.io/v1/projects'),
     ]);
     // Get just the items, whole response contians resourceVersion whichs changes everytime
     // check if we can just do resourceVersion
@@ -45,11 +46,13 @@ export async function getClusterRbacConfig(kubeToken) {
     roleBindings = roleBindings && roleBindings.items;
     clusterRoles = clusterRoles && clusterRoles.items;
     clusterRoleBindings = clusterRoleBindings && clusterRoleBindings.items;
+    namespaces = namespaces && namespaces.items;
     return {
       roles,
       roleBindings,
       clusterRoles,
       clusterRoleBindings,
+      namespaces,
     };
   }
   return {};
@@ -239,7 +242,7 @@ export default function pollUserAccess() {
   asyncPolling(async (end) => {
     if (config.get('NODE_ENV') !== 'test') {
       const startTime = Date.now();
-      logger.debug('Polling - Revalidating user access to determine if rbac needs to be updated');
+      logger.info('Polling - Revalidating user access to determine if rbac needs to be updated');
       // filter out inactive users and remove them from cache
       Object.entries(activeUsers).forEach((user) => {
         const active = Date.now() - user[1] < config.get('RBAC_INACTIVITY_TIMEOUT');
@@ -264,10 +267,12 @@ export default function pollUserAccess() {
           const clusterRolesCache = _.get(roleAccessCache, 'clusterRoles', '');
           const roleBindingsCache = _.get(roleAccessCache, 'roleBindings', '');
           const clusteroleBindingsCache = _.get(roleAccessCache, 'clusterRoleBindings', '');
+          const namespacesCache = _.get(roleAccessCache, 'namespaces', '');
           if (JSON.stringify(res.roles) !== JSON.stringify(rolesCache)
             || JSON.stringify(res.clusterRoles) !== JSON.stringify(clusterRolesCache)
             || JSON.stringify(res.roleBindings) !== JSON.stringify(roleBindingsCache)
-            || JSON.stringify(res.clusterRoleBindings) !== JSON.stringify(clusteroleBindingsCache)) {
+            || JSON.stringify(res.clusterRoleBindings) !== JSON.stringify(clusteroleBindingsCache)
+            || JSON.stringify(res.namespaces) !== JSON.stringify(namespacesCache)) {
             // Delete the entire cache & remove all active users
             cache.reset();
             activeUsers = [];
