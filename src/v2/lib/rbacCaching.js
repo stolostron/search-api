@@ -32,7 +32,6 @@ export async function getClusterRbacConfig(kubeToken) {
     const kubeConnector = !isTest
       ? new KubeConnector({ token: kubeToken })
       : new MockKubeConnector();
-    // eslint-disable-next-line prefer-const
     const [roles, roleBindings, clusterRoles, clusterRoleBindings, namespaces] = await Promise.all([
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/roles'),
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/rolebindings'),
