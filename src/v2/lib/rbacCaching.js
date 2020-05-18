@@ -33,26 +33,21 @@ export async function getClusterRbacConfig(kubeToken) {
       ? new KubeConnector({ token: kubeToken })
       : new MockKubeConnector();
     // eslint-disable-next-line prefer-const
-    let [roles, roleBindings, clusterRoles, clusterRoleBindings, namespaces] = await Promise.all([
+    const [roles, roleBindings, clusterRoles, clusterRoleBindings, namespaces] = await Promise.all([
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/roles'),
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/rolebindings'),
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/clusterroles'),
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/clusterrolebindings'),
       kubeConnector.get('/apis/project.openshift.io/v1/projects'),
     ]);
-    // Get just the items, whole response contians resourceVersion whichs changes everytime
+    // Get just the items, whole response contians resourceVersion which changes everytime
     // check if we can just do resourceVersion
-    roles = roles && roles.items;
-    roleBindings = roleBindings && roleBindings.items;
-    clusterRoles = clusterRoles && clusterRoles.items;
-    clusterRoleBindings = clusterRoleBindings && clusterRoleBindings.items;
-    namespaces = namespaces && namespaces.items;
     return {
-      roles,
-      roleBindings,
-      clusterRoles,
-      clusterRoleBindings,
-      namespaces,
+      roles: roles && roles.items,
+      roleBindings: roleBindings && roleBindings.items,
+      clusterRoles: clusterRoles && clusterRoles.items,
+      clusterRoleBindings: clusterRoleBindings && clusterRoleBindings.items,
+      namespaces: namespaces && namespaces.items,
     };
   }
   return {};
@@ -242,7 +237,7 @@ export default function pollUserAccess() {
   asyncPolling(async (end) => {
     if (config.get('NODE_ENV') !== 'test') {
       const startTime = Date.now();
-      logger.info('Polling - Revalidating user access to determine if rbac needs to be updated');
+      logger.debug('Polling - Revalidating user access to determine if rbac needs to be updated');
       // filter out inactive users and remove them from cache
       Object.entries(activeUsers).forEach((user) => {
         const active = Date.now() - user[1] < config.get('RBAC_INACTIVITY_TIMEOUT');

@@ -65,8 +65,6 @@ Object {
     Object {
       "metadata": Object {
         "annotations": Object {
-          "mcm.ibm.com/accountID": "id-mycluster-account",
-          "mcm.ibm.com/type": "System",
           "openshift.io/sa.scc.mcs": "s0:c16,c0",
           "openshift.io/sa.scc.supplemental-groups": "1000240000/10000",
           "openshift.io/sa.scc.uid-range": "1000240000/10000",

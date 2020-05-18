@@ -193,8 +193,6 @@ export default class MockKubeConnector {
             resourceVersion: '69436',
             creationTimestamp: '2020-02-09T04:09:15Z',
             annotations: {
-              'mcm.ibm.com/accountID': 'id-mycluster-account',
-              'mcm.ibm.com/type': 'System',
               'openshift.io/sa.scc.mcs': 's0:c16,c0',
               'openshift.io/sa.scc.supplemental-groups': '1000240000/10000',
               'openshift.io/sa.scc.uid-range': '1000240000/10000',
