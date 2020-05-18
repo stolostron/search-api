@@ -61,6 +61,30 @@ Object {
       ],
     },
   ],
+  "namespaces": Array [
+    Object {
+      "metadata": Object {
+        "annotations": Object {
+          "openshift.io/sa.scc.mcs": "s0:c16,c0",
+          "openshift.io/sa.scc.supplemental-groups": "1000240000/10000",
+          "openshift.io/sa.scc.uid-range": "1000240000/10000",
+        },
+        "creationTimestamp": "2020-02-09T04:09:15Z",
+        "name": "default",
+        "resourceVersion": "69436",
+        "selfLink": "/apis/project.openshift.io/v1/projects/default",
+        "uid": "ef8d61de-4af1-11ea-969d-00000a10275c",
+      },
+      "spec": Object {
+        "finalizers": Array [
+          "kubernetes",
+        ],
+      },
+      "status": Object {
+        "phase": "Active",
+      },
+    },
+  ],
   "roleBindings": Array [
     Object {
       "metadata": Object {
