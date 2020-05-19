@@ -17,6 +17,9 @@ type Query {
   # Aggregated data from all applications.
   globalAppData: GlobalAppData
 
+  # Special query for Overview page
+  overview: [Overview]
+
   # Search for resources.
   search(input: [SearchInput]): [SearchResult]
 

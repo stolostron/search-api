@@ -225,8 +225,12 @@ export default class RedisGraphConnector {
   }
 
 
+  /* **************************
+   * Application Page Queries
+   ************************* */
+
   /*
-   * Get Applications.
+   * Get Applications
    */
   async runApplicationsQuery() {
     const whereClause = await this.createWhereClause([], ['app']);
@@ -313,6 +317,29 @@ export default class RedisGraphConnector {
   async runGlobalAppRemoteSubscriptionsQuery() {
     const whereClause = await this.createWhereClause([], ['app', 'sub']);
     const query = `MATCH (app:Application)<-[{_interCluster:true}]-(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hostingSubscription)=true RETURN DISTINCT sub`;
+    return this.executeQuery({ query, removePrefix: false });
+  }
+
+
+  /* *************************
+   * Overview Page Queries
+   ************************ */
+
+  async runOverviewClustersQuery() {
+    const whereClause = await this.createWhereClause([], ['c']);
+    const query = `MATCH (c:Cluster) ${whereClause} RETURN count(c)`;
+    return this.executeQuery({ query, removePrefix: false });
+  }
+
+  async runOverviewPodStates() {
+    const whereClause = await this.createWhereClause([], ['p']);
+    const query = `MATCH (p:Pod) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=false RETURN count(p.status)`;
+    return this.executeQuery({ query, removePrefix: false });
+  }
+
+  async resolveNonCompliantClusters() {
+    const whereClause = await this.createWhereClause([], ['p']);
+    const query = `MATCH (p:Policy {compliant:'NonCompliant}) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=false RETURN DISTINCT count(c.cluster)`;
     return this.executeQuery({ query, removePrefix: false });
   }
 

@@ -12,6 +12,7 @@ import { makeExecutableSchema } from 'graphql-tools';
 
 import * as application from './application';
 import * as json from './json';
+import * as overview from './overview';
 import * as query from './query';
 import * as search from './search';
 import * as userSearch from './user-search';
@@ -19,6 +20,7 @@ import * as userSearch from './user-search';
 const modules = [
   application,
   json,
+  overview,
   query,
   search,
   userSearch,
