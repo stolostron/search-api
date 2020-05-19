@@ -31,7 +31,7 @@ const jestConfig = {
       branches: 39,
       functions: 59,
       lines: 50,
-      statements: 52,
+      statements: 51,
     },
   },
   collectCoverageFrom: [
