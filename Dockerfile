@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/ubi8/nodejs-10:1
 
-#USER root
+USER root
 RUN dnf update
 
 ARG VCS_REF
