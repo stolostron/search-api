@@ -1,5 +1,7 @@
 FROM registry.access.redhat.com/ubi8/nodejs-10:1
 
+RUN yum update
+
 ARG VCS_REF
 ARG VCS_URL
 ARG IMAGE_NAME
@@ -35,8 +37,6 @@ ENV BABEL_DISABLE_CACHE=1 \
     NODE_ENV=production \
     USER_UID=1001 \
     VCS_REF="$VCS_REF"
-
-RUN yum update
 
 RUN mkdir -p /opt/app-root/search-api
 WORKDIR /opt/app-root/search-api
