@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/ubi8/nodejs-10:1
 
-USER root
+USER root           # Needed for yum update, gets reset to 65534 below.
 RUN yum -y update
 
 ARG VCS_REF
