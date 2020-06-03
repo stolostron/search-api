@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi8/nodejs-10:1
 
 USER root
-RUN dnf update
+RUN yum -y update
 
 ARG VCS_REF
 ARG VCS_URL
