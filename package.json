@@ -72,6 +72,7 @@
     "eslint-plugin-jest": "^21.17.0",
     "husky": "^1.1.0",
     "jest": "^23.6.0",
+    "jest-tap-reporter": "^1.9.0",
     "jest-sonar-reporter": "^2.0.0",
     "nodemon": "^1.17.3",
     "supertest": "^3.1.0"
