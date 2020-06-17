@@ -85,7 +85,8 @@ async function getNonNamespacedResources(kubeToken) {
       const results = await Promise.all(apiGroups.map((group) => {
         const mappedResources = kubeConnector.get(`/apis/${group}`).then((result) => {
           const groupResources = _.get(result, 'resources', []);
-          const nonNamespaced = groupResources.filter(resource => resource.namespaced === false)
+          const nonNamespaced = groupResources
+            .filter(resource => resource.namespaced === false && !resource.name.includes('/'))
             .map(resource => resource.name);
           return nonNamespaced.filter(item => item.length > 0)
             .map(item => ({ name: item, apiGroup: group }));
@@ -128,7 +129,8 @@ async function getNonNamespacedAccess(kubeToken) {
     };
     return kubeConnector.post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', jsonBody).then((res) => {
       if (res && res.status && res.status.allowed) {
-        return `'null_${resource.apiGroup}_${resource.name}'`;
+        const apiGroupWithoutVersion = resource.apiGroup.split('/');
+        return `'null_${apiGroupWithoutVersion[0]}_${resource.name}'`;
       }
       return null;
     });
