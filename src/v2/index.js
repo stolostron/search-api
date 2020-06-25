@@ -5,15 +5,16 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
 
 import express from 'express';
-import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
+import { ApolloServer } from 'apollo-server-express';
 import { isInstance as isApolloErrorInstance, formatError as formatApolloError } from 'apollo-errors';
-import bodyParser from 'body-parser';
 import inspect from 'security-middleware';
 import morgan from 'morgan';
 import helmet from 'helmet';
+import noCache from 'nocache';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 
@@ -27,7 +28,7 @@ import SearchModel from './models/search';
 import QueryModel from './models/userSearch';
 
 import MockSearchConnector from './mocks/search';
-import schema from './schema/';
+import schema from './schema';
 import config from '../../config';
 import authMiddleware from './lib/auth-middleware';
 import MockKubeConnector from './mocks/kube';
@@ -48,11 +49,40 @@ const formatError = (error) => {
   return formatApolloError(error);
 };
 
+const apolloServer = new ApolloServer({
+  ...schema,
+  formatError,
+  playground: {
+    endpoint: GRAPHQL_PATH,
+  },
+  context: ({ req }) => {
+    let searchConnector;
+    let kubeConnector;
+
+    if (isTest) {
+      searchConnector = new MockSearchConnector();
+      kubeConnector = new MockKubeConnector();
+    } else {
+      searchConnector = new RedisGraphConnector({ rbac: req.user.namespaces, req });
+      // KubeConnector uses admin token.
+      // This allows non-admin users have access to the userpreference resource for saved searches
+      kubeConnector = new KubeConnector({ token: serviceaccountToken });
+    }
+
+    return {
+      req,
+      appModel: new AppModel({ searchConnector }),
+      searchModel: new SearchModel({ searchConnector }),
+      queryModel: new QueryModel({ kubeConnector }),
+    };
+  },
+});
+
 const graphQLServer = express();
 graphQLServer.use(compression());
 
-const requestLogger = isProd ?
-  morgan('combined', {
+const requestLogger = isProd
+  ? morgan('combined', {
     skip: (req, res) => res.statusCode < 400,
   })
   : morgan('dev');
@@ -61,8 +91,7 @@ graphQLServer.use('*', helmet({
   frameguard: false,
   noSniff: false,
   xssFilter: false,
-  noCache: true,
-}), requestLogger, cookieParser());
+}), noCache(), requestLogger, cookieParser());
 
 graphQLServer.get('/livenessProbe', (req, res) => {
   res.send(`Testing livenessProbe --> ${new Date().toLocaleString()}`);
@@ -79,7 +108,6 @@ if (isProd) {
   auth.push(inspect.app, authMiddleware());
 } else {
   auth.push(authMiddleware({ shouldLocalAuth: true }));
-  graphQLServer.use(GRAPHIQL_PATH, graphiqlExpress({ endpointURL: GRAPHQL_PATH }));
 }
 
 if (isTest) {
@@ -90,28 +118,7 @@ if (isTest) {
 }
 
 graphQLServer.use(...auth);
-graphQLServer.use(GRAPHQL_PATH, bodyParser.json(), graphqlExpress(async (req) => {
-  let searchConnector;
-  let kubeConnector;
-  if (isTest) {
-    searchConnector = new MockSearchConnector();
-    kubeConnector = new MockKubeConnector();
-  } else {
-    searchConnector = new RedisGraphConnector({ rbac: req.user.namespaces, req });
-    // KubeConnector uses admin token.
-    // This allows non-admin users have access to the userpreference resource for saved searches
-    kubeConnector = new KubeConnector({ token: serviceaccountToken });
-  }
 
-
-  const context = {
-    req,
-    appModel: new AppModel({ searchConnector }),
-    searchModel: new SearchModel({ searchConnector }),
-    queryModel: new QueryModel({ kubeConnector }),
-  };
-
-  return { formatError, schema, context };
-}));
+apolloServer.applyMiddleware({ app: graphQLServer, path: GRAPHQL_PATH });
 
 export default graphQLServer;

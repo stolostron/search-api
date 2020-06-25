@@ -9,7 +9,6 @@
 
 import { createError } from 'apollo-errors';
 
-
 export const GenericError = createError('GenericError', {
   message: 'A generic error has occurred', // TODO: NLS
 });

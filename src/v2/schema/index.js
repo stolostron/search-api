@@ -5,10 +5,11 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
 
 import _ from 'lodash';
-import { makeExecutableSchema } from 'graphql-tools';
+import { gql } from 'apollo-server-express';
 
 import * as application from './application';
 import * as json from './json';
@@ -24,16 +25,14 @@ const modules = [
   userSearch,
 ];
 
-const mainDefs = [`
+const mainDefs = [gql`
 schema {
   query: Query,
   mutation: Mutation,
 }
 `];
 
-export const typeDefs = mainDefs.concat(modules.map(m => m.typeDef));
-export const resolvers = _.merge(...modules.map(m => m.resolver));
+export const typeDefs = mainDefs.concat(modules.map((m) => m.typeDef));
+export const resolvers = _.merge(...modules.map((m) => m.resolver));
 
-const schema = makeExecutableSchema({ typeDefs, resolvers });
-
-export default schema;
+export default { typeDefs, resolvers };

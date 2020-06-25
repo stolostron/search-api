@@ -33,7 +33,7 @@ export default class MockKubeConnector {
           },
         ],
       };
-    } else if (url.includes('/api/v1')) {
+    } if (url.includes('/api/v1')) {
       // Get request for non-namespaced resources without a group
       return {
         kind: 'APIResourceList',
@@ -59,7 +59,7 @@ export default class MockKubeConnector {
           },
         ],
       };
-    } else if (url.includes('v1/roles')) {
+    } if (url.includes('v1/roles')) {
       return {
         kind: 'RoleList',
         apiVersion: 'rbac.authorization.k8s.io/v1',
@@ -83,7 +83,7 @@ export default class MockKubeConnector {
           }],
         }],
       };
-    } else if (url.includes('v1/clusterroles')) {
+    } if (url.includes('v1/clusterroles')) {
       return {
         kind: 'RoleBindingList',
         apiVersion: 'rbac.authorization.k8s.io/v1',
@@ -116,7 +116,7 @@ export default class MockKubeConnector {
           },
         }],
       };
-    } else if (url.includes('v1/rolebindings')) {
+    } if (url.includes('v1/rolebindings')) {
       return {
         kind: 'ClusterRoleList',
         apiVersion: 'rbac.authorization.k8s.io/v1',
@@ -140,7 +140,7 @@ export default class MockKubeConnector {
           }],
         }],
       };
-    } else if (url.includes('v1/clusterrolebindings')) {
+    } if (url.includes('v1/clusterrolebindings')) {
       return {
         kind: 'ClusterRoleBindingList',
         apiVersion: 'rbac.authorization.k8s.io/v1',
@@ -180,7 +180,7 @@ export default class MockKubeConnector {
           },
         }],
       };
-    } else if (url.includes('project.openshift.io/v1/projects')) {
+    } if (url.includes('project.openshift.io/v1/projects')) {
       return {
         kind: 'ProjectList',
         apiVersion: 'project.openshift.io/v1',
@@ -206,6 +206,7 @@ export default class MockKubeConnector {
     // return null if request has not been mocked.
     return null;
   }
+
   async post(url /* , body */) {
     if (url === '/apis') {
       return {
@@ -227,7 +228,7 @@ export default class MockKubeConnector {
           },
         ],
       };
-    } else if (url.includes('selfsubjectaccessreviews')) {
+    } if (url.includes('selfsubjectaccessreviews')) {
       return {
         kind: 'SelfSubjectAccessReview',
         apiVersion: 'authorization.k8s.io/v1',
@@ -245,7 +246,7 @@ export default class MockKubeConnector {
           reason: 'RBAC: allowed by ClusterRoleBinding "oidc-admin-binding" of ClusterRole "cluster-admin" to User "admin"',
         },
       };
-    } else if (url.includes('default/selfsubjectrulesreviews')) {
+    } if (url.includes('default/selfsubjectrulesreviews')) {
       return {
         kind: 'SelfSubjectRulesReview',
         apiVersion: 'authorization.openshift.io/v1',
@@ -294,7 +295,7 @@ export default class MockKubeConnector {
           ],
         },
       };
-    } else if (url.includes('kube-public/selfsubjectrulesreviews')) {
+    } if (url.includes('kube-public/selfsubjectrulesreviews')) {
       return {
         kind: 'SelfSubjectRulesReview',
         apiVersion: 'authorization.openshift.io/v1',
@@ -318,7 +319,7 @@ export default class MockKubeConnector {
           ],
         },
       };
-    } else if (url.includes('kube-system/selfsubjectrulesreviews')) {
+    } if (url.includes('kube-system/selfsubjectrulesreviews')) {
       return {
         kind: 'SelfSubjectRulesReview',
         apiVersion: 'authorization.openshift.io/v1',

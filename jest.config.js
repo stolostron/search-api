@@ -5,8 +5,8 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
-// Copyright (c) 2020 Red Hat, Inc.
 
 const tapReporter = [
   'jest-tap-reporter',
@@ -39,7 +39,7 @@ const jestConfig = {
     '!src/**/mocks/*.js',
   ],
   testEnvironment: 'node',
-  setupTestFrameworkScriptFile: './jest.setup.js',
+  setupFilesAfterEnv: ['./jest.setup.js'],
   testResultsProcessor: 'jest-sonar-reporter',
 };
 
