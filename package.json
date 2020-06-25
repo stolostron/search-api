@@ -26,10 +26,6 @@
   },
   "author": "",
   "license": "SEE LICENSE IN LICENSE",
-  "engines": {
-    "node": "10.15.3",
-    "npm": "6.9.0"
-  },
   "husky": {
     "hooks": {
       "pre-commit": "npm run lint",
