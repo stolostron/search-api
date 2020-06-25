@@ -5,11 +5,13 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
 import lodash from 'lodash';
+import { gql } from 'apollo-server-express';
 import logger from '../lib/logger';
 
-export const typeDef = `
+export const typeDef = gql`
   input SearchFilter {
     property: String!
     values: [String]
@@ -41,8 +43,10 @@ export const typeDef = `
 export const resolver = {
   Query: {
     search: (parent, { input }) => input,
-    searchComplete: (parent, { property, query = {}, limit }, { searchModel }) =>
-      searchModel.resolveSearchComplete({ property, filters: lodash.get(query, 'filters', []) }, limit),
+    searchComplete: (parent, { property, query = {}, limit }, { searchModel }) => searchModel.resolveSearchComplete({
+      property,
+      filters: lodash.get(query, 'filters', []),
+    }, limit),
     searchSchema: (parent, args, { searchModel }) => searchModel.searchSchema(),
   },
   SearchResult: {
@@ -50,7 +54,7 @@ export const resolver = {
     items: (parent, args, { searchModel }) => searchModel.resolveSearch(parent),
     related: (parent, args, { searchModel }, info) => {
       const selections = lodash.get(info, 'fieldNodes[0].selectionSet.selections', [])
-        .map(s => lodash.get(s, 'name.value', []));
+        .map((s) => lodash.get(s, 'name.value', []));
       const countOnly = selections.includes('count') && !selections.includes('items');
       if (selections.includes('count') && selections.includes('items')) {
         // eslint-disable-next-line max-len

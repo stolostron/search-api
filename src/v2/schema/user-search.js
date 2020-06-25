@@ -5,9 +5,11 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
+import { gql } from 'apollo-server-express';
 
-export const typeDef = `
+export const typeDef = gql`
 type userSearch {
   id: String
   name: String

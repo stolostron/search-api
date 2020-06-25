@@ -10,7 +10,7 @@
 import createAuthMiddleWare from './auth-middleware';
 
 describe('Auth Middleware', () => {
-  test('Sets kubeToken to Bearer localdev in development', (done) => {
+  test('Sets kubeToken to Bearer localdev in development', () => new Promise((done) => {
     const mockRequest = { headers: { authorization: 'Bearer localdev' } };
     const authMiddleware = createAuthMiddleWare({ shouldLocalAuth: true });
 
@@ -19,5 +19,5 @@ describe('Auth Middleware', () => {
       expect(mockRequest.kubeToken).toBe('localdev');
       done();
     });
-  });
+  }));
 });

@@ -12,7 +12,6 @@ const path = require('path');
 
 const logger = log4js.getLogger('server');
 
-
 const configDir = path.resolve(__dirname);
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';

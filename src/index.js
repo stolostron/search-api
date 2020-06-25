@@ -36,6 +36,6 @@ server.listen(GRAPHQL_PORT, () => {
   logger.info(`[pid ${process.pid}] [env ${process.env.NODE_ENV}] [version V2] started.`);
   logger.info(`Search API is now running on https://localhost:${GRAPHQL_PORT}${CONTEXT_PATH}/graphql`);
   if (process.env.NODE_ENV !== 'production') {
-    logger.info(`GraphiQL is now running on https://localhost:${GRAPHQL_PORT}${CONTEXT_PATH}/graphiql`);
+    logger.info(`GraphQL is now running on https://localhost:${GRAPHQL_PORT}${CONTEXT_PATH}/graphql`);
   }
 });

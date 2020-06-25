@@ -5,17 +5,18 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
 
 import _ from 'lodash';
-import lru from 'lru-cache';
+import LRU from 'lru-cache';
 import config from '../../../config';
 import createMockIAMHTTP from '../mocks/iam-http';
 import request from './request';
-import { getServiceAccountToken } from '../lib/utils';
+import { getServiceAccountToken } from './utils';
 
 // Async middleware error handler
-const asyncMiddleware = fn => (req, res, next) => {
+const asyncMiddleware = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next))
     .catch(next);
 };
@@ -59,7 +60,7 @@ async function getNamespaces(usertoken) {
     return mockReq(options);
   }
   const nsResponse = await request(options);
-  return Array.isArray(nsResponse.items) ? nsResponse.items.map(ns => ns.metadata.name) : [];
+  return Array.isArray(nsResponse.items) ? nsResponse.items.map((ns) => ns.metadata.name) : [];
 }
 
 async function getUsername(token) {
@@ -96,7 +97,7 @@ async function getUsername(token) {
 // - Set user for the request
 // - Set token for kubernetes requests.
 export default function createAuthMiddleWare({
-  cache = lru({
+  cache = new LRU({
     max: 1000,
     maxAge: 2 * 60 * 1000, // 2 mins. Must keep low because user's permissions can change.
   }),

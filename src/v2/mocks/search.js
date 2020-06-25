@@ -8,7 +8,7 @@
  ****************************************************************************** */
 
 const resourceTemplate = {
-  cluster: id => ({
+  cluster: (id) => ({
     kind: 'cluster',
     name: `mock-cluster${id > 0 ? `-${id}` : ''}`,
     namespace: 'mock-mcm-cluster',
@@ -25,7 +25,7 @@ const resourceTemplate = {
     cpus: 10,
     role: 'master',
   }),
-  pod: id => ({
+  pod: (id) => ({
     kind: 'pod',
     name: `mock-cluster${id > 0 ? `-${id}` : ''}`,
     namespace: 'kube-system',
@@ -64,13 +64,11 @@ export const mockSearchResult = {
   },
 };
 
-
 /* eslint-disable class-methods-use-this */
 export default class MockSearchConnector {
   async isServiceAvailable() {
     return true;
   }
-
 
   // Search Query Mocks
   async runSearchQuery() {

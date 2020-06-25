@@ -70,8 +70,8 @@ export default class AppModel {
 
     if (name != null && namespace != null) {
       const apps = await this.searchConnector.runApplicationsQuery();
-      return apps.filter(app => (app['app.name'] === name && app['app.namespace'] === namespace));
-    } else if (name == null || namespace == null) {
+      return apps.filter((app) => (app['app.name'] === name && app['app.namespace'] === namespace));
+    } if ((name) == null || namespace == null) {
       logger.warn('To filter applications must you provide both name and namespace. Returning all apps.');
     }
 
@@ -83,7 +83,7 @@ export default class AppModel {
    */
   async resolveAppClustersCount(appUid) {
     const clusters = await this.runQueryOnlyOnce('runAppClustersQuery');
-    const c = clusters.find(app => app['app._uid'] === appUid);
+    const c = clusters.find((app) => app['app._uid'] === appUid);
     return c ? c.count : 0;
   }
 
@@ -92,7 +92,7 @@ export default class AppModel {
    */
   async resolveAppHubSubscriptions(appUid) {
     const subs = await this.runQueryOnlyOnce('runAppHubSubscriptionsQuery');
-    return subs.filter(s => s['app._uid'] === appUid);
+    return subs.filter((s) => s['app._uid'] === appUid);
   }
 
   /*
@@ -100,7 +100,7 @@ export default class AppModel {
    */
   async resolveAppPodsCount(appUid) {
     const pods = await this.runQueryOnlyOnce('runAppPodsCountQuery');
-    return groupByStatus(pods.filter(p => p['app._uid'] === appUid), 'pod.status');
+    return groupByStatus(pods.filter((p) => p['app._uid'] === appUid), 'pod.status');
   }
 
   /*
@@ -108,7 +108,7 @@ export default class AppModel {
    */
   async resolveAppRemoteSubscriptions(appUid) {
     const subs = await this.runQueryOnlyOnce('runAppRemoteSubscriptionsQuery');
-    return groupByStatus(subs.filter(s => s['app._uid'] === appUid), 'sub.status');
+    return groupByStatus(subs.filter((s) => s['app._uid'] === appUid), 'sub.status');
   }
 
   /* ***  GLOBAL APPLICATION DATA RESOLVERS *** */

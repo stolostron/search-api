@@ -37,7 +37,7 @@ export default class KubeConnector {
         Authorization: `Bearer ${this.token}`,
       },
     };
-    return this.http(_.merge(defaults, opts)).then(res => res.body);
+    return this.http(_.merge(defaults, opts)).then((res) => res.body);
   }
 
   post(path = '', jsonBody, opts = {}) {
@@ -49,7 +49,7 @@ export default class KubeConnector {
       },
       json: jsonBody,
     };
-    return this.http(_.merge(defaults, opts)).then(res => res.body);
+    return this.http(_.merge(defaults, opts)).then((res) => res.body);
   }
 
   patch(path = '', jsonBody, opts = {}) {
@@ -62,6 +62,6 @@ export default class KubeConnector {
       },
       json: jsonBody,
     };
-    return this.http(_.merge(defaults, opts)).then(res => res.body);
+    return this.http(_.merge(defaults, opts)).then((res) => res.body);
   }
 }

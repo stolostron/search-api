@@ -25,7 +25,7 @@ export default class QueryModel {
     const response = await this.kubeConnector.get(`/apis/${this.userPreferenceApi}${formatName(user.name)}`);
     if (response.status === 'Failure' && response.reason === 'NotFound') {
       return {};
-    } else if (response.code || response.message) {
+    } if (response.code || response.message) {
       throw new Error(`ERROR ${response.error.code} - ${response.error.message}`);
     }
     return response;
@@ -43,8 +43,8 @@ export default class QueryModel {
     let updatedSearches = null;
     const queries = _.get(response, 'spec.savedSearches', []);
     // check Id and Name for backwards compatibility
-    const target = queries.find(query => query.id === resource.id) ||
-      queries.find(query => query.name === resource.name);
+    const target = queries.find((query) => query.id === resource.id)
+      || queries.find((query) => query.name === resource.name);
     if (target) { // this is an edit
       target.name = resource.name;
       target.description = resource.description;
@@ -82,8 +82,8 @@ export default class QueryModel {
       };
       updatedSearches = await this.kubeConnector.post(`/apis/${this.userPreferenceApi}${formatName(user.name)}`, json);
     }
-    if (updatedSearches.error &&
-      (updatedSearches.error.code || updatedSearches.error.statusCode || updatedSearches.error.message)) {
+    if (updatedSearches.error
+      && (updatedSearches.error.code || updatedSearches.error.statusCode || updatedSearches.error.message)) {
       // eslint-disable-next-line max-len
       throw new Error(`ERROR ${updatedSearches.error.code || updatedSearches.error.statusCode} - ${updatedSearches.error.message}`);
     }
@@ -95,7 +95,7 @@ export default class QueryModel {
     const url = `/apis/${this.userPreferenceApi}${formatName(user.name)}`;
     const response = await this.getUserPreferences(args);
     const queries = _.get(response, 'spec.savedSearches', []);
-    const removeIdx = queries.findIndex(object => object.name === resource.name);
+    const removeIdx = queries.findIndex((object) => object.name === resource.name);
     const json = [
       {
         op: 'remove',
@@ -104,8 +104,8 @@ export default class QueryModel {
     ];
     const updatedSearches = await this.kubeConnector.patch(url, json);
 
-    if (updatedSearches.error &&
-      (updatedSearches.error.code || updatedSearches.error.statusCode || updatedSearches.error.message)) {
+    if (updatedSearches.error
+      && (updatedSearches.error.code || updatedSearches.error.statusCode || updatedSearches.error.message)) {
       // eslint-disable-next-line max-len
       throw new Error(`ERROR ${updatedSearches.error.code || updatedSearches.error.statusCode} - ${updatedSearches.error.message}`);
     }

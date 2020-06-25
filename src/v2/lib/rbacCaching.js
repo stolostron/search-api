@@ -5,15 +5,15 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
-// Copyright (c) 2020 Red Hat, Inc.
 
 import _ from 'lodash';
-import lru from 'lru-cache';
+import LRU from 'lru-cache';
 import asyncPolling from 'async-polling';
 import config from '../../../config';
-import { getServiceAccountToken } from '../lib/utils';
-import logger from '../lib/logger';
+import { getServiceAccountToken } from './utils';
+import logger from './logger';
 import KubeConnector from '../connectors/kube';
 // Mocked connectors for testing
 import MockKubeConnector from '../mocks/kube';
@@ -22,7 +22,7 @@ let isOpenshift = null;
 const isTest = config.get('NODE_ENV') === 'test';
 let activeUsers = [];
 let serviceaccountToken;
-const cache = lru({
+const cache = new LRU({
   max: 1000,
   maxAge: config.get('RBAC_INACTIVITY_TIMEOUT'), // default is 10 mins
 });
@@ -60,7 +60,7 @@ async function checkIfOpenShiftPlatform(kubeToken) {
   const res = await kubeConnector.get(url);
 
   if (res && res.resources) {
-    const selfReview = res.resources.filter(r => r.kind === 'SelfSubjectRulesReview');
+    const selfReview = res.resources.filter((r) => r.kind === 'SelfSubjectRulesReview');
     logger.debug('SelfSubjectRulesReview:', selfReview);
     if (selfReview.length > 0) {
       logger.debug('Found API "authorization.openshift.io/v1" so assuming that we are running in OpenShift');
@@ -81,19 +81,19 @@ async function getNonNamespacedResources(kubeToken) {
   // Get non-namespaced resources WITH an api group
   resources.push(kubeConnector.post('/apis', {}).then(async (res) => {
     if (res && res.groups) {
-      const apiGroups = res.groups.map(group => group.preferredVersion.groupVersion);
+      const apiGroups = res.groups.map((group) => group.preferredVersion.groupVersion);
       const results = await Promise.all(apiGroups.map((group) => {
         const mappedResources = kubeConnector.get(`/apis/${group}`).then((result) => {
           const groupResources = _.get(result, 'resources', []);
           const nonNamespaced = groupResources
-            .filter(resource => resource.namespaced === false && !resource.name.includes('/'))
-            .map(resource => resource.name);
-          return nonNamespaced.filter(item => item.length > 0)
-            .map(item => ({ name: item, apiGroup: group }));
+            .filter((resource) => resource.namespaced === false && !resource.name.includes('/'))
+            .map((resource) => resource.name);
+          return nonNamespaced.filter((item) => item.length > 0)
+            .map((item) => ({ name: item, apiGroup: group }));
         });
         return mappedResources;
       }));
-      return _.flatten(results.filter(item => item.length > 0));
+      return _.flatten(results.filter((item) => item.length > 0));
     }
     return 'Error getting available apis.';
   }));
@@ -101,8 +101,8 @@ async function getNonNamespacedResources(kubeToken) {
   // Get non-namespaced resources WITHOUT an api group
   resources.push(kubeConnector.get('/api/v1').then((res) => {
     if (res && res.resources) {
-      return res.resources.filter(resource => resource.namespaced === false && resource.name.indexOf('/') === -1)
-        .map(item => ({ name: item.name, apiGroup: 'null' }));
+      return res.resources.filter((resource) => resource.namespaced === false && resource.name.indexOf('/') === -1)
+        .map((item) => ({ name: item.name, apiGroup: 'null' }));
     }
     return 'Error getting available apis.';
   }));
@@ -136,15 +136,16 @@ async function getNonNamespacedAccess(kubeToken) {
     });
   }));
   logger.perfLog(startTime, 500, 'getNonNamespacedAccess()');
-  return results.filter(r => r !== null);
+  return results.filter((r) => r !== null);
 }
 
 async function getUserAccess(kubeToken, namespace) {
   const kubeConnector = !isTest
     ? new KubeConnector({ token: kubeToken })
     : new MockKubeConnector();
-  const url = `/apis/authorization.${!isOpenshift ?
-    'k8s' : 'openshift'}.io/v1/${!isOpenshift ? '' : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
+  const url = `/apis/authorization.${!isOpenshift
+    ? 'k8s' : 'openshift'}.io/v1/${!isOpenshift ? ''
+    : `namespaces/${namespace}/`}selfsubjectrulesreviews`;
   const jsonBody = {
     apiVersion: `authorization.${!isOpenshift ? 'k8s' : 'openshift'}.io/v1`,
     kind: 'SelfSubjectRulesReview',
@@ -157,8 +158,9 @@ async function getUserAccess(kubeToken, namespace) {
   const rules = (isOpenshift ? res.status.rules : res.status.resourceRules) || [];
 
   // Check if user can get all resources in namespace.
-  if (rules.find(({ verbs = [], apiGroups = [], resources = [] }) =>
-    (verbs.includes('*') || verbs.includes('get')) && apiGroups && apiGroups.includes('*') && resources.includes('*'))) {
+  if (rules.find(({ verbs = [], apiGroups = [], resources = [] }) => (
+    verbs.includes('*') || verbs.includes('get')
+  ) && apiGroups && apiGroups.includes('*') && resources.includes('*'))) {
     return [`${namespace}_*_*`];
   }
 
@@ -172,14 +174,14 @@ async function getUserAccess(kubeToken, namespace) {
       rule.apiGroups && rule.apiGroups.forEach((api) => {
         const apiGroup = (api === '') ? 'null' : api;
         // Filter sub-resources, those contain '/'
-        rule.resources.filter(r => r.indexOf('/') === -1).forEach((resource) => {
+        rule.resources.filter((r) => r.indexOf('/') === -1).forEach((resource) => {
           resources.push(`'${ns}_${apiGroup}_${resource}'`);
         });
       });
       return resources;
     }
     return null;
-  }).filter(r => r !== null);
+  }).filter((r) => r !== null);
 }
 
 async function buildRbacString(req, objAliases) {
@@ -189,7 +191,7 @@ async function buildRbacString(req, objAliases) {
   const userCache = cache.get(idToken);
   let data = [];
   if (!userCache || !userCache.userAccessPromise || !userCache.userNonNamespacedAccessPromise) {
-    const userAccessPromise = Promise.all(namespaces.map(namespace => getUserAccess(idToken, namespace)));
+    const userAccessPromise = Promise.all(namespaces.map((namespace) => getUserAccess(idToken, namespace)));
     const userNonNamespacedAccessPromise = getNonNamespacedAccess(idToken);
     cache.set(idToken, { ...userCache, userAccessPromise, userNonNamespacedAccessPromise });
     logger.info('Saved userAccess and nonNamespacesAccess promises to user cache.');
@@ -199,7 +201,7 @@ async function buildRbacString(req, objAliases) {
   }
 
   const rbacData = new Set(_.flattenDeep(data));
-  const aliasesData = objAliases.map(alias => [...rbacData].map((item) => {
+  const aliasesData = objAliases.map((alias) => [...rbacData].map((item) => {
     // If user can get all reasources in the namespace, we get an rbac string with the format `namespace_*_*`.
     if (item.endsWith('_*_*')) {
       // Adds the openCypher clause: `substring(n._rbac,0, 9) = 'namespace'`
@@ -207,7 +209,7 @@ async function buildRbacString(req, objAliases) {
     }
     return `${alias}._rbac = ${item}`;
   }));
-  const aliasesStrings = aliasesData.map(a => a.join(' OR '));
+  const aliasesStrings = aliasesData.map((a) => a.join(' OR '));
 
   logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaces && namespaces.length} )`);
   return `(${aliasesStrings.join(') AND (')})`;

@@ -40,7 +40,7 @@ function formatResult(results, removePrefix = true) {
   return resultList;
 }
 
-const isNumber = value => !Number.isNaN(value * 1);
+const isNumber = (value) => !Number.isNaN(value * 1);
 // TODO: Zack L - Need to come back to this once number values with units are normalized
 // const isNumWithChars = (value) => {
 //   if (!isNumber(value) && !Number.isNaN(parseInt(value, 10))) {
@@ -49,8 +49,8 @@ const isNumber = value => !Number.isNaN(value * 1);
 //   }
 //   return false;
 // };
-const isDate = value => !isNumber(value) && moment(value, 'YYYY-MM-DDTHH:mm:ssZ', true).isValid();
-const isDateFilter = value => ['hour', 'day', 'week', 'month', 'year'].indexOf(value) > -1;
+const isDate = (value) => !isNumber(value) && moment(value, 'YYYY-MM-DDTHH:mm:ssZ', true).isValid();
+const isDateFilter = (value) => ['hour', 'day', 'week', 'month', 'year'].indexOf(value) > -1;
 // const isVersion = property.toLowerCase().includes('version');
 
 export function getOperator(value) {
@@ -89,7 +89,7 @@ export function getFilterString(filters) {
       const operatorRemoved = value.replace(/^<=|^>=|^!=|^!|^<|^>|^=/, '');
       if (isNumber(operatorRemoved)) { //  || isNumWithChars(operatorRemoved)
         return `n.${filter.property} ${getOperator(value)} ${operatorRemoved}`;
-      } else if (isDateFilter(value)) {
+      } if (isDateFilter(value)) {
         return `n.${filter.property} ${getDateFilter(value)}`;
       }
       return `n.${filter.property} ${getOperator(value)} '${operatorRemoved}'`;
@@ -113,6 +113,7 @@ function getIPvFamily(redisHost) {
 
 let redisClient;
 function getRedisClient() {
+  // eslint-disable-next-line no-async-promise-executor
   return new Promise(async (resolve) => {
     if (redisClient) {
       resolve(redisClient);
@@ -206,12 +207,11 @@ export default class RedisGraphConnector {
         return `WHERE ${filterString} AND ${rbac}`;
       }
       return `WHERE ${rbac}`;
-    } else if (filterString !== '') {
+    } if (filterString !== '') {
       return `WHERE ${filterString}`;
     }
     return '';
   }
-
 
   /*
    * Execute a redis query and format the result as an array of Object.
@@ -224,7 +224,6 @@ export default class RedisGraphConnector {
     return formatResult(result, removePrefix);
   }
 
-
   /*
    * Get Applications.
    */
@@ -233,7 +232,6 @@ export default class RedisGraphConnector {
     const query = `MATCH (app:Application) ${whereClause} RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard, app.selfLink, app.label ORDER BY app.name ASC`;
     return this.executeQuery({ query, removePrefix: false });
   }
-
 
   /*
    * Get a list of applications that have related clusters.
@@ -328,15 +326,14 @@ export default class RedisGraphConnector {
       // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
       // encode labels in a single string. As a result we can't use an openCypher query to search
       // for labels so we need to filter here, which btw is inefficient.
-      const labelFilter = filters.find(f => f.property === 'label');
+      const labelFilter = filters.find((f) => f.property === 'label');
       if (labelFilter) {
-        const whereClause = await this.createWhereClause(filters.filter(f => f.property !== 'label'), ['n']);
+        const whereClause = await this.createWhereClause(filters.filter((f) => f.property !== 'label'), ['n']);
         const startTime = Date.now();
         const query = `MATCH (n) ${whereClause} RETURN n`;
         const result = await this.g.query(query);
         logger.perfLog(startTime, 150, 'LabelSearchQuery');
-        return formatResult(result).filter(item =>
-          (item.label && labelFilter.values.find(value => item.label.indexOf(value) > -1)));
+        return formatResult(result).filter((item) => (item.label && labelFilter.values.find((value) => item.label.indexOf(value) > -1)));
       }
       let limitClause = '';
       if (limit > 0) {
@@ -361,9 +358,9 @@ export default class RedisGraphConnector {
       // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
       // encode labels in a single string. As a result we can't use an openCypher query to search
       // for labels so we need to filter here, which btw is inefficient.
-      const labelFilter = filters.find(f => f.property === 'label');
+      const labelFilter = filters.find((f) => f.property === 'label');
       if (labelFilter) {
-        return this.runSearchQuery(filters, -1, -1).then(r => r.length);
+        return this.runSearchQuery(filters, -1, -1).then((r) => r.length);
       }
       const whereClause = await this.createWhereClause(filters, ['n']);
       const startTime = Date.now();
@@ -437,12 +434,12 @@ export default class RedisGraphConnector {
       }
       if (isDate(valuesList[0])) {
         return ['isDate'];
-      } else if (isNumber(valuesList[0])) { //  || isNumWithChars(valuesList[0]))
-        valuesList = valuesList.filter(res => (isNumber(res) || (!isNumber(res))) && res !== ''); //  && isNumWithChars(res)
+      } if (isNumber(valuesList[0])) { //  || isNumWithChars(valuesList[0]))
+        valuesList = valuesList.filter((res) => (isNumber(res) || (!isNumber(res))) && res !== ''); //  && isNumWithChars(res)
         valuesList.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
         if (valuesList.length > 1) {
           return ['isNumber', valuesList[0], valuesList[valuesList.length - 1]];
-        } else if (valuesList.length === 1) {
+        } if (valuesList.length === 1) {
           return ['isNumber', valuesList[0]];
         }
       }
@@ -462,7 +459,7 @@ export default class RedisGraphConnector {
       let inQuery = '';
       let outQuery = '';
       if (relatedKinds.length > 0) {
-        const relatedClause = relatedKinds.map(kind => `r.kind = '${kind}'`).join(' OR ');
+        const relatedClause = relatedKinds.map((kind) => `r.kind = '${kind}'`).join(' OR ');
         inQuery = `MATCH (n)<-[]-(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
         outQuery = `MATCH (n)-[]->(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
       } else {
@@ -478,7 +475,7 @@ export default class RedisGraphConnector {
       const result = inFormatted;
       outFormatted.forEach((outItem) => {
         // Add only if the relationship doesn't already exist.
-        if (!result.find(item => item._uid === outItem._uid)) {
+        if (!result.find((item) => item._uid === outItem._uid)) {
           result.push(outItem);
         }
       });

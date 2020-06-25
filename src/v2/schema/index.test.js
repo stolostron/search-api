@@ -19,4 +19,3 @@ describe('Schema', () => {
     expect(result.data.__schema.types).toBeInstanceOf(Array);
   });
 });
-

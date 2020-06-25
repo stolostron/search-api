@@ -11,7 +11,7 @@ import supertest from 'supertest';
 import server, { GRAPHQL_PATH } from '../index';
 
 describe('Search Resolver', () => {
-  test('Correctly Resolves Search Query', (done) => {
+  test('Correctly Resolves Search Query', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -37,8 +37,8 @@ describe('Search Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
-  test('Correctly Resolves Search Keyword Query', (done) => {
+  }));
+  test('Correctly Resolves Search Keyword Query', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -62,8 +62,8 @@ describe('Search Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
-  test('Correctly Resolves Performant Search Query', (done) => {
+  }));
+  test('Correctly Resolves Performant Search Query', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -85,8 +85,8 @@ describe('Search Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
-  test('Correctly Resolves SearchSchema Query', (done) => {
+  }));
+  test('Correctly Resolves SearchSchema Query', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -100,8 +100,8 @@ describe('Search Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
-  test('Correctly Resolves SearchComplete Query', (done) => {
+  }));
+  test('Correctly Resolves SearchComplete Query', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -115,8 +115,8 @@ describe('Search Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
-  test('Correctly Resolves SearchComplete Query With Filters', (done) => {
+  }));
+  test('Correctly Resolves SearchComplete Query With Filters', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -130,8 +130,8 @@ describe('Search Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
-  test('Correctly Resolves SearchComplete Query With No Params', (done) => {
+  }));
+  test('Correctly Resolves SearchComplete Query With No Params', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -145,5 +145,5 @@ describe('Search Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
+  }));
 });

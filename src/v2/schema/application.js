@@ -5,9 +5,11 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
+import { gql } from 'apollo-server-express';
 
-export const typeDef = `
+export const typeDef = gql`
   type Application {
     _uid: String
     created: String
@@ -67,18 +69,17 @@ export const resolver = {
     applications: (parent, { name, namespace }, { appModel }) => appModel.resolveApplications({ name, namespace }),
   },
   Application: {
-    _uid: parent => parent['app._uid'],
-    created: parent => parent['app.created'],
-    dashboard: parent => parent['app.dashboard'],
-    labels: parent => (parent['app.label'] ? parent['app.label'].split(';').map(l => l.trim()) : []),
-    name: parent => parent['app.name'],
-    namespace: parent => parent['app.namespace'],
-    selfLink: parent => parent['app.selfLink'],
+    _uid: (parent) => parent['app._uid'],
+    created: (parent) => parent['app.created'],
+    dashboard: (parent) => parent['app.dashboard'],
+    labels: (parent) => (parent['app.label'] ? parent['app.label'].split(';').map((l) => l.trim()) : []),
+    name: (parent) => parent['app.name'],
+    namespace: (parent) => parent['app.namespace'],
+    selfLink: (parent) => parent['app.selfLink'],
     clusterCount: (parent, args, { appModel }) => appModel.resolveAppClustersCount(parent['app._uid']),
     hubSubscriptions: (parent, args, { appModel }) => appModel.resolveAppHubSubscriptions(parent['app._uid']),
     podStatusCount: (parent, args, { appModel }) => appModel.resolveAppPodsCount(parent['app._uid']),
-    remoteSubscriptionStatusCount: (parent, args, { appModel }) =>
-      appModel.resolveAppRemoteSubscriptions(parent['app._uid']),
+    remoteSubscriptionStatusCount: (parent, args, { appModel }) => appModel.resolveAppRemoteSubscriptions(parent['app._uid']),
   },
   GlobalAppData: {
     channelsCount: (parent, args, { appModel }) => appModel.resolveGlobalAppChannelsCount(),
@@ -87,8 +88,8 @@ export const resolver = {
     remoteSubscriptionStatusCount: (parent, args, { appModel }) => appModel.resolveGlobalAppRemoteSubscriptions(),
   },
   Subscription: {
-    _uid: parent => parent['sub._uid'],
-    status: parent => parent['sub.status'],
-    channel: parent => parent['sub.channel'],
+    _uid: (parent) => parent['sub._uid'],
+    status: (parent) => parent['sub.status'],
+    channel: (parent) => parent['sub.channel'],
   },
 };

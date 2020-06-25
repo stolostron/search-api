@@ -12,7 +12,7 @@ import server, { GRAPHQL_PATH } from '../index';
 
 // eslint-disable-next-line jest/no-disabled-tests
 describe.skip('UserSearch Resolver', () => {
-  test('Correctly Resolves Saved Search Query', (done) => {
+  test('Correctly Resolves Saved Search Query', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -31,9 +31,9 @@ describe.skip('UserSearch Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
+  }));
 
-  test('Correctly Resolves Saved Search Query Edit', (done) => {
+  test('Correctly Resolves Saved Search Query Edit', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -54,9 +54,9 @@ describe.skip('UserSearch Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
+  }));
 
-  test('Correctly Resolves Saved Search Query Deletion', (done) => {
+  test('Correctly Resolves Saved Search Query Deletion', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -75,5 +75,5 @@ describe.skip('UserSearch Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
+  }));
 });

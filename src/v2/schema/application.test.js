@@ -11,7 +11,7 @@ import supertest from 'supertest';
 import server, { GRAPHQL_PATH } from '../index';
 
 describe('Application Resolver', () => {
-  test('Correctly Resolves Application Query', (done) => {
+  test('Correctly Resolves Application Query', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -41,9 +41,9 @@ describe('Application Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
+  }));
 
-  test('Correctly Resolves Single Application', (done) => {
+  test('Correctly Resolves Single Application', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -73,9 +73,9 @@ describe('Application Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
+  }));
 
-  test('Ignores filters when only name or namespace is passed.', (done) => {
+  test('Ignores filters when only name or namespace is passed.', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -92,11 +92,11 @@ describe('Application Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
+  }));
 });
 
 describe('Global Application Resolver', () => {
-  test('Correctly Resolves Global Application Data', (done) => {
+  test('Correctly Resolves Global Application Data', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({
@@ -115,5 +115,5 @@ describe('Global Application Resolver', () => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
         done();
       });
-  });
+  }));
 });

@@ -26,10 +26,10 @@ function sanitizeInputs({
   limit,
   relatedKinds = [],
 }) {
-  const sanitizedKeywords = keywords.map(k => sanitizeString(k));
-  const sanitizedFilters = filters.map(f => ({
+  const sanitizedKeywords = keywords.map((k) => sanitizeString(k));
+  const sanitizedFilters = filters.map((f) => ({
     property: sanitizeString(f.property),
-    values: f.values.map(v => sanitizeString(v)),
+    values: f.values.map((v) => sanitizeString(v)),
   }));
 
   return {
@@ -37,7 +37,7 @@ function sanitizeInputs({
     filters: sanitizedFilters,
     property: sanitizeString(property),
     limit: limit || config.get('defaultQueryLimit'),
-    relatedKinds: relatedKinds.map(k => sanitizeString(k)),
+    relatedKinds: relatedKinds.map((k) => sanitizeString(k)),
   };
 }
 
@@ -49,7 +49,7 @@ function filterByKeywords(resultSet, keywords) {
    * which matches if the string contains all keywords and is case insensitive. */
   const regex = new RegExp(keywords.reduce((prev, curr) => `${prev}(?=.*${curr})`, ''), 'gi');
 
-  return resultSet.filter(r => Object.values(r).toString().match(regex));
+  return resultSet.filter((r) => Object.values(r).toString().match(regex));
 }
 
 export default class SearchModel {
@@ -148,7 +148,7 @@ export default class SearchModel {
     ];
     resultKinds.sort((a, b) => prioritizedRelationships.indexOf(b));
 
-    return resultKinds.map(r => ({ kind: r, count: result[r].length, items: result[r] }));
+    return resultKinds.map((r) => ({ kind: r, count: result[r].length, items: result[r] }));
   }
 
   async searchSchema() {
