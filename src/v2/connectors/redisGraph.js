@@ -11,7 +11,7 @@
 import fs from 'fs';
 import redis from 'redis';
 import dns from 'dns';
-import { RedisGraph } from 'redisgraph.js';
+import { Graph } from 'redisgraph.js';
 import moment from 'moment';
 import config from '../../../config';
 import logger from '../lib/logger';
@@ -23,12 +23,16 @@ function formatResult(results, removePrefix = true) {
   const startTime = Date.now();
   const resultList = [];
   while (results.hasNext()) {
-    const resultItem = {};
+    let resultItem = {};
     const record = results.next();
     record.keys().forEach((key) => {
       if (record.get(key) !== null) {
         if (removePrefix) {
-          resultItem[key.substr(key.indexOf('.') + 1)] = record.get(key);
+          if (record.get(key).properties !== null && record.get(key).properties !== undefined) {
+            resultItem = record.get(key).properties;
+          } else {
+            resultItem[key.substring(key.indexOf('.') + 1)] = record.get(key);
+          }
         } else {
           resultItem[key] = record.get(key);
         }
@@ -136,7 +140,15 @@ function getRedisClient() {
       const redisPort = redisInfo[1];
       const redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
       const ipFamily = await getIPvFamily(redisHost);
-      redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] }, family: ipFamily });
+      redisClient = redis.createClient(
+        redisPort,
+        redisHost,
+        {
+          auth_pass: config.get('redisPassword'),
+          tls: { servername: redisHost, ca: [redisCert] },
+          family: ipFamily,
+        },
+      );
     }
 
     redisClient.ping((error, result) => {
@@ -187,7 +199,7 @@ export default class RedisGraphConnector {
   async isServiceAvailable() {
     await getRedisClient();
     if (this.g === undefined && redisClient) {
-      this.g = new RedisGraph('icp-search', redisClient);
+      this.g = new Graph('icp-search', redisClient);
     }
     return redisClient.connected && redisClient.ready;
   }
@@ -382,14 +394,18 @@ export default class RedisGraphConnector {
     if (this.rbac.length > 0) {
       const whereClause = await this.createWhereClause([], ['n']);
       const startTime = Date.now();
-      const result = await this.g.query(`MATCH (n) ${whereClause} RETURN n LIMIT 1`);
+      const result = await this.g.query(`MATCH (n) ${whereClause} RETURN n`);
       logger.perfLog(startTime, 150, 'getAllProperties()');
-      result._header.forEach((property) => {
-        const label = property.substr(property.indexOf('.') + 1);
-        if (label.charAt(0) !== '_' && values.indexOf(label) < 0) {
-          values.push(label);
-        }
-      });
+
+      while (result.hasNext()) {
+        const record = result.next();
+        record.keys().forEach((key) => {
+          const { properties: { kind } } = record.get(key);
+          if (kind.charAt(0) !== '_' && values.indexOf(kind) < 0) {
+            values.push(kind);
+          }
+        });
+      }
     }
     return values;
   }
@@ -467,7 +483,10 @@ export default class RedisGraphConnector {
         outQuery = `MATCH (n)-[]->(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
       }
 
-      const [inFormatted, outFormatted] = await Promise.all([formatResult(await this.g.query(inQuery)), formatResult(await this.g.query(outQuery))]);
+      const [inFormatted, outFormatted] = await Promise.all([
+        formatResult(await this.g.query(inQuery)),
+        formatResult(await this.g.query(outQuery)),
+      ]);
 
       logger.perfLog(startTime, 300, 'findRelationships()');
 

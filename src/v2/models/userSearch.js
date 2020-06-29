@@ -26,7 +26,7 @@ export default class QueryModel {
     if (response.status === 'Failure' && response.reason === 'NotFound') {
       return {};
     } if (response.code || response.message) {
-      throw new Error(`ERROR ${response.error.code} - ${response.error.message}`);
+      throw new Error(`ERROR ${response.code} - ${response.message}`);
     }
     return response;
   }
