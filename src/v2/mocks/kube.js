@@ -15,7 +15,29 @@
 /* eslint-disable class-methods-use-this */
 export default class MockKubeConnector {
   async get(url) {
-    if (url === '/apis/authorization.openshift.io/v1') {
+    if (url.includes('/v1/namespaces')) {
+      return {
+        kind: 'NamespaceList',
+        apiVersion: 'v1',
+        metadata: { selfLink: '/api/v1/namespaces' },
+        items: [{
+          metadata: {
+            name: 'default',
+            selfLink: '/api/v1/namespaces/default',
+            uid: '27238466-2f13-4d61-bd10-b02567d72096',
+            resourceVersion: '8602',
+            creationTimestamp: '2020-06-26T17:44:03Z',
+            annotations: {
+              'openshift.io/sa.scc.mcs': 's0:c21,c0',
+              'openshift.io/sa.scc.supplemental-groups': '1000420000/10000',
+              'openshift.io/sa.scc.uid-range': '1000420000/10000',
+            },
+          },
+          spec: { finalizers: ['kubernetes'] },
+          status: { phase: 'Active' },
+        }],
+      };
+    } if (url === '/apis/authorization.openshift.io/v1') {
       // Get request for Openshift check
       return {
         kind: 'APIResourceList',
