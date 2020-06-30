@@ -39,7 +39,7 @@ export async function getClusterRbacConfig(kubeToken) {
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/clusterrolebindings'),
       kubeConnector.get('/apis/project.openshift.io/v1/projects'),
     ]);
-    // Get just the items, whole response contians resourceVersion which changes everytime
+    // Get just the items, whole response contians kube request resourceVersion which changes everytime
     // check if we can just do resourceVersion
     return {
       roles: roles && roles.items,
@@ -266,6 +266,11 @@ export default function pollUserAccess() {
           const roleBindingsCache = _.get(roleAccessCache, 'roleBindings', '');
           const clusteroleBindingsCache = _.get(roleAccessCache, 'clusterRoleBindings', '');
           const namespacesCache = _.get(roleAccessCache, 'namespaces', '');
+          logger.warn('roles access equality: ', JSON.stringify(res.roles) !== JSON.stringify(rolesCache));
+          logger.warn('clusterRoles access equality: ', JSON.stringify(res.clusterRoles) !== JSON.stringify(clusterRolesCache));
+          logger.warn('roleBindings access equality: ', JSON.stringify(res.roleBindings) !== JSON.stringify(roleBindingsCache));
+          logger.warn('clusterRoleBindings access equality: ', JSON.stringify(res.clusterRoleBindings) !== JSON.stringify(clusteroleBindingsCache));
+          logger.warn('namespaces access equality: ', JSON.stringify(res.namespaces) !== JSON.stringify(namespacesCache));
           if (JSON.stringify(res.roles) !== JSON.stringify(rolesCache)
             || JSON.stringify(res.clusterRoles) !== JSON.stringify(clusterRolesCache)
             || JSON.stringify(res.roleBindings) !== JSON.stringify(roleBindingsCache)
