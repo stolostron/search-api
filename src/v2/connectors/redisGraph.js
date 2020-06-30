@@ -392,20 +392,13 @@ export default class RedisGraphConnector {
     const values = ['cluster', 'kind', 'label', 'name', 'namespace', 'status'];
 
     if (this.rbac.length > 0) {
-      const whereClause = await this.createWhereClause([], ['n']);
       const startTime = Date.now();
-      const result = await this.g.query(`MATCH (n) ${whereClause} RETURN n`);
+      const result = await this.g.query('CALL db.propertyKeys()');
       logger.perfLog(startTime, 150, 'getAllProperties()');
 
-      while (result.hasNext()) {
-        const record = result.next();
-        record.keys().forEach((key) => {
-          const { properties: { kind } } = record.get(key);
-          if (kind.charAt(0) !== '_' && values.indexOf(kind) < 0) {
-            values.push(kind);
-          }
-        });
-      }
+      result._results.forEach((record) => {
+        values.push(record.values()[0]);
+      });
     }
     return values;
   }
@@ -465,41 +458,19 @@ export default class RedisGraphConnector {
 
   async findRelationships({ filters = [], countOnly = false, relatedKinds = [] } = {}) {
     if (this.rbac.length > 0) {
-      // A limitation in RedisGraph 1.0.15 is that we can't query relationships without direction.
-      // To work around this limitation, we use 2 queries to get IN and OUT relationships.
-      // Then we join both results.
-
       const whereClause = await this.createWhereClause(filters, ['n', 'r']);
       const startTime = Date.now();
 
-      let inQuery = '';
-      let outQuery = '';
+      let query = '';
       if (relatedKinds.length > 0) {
         const relatedClause = relatedKinds.map((kind) => `r.kind = '${kind}'`).join(' OR ');
-        inQuery = `MATCH (n)<-[]-(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
-        outQuery = `MATCH (n)-[]->(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
+        query = `MATCH (n)-[]-(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
       } else {
-        inQuery = `MATCH (n)<-[]-(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
-        outQuery = `MATCH (n)-[]->(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
+        query = `MATCH (n)-[]-(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
       }
 
-      const [inFormatted, outFormatted] = await Promise.all([
-        formatResult(await this.g.query(inQuery)),
-        formatResult(await this.g.query(outQuery)),
-      ]);
-
       logger.perfLog(startTime, 300, 'findRelationships()');
-
-      // Join results for IN and OUT, removing duplicates.
-      const result = inFormatted;
-      outFormatted.forEach((outItem) => {
-        // Add only if the relationship doesn't already exist.
-        if (!result.find((item) => item._uid === outItem._uid)) {
-          result.push(outItem);
-        }
-      });
-
-      return result;
+      return formatResult(await this.g.query(query));
     }
     return [];
   }
