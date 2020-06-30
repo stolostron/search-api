@@ -37,7 +37,7 @@ export async function getClusterRbacConfig(kubeToken) {
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/rolebindings'),
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/clusterroles'),
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/clusterrolebindings'),
-      kubeConnector.get('/apis/project.openshift.io/v1/projects'),
+      kubeConnector.get('/api/v1/namespaces'),
     ]);
     // Get just the items, whole response contians kube request resourceVersion which changes everytime
     // check if we can just do resourceVersion
