@@ -266,11 +266,19 @@ export default function pollUserAccess() {
           const roleBindingsCache = _.get(roleAccessCache, 'roleBindings', '');
           const clusteroleBindingsCache = _.get(roleAccessCache, 'clusterRoleBindings', '');
           const namespacesCache = _.get(roleAccessCache, 'namespaces', '');
+
           logger.warn('roles access equality: ', JSON.stringify(res.roles) !== JSON.stringify(rolesCache));
           logger.warn('clusterRoles access equality: ', JSON.stringify(res.clusterRoles) !== JSON.stringify(clusterRolesCache));
           logger.warn('roleBindings access equality: ', JSON.stringify(res.roleBindings) !== JSON.stringify(roleBindingsCache));
           logger.warn('clusterRoleBindings access equality: ', JSON.stringify(res.clusterRoleBindings) !== JSON.stringify(clusteroleBindingsCache));
           logger.warn('namespaces access equality: ', JSON.stringify(res.namespaces) !== JSON.stringify(namespacesCache));
+          logger.warn('roles cache length: ', rolesCache.length);
+          logger.warn('roles res length: ', res.roles.length);
+          res.roles.forEach((role, idx) => {
+            logger.warn(role.metadata.resourceVersion);
+            logger.warn(rolesCache[idx].metadata.resourceVersion);
+          });
+
           if (JSON.stringify(res.roles) !== JSON.stringify(rolesCache)
             || JSON.stringify(res.clusterRoles) !== JSON.stringify(clusterRolesCache)
             || JSON.stringify(res.roleBindings) !== JSON.stringify(roleBindingsCache)
