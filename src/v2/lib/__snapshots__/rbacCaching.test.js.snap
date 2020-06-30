@@ -65,15 +65,15 @@ Object {
     Object {
       "metadata": Object {
         "annotations": Object {
-          "openshift.io/sa.scc.mcs": "s0:c16,c0",
-          "openshift.io/sa.scc.supplemental-groups": "1000240000/10000",
-          "openshift.io/sa.scc.uid-range": "1000240000/10000",
+          "openshift.io/sa.scc.mcs": "s0:c21,c0",
+          "openshift.io/sa.scc.supplemental-groups": "1000420000/10000",
+          "openshift.io/sa.scc.uid-range": "1000420000/10000",
         },
-        "creationTimestamp": "2020-02-09T04:09:15Z",
+        "creationTimestamp": "2020-06-26T17:44:03Z",
         "name": "default",
-        "resourceVersion": "69436",
-        "selfLink": "/apis/project.openshift.io/v1/projects/default",
-        "uid": "ef8d61de-4af1-11ea-969d-00000a10275c",
+        "resourceVersion": "8602",
+        "selfLink": "/api/v1/namespaces/default",
+        "uid": "27238466-2f13-4d61-bd10-b02567d72096",
       },
       "spec": Object {
         "finalizers": Array [
