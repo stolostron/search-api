@@ -397,7 +397,9 @@ export default class RedisGraphConnector {
       logger.perfLog(startTime, 150, 'getAllProperties()');
 
       result._results.forEach((record) => {
-        values.push(record.values()[0]);
+        if (record.values()[0].charAt(0) !== '_' && values.indexOf(record.values()[0]) < 0) {
+          values.push(record.values()[0]);
+        }
       });
     }
     return values;
