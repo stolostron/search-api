@@ -5,6 +5,7 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ *
  * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
 
@@ -39,7 +40,7 @@ export async function getClusterRbacConfig(kubeToken) {
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/clusterrolebindings'),
       kubeConnector.get('/api/v1/namespaces'),
     ]);
-    // Get just the items, whole response contians resourceVersion which changes everytime
+    // Get just the items, whole response contians kube request resourceVersion which changes everytime
     // check if we can just do resourceVersion
     return {
       roles: roles && roles.items,
@@ -266,6 +267,7 @@ export default function pollUserAccess() {
           const roleBindingsCache = _.get(roleAccessCache, 'roleBindings', '');
           const clusteroleBindingsCache = _.get(roleAccessCache, 'clusterRoleBindings', '');
           const namespacesCache = _.get(roleAccessCache, 'namespaces', '');
+
           if (JSON.stringify(res.roles) !== JSON.stringify(rolesCache)
             || JSON.stringify(res.clusterRoles) !== JSON.stringify(clusterRolesCache)
             || JSON.stringify(res.roleBindings) !== JSON.stringify(roleBindingsCache)

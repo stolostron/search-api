@@ -5,30 +5,36 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ *
+ * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
 import fs from 'fs';
 import redis from 'redis';
 import dns from 'dns';
-import { RedisGraph } from 'redisgraph.js';
+import { Graph } from 'redisgraph.js';
 import moment from 'moment';
 import config from '../../../config';
 import logger from '../lib/logger';
 import { isRequired } from '../lib/utils';
 import pollRbacCache, { getUserRbacFilter } from '../lib/rbacCaching';
 
-// FIXME: Is there a more efficient way?
+// Is there a more efficient way?
 function formatResult(results, removePrefix = true) {
   const startTime = Date.now();
   const resultList = [];
   while (results.hasNext()) {
-    const resultItem = {};
+    let resultItem = {};
     const record = results.next();
     record.keys().forEach((key) => {
       if (record.get(key) !== null) {
         if (removePrefix) {
-          resultItem[key.substr(key.indexOf('.') + 1)] = record.get(key);
+          if (record.get(key).properties !== null && record.get(key).properties !== undefined) {
+            resultItem = record.get(key).properties;
+          } else {
+            resultItem[key.substring(key.indexOf('.') + 1)] = record.get(key);
+          }
         } else {
           resultItem[key] = record.get(key);
         }
@@ -56,8 +62,8 @@ const isDateFilter = (value) => ['hour', 'day', 'week', 'month', 'year'].indexOf
 export function getOperator(value) {
   const match = value.match(/^<=|^>=|^!=|^!|^<|^>|^=]/);
   let operator = (match && match[0]) || '=';
-  if (operator === '!') {
-    operator = '!=';
+  if (operator === '!' || operator === '!=') {
+    operator = '<>';
   }
   return operator;
 }
@@ -136,7 +142,15 @@ function getRedisClient() {
       const redisPort = redisInfo[1];
       const redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
       const ipFamily = await getIPvFamily(redisHost);
-      redisClient = redis.createClient(redisPort, redisHost, { auth_pass: config.get('redisPassword'), tls: { servername: redisHost, ca: [redisCert] }, family: ipFamily });
+      redisClient = redis.createClient(
+        redisPort,
+        redisHost,
+        {
+          auth_pass: config.get('redisPassword'),
+          tls: { servername: redisHost, ca: [redisCert] },
+          family: ipFamily,
+        },
+      );
     }
 
     redisClient.ping((error, result) => {
@@ -187,7 +201,7 @@ export default class RedisGraphConnector {
   async isServiceAvailable() {
     await getRedisClient();
     if (this.g === undefined && redisClient) {
-      this.g = new RedisGraph('icp-search', redisClient);
+      this.g = new Graph('search-db', redisClient);
     }
     return redisClient.connected && redisClient.ready;
   }
@@ -380,14 +394,13 @@ export default class RedisGraphConnector {
     const values = ['cluster', 'kind', 'label', 'name', 'namespace', 'status'];
 
     if (this.rbac.length > 0) {
-      const whereClause = await this.createWhereClause([], ['n']);
       const startTime = Date.now();
-      const result = await this.g.query(`MATCH (n) ${whereClause} RETURN n LIMIT 1`);
+      const result = await this.g.query('CALL db.propertyKeys()');
       logger.perfLog(startTime, 150, 'getAllProperties()');
-      result._header.forEach((property) => {
-        const label = property.substr(property.indexOf('.') + 1);
-        if (label.charAt(0) !== '_' && values.indexOf(label) < 0) {
-          values.push(label);
+
+      result._results.forEach((record) => {
+        if (record.values()[0].charAt(0) !== '_' && values.indexOf(record.values()[0]) < 0) {
+          values.push(record.values()[0]);
         }
       });
     }
@@ -435,7 +448,7 @@ export default class RedisGraphConnector {
       if (isDate(valuesList[0])) {
         return ['isDate'];
       } if (isNumber(valuesList[0])) { //  || isNumWithChars(valuesList[0]))
-        valuesList = valuesList.filter((res) => (isNumber(res) || (!isNumber(res))) && res !== ''); //  && isNumWithChars(res)
+        valuesList = valuesList.filter((res) => (isNumber(res) || (!isNumber(res))) && res !== '');
         valuesList.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
         if (valuesList.length > 1) {
           return ['isNumber', valuesList[0], valuesList[valuesList.length - 1]];
@@ -449,38 +462,20 @@ export default class RedisGraphConnector {
 
   async findRelationships({ filters = [], countOnly = false, relatedKinds = [] } = {}) {
     if (this.rbac.length > 0) {
-      // A limitation in RedisGraph 1.0.15 is that we can't query relationships without direction.
-      // To work around this limitation, we use 2 queries to get IN and OUT relationships.
-      // Then we join both results.
-
       const whereClause = await this.createWhereClause(filters, ['n', 'r']);
       const startTime = Date.now();
 
-      let inQuery = '';
-      let outQuery = '';
+      let query = '';
       if (relatedKinds.length > 0) {
         const relatedClause = relatedKinds.map((kind) => `r.kind = '${kind}'`).join(' OR ');
-        inQuery = `MATCH (n)<-[]-(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
-        outQuery = `MATCH (n)-[]->(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
+        query = `MATCH (n)-[]-(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
       } else {
-        inQuery = `MATCH (n)<-[]-(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
-        outQuery = `MATCH (n)-[]->(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
+        query = `MATCH (n)-[]-(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
       }
 
-      const [inFormatted, outFormatted] = await Promise.all([formatResult(await this.g.query(inQuery)), formatResult(await this.g.query(outQuery))]);
-
+      const result = await this.g.query(query);
       logger.perfLog(startTime, 300, 'findRelationships()');
-
-      // Join results for IN and OUT, removing duplicates.
-      const result = inFormatted;
-      outFormatted.forEach((outItem) => {
-        // Add only if the relationship doesn't already exist.
-        if (!result.find((item) => item._uid === outItem._uid)) {
-          result.push(outItem);
-        }
-      });
-
-      return result;
+      return formatResult(result);
     }
     return [];
   }

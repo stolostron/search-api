@@ -5,6 +5,8 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ *
+ * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
 
 import _ from 'lodash';
@@ -26,7 +28,7 @@ export default class QueryModel {
     if (response.status === 'Failure' && response.reason === 'NotFound') {
       return {};
     } if (response.code || response.message) {
-      throw new Error(`ERROR ${response.error.code} - ${response.error.message}`);
+      throw new Error(`ERROR ${response.code} - ${response.message}`);
     }
     return response;
   }

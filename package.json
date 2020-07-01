@@ -1,6 +1,6 @@
 {
   "name": "search-api",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "API server for search.",
   "main": "index.js",
   "scripts": {
@@ -53,8 +53,8 @@
     "morgan": "^1.10.0",
     "nconf": "^0.10.0",
     "nocache": "^2.1.0",
-    "redis": "^2.8.0",
-    "redisgraph.js": "^1.1.4",
+    "redis": "^3.0.2",
+    "redisgraph.js": "^2.1.0",
     "requestretry": "^4.1.1",
     "security-middleware": "github:open-cluster-management/security-middleware"
   },
