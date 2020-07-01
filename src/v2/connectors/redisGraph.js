@@ -199,7 +199,7 @@ export default class RedisGraphConnector {
   async isServiceAvailable() {
     await getRedisClient();
     if (this.g === undefined && redisClient) {
-      this.g = new Graph('icp-search', redisClient);
+      this.g = new Graph('search', redisClient);
     }
     return redisClient.connected && redisClient.ready;
   }
