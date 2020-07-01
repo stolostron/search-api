@@ -19,7 +19,6 @@ describe('redisGraph', () => {
       expect(getOperator('>')).toEqual('>');
       expect(getOperator('!')).toEqual('<>');
       expect(getOperator('!=')).toEqual('<>');
-
     });
     test('getFilterString', async () => {
       expect(getFilterString([{ property: 'kind', values: ['cluster'] }])).toEqual('(n.kind = \'cluster\')');
@@ -49,6 +48,7 @@ describe('redisGraph', () => {
    * findRelationships
    */
 
+  // eslint-ignore jest/no-commented-out-tests
   // describe('Testing Connector Functions', () => {
   //   const searchConnector = new RedisGraphConnector({ rbac: ['kube-system', 'default'],
   //      req: { user: { name: 'TestUserName' }, kubeToken: 'Bearer localdev' } });

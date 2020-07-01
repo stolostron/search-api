@@ -5,7 +5,7 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
- * 
+ *
  * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
 /* eslint-disable no-underscore-dangle */
@@ -473,7 +473,7 @@ export default class RedisGraphConnector {
         query = `MATCH (n)-[]-(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
       }
 
-      const result = await this.g.query(query)
+      const result = await this.g.query(query);
       logger.perfLog(startTime, 300, 'findRelationships()');
       return formatResult(result);
     }
