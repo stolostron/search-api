@@ -1,6 +1,6 @@
 {
   "name": "search-api",
-  "version": "2.0",
+  "version": "2.0.0",
   "description": "API server for search.",
   "main": "index.js",
   "scripts": {
@@ -26,12 +26,6 @@
   },
   "author": "",
   "license": "SEE LICENSE IN LICENSE",
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint",
-      "pre-push": "npm run test"
-    }
-  },
   "dependencies": {
     "agentkeepalive": "^4.1.2",
     "apollo-errors": "^1.9.0",
