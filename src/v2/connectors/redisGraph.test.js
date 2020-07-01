@@ -15,9 +15,11 @@ describe('redisGraph', () => {
     test('getOperator', async () => {
       expect(getOperator('<=')).toEqual('<=');
       expect(getOperator('>=')).toEqual('>=');
-      expect(getOperator('!=')).toEqual('!=');
       expect(getOperator('<')).toEqual('<');
       expect(getOperator('>')).toEqual('>');
+      expect(getOperator('!')).toEqual('<>');
+      expect(getOperator('!=')).toEqual('<>');
+
     });
     test('getFilterString', async () => {
       expect(getFilterString([{ property: 'kind', values: ['cluster'] }])).toEqual('(n.kind = \'cluster\')');

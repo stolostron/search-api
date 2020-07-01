@@ -5,6 +5,8 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ * 
+ * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
@@ -18,7 +20,7 @@ import logger from '../lib/logger';
 import { isRequired } from '../lib/utils';
 import pollRbacCache, { getUserRbacFilter } from '../lib/rbacCaching';
 
-// FIXME: Is there a more efficient way?
+// Is there a more efficient way?
 function formatResult(results, removePrefix = true) {
   const startTime = Date.now();
   const resultList = [];
@@ -60,8 +62,8 @@ const isDateFilter = (value) => ['hour', 'day', 'week', 'month', 'year'].indexOf
 export function getOperator(value) {
   const match = value.match(/^<=|^>=|^!=|^!|^<|^>|^=]/);
   let operator = (match && match[0]) || '=';
-  if (operator === '!') {
-    operator = '!=';
+  if (operator === '!' || operator === '!=') {
+    operator = '<>';
   }
   return operator;
 }
@@ -199,7 +201,7 @@ export default class RedisGraphConnector {
   async isServiceAvailable() {
     await getRedisClient();
     if (this.g === undefined && redisClient) {
-      this.g = new Graph('search', redisClient);
+      this.g = new Graph('search-db', redisClient);
     }
     return redisClient.connected && redisClient.ready;
   }
@@ -446,7 +448,7 @@ export default class RedisGraphConnector {
       if (isDate(valuesList[0])) {
         return ['isDate'];
       } if (isNumber(valuesList[0])) { //  || isNumWithChars(valuesList[0]))
-        valuesList = valuesList.filter((res) => (isNumber(res) || (!isNumber(res))) && res !== ''); //  && isNumWithChars(res)
+        valuesList = valuesList.filter((res) => (isNumber(res) || (!isNumber(res))) && res !== '');
         valuesList.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
         if (valuesList.length > 1) {
           return ['isNumber', valuesList[0], valuesList[valuesList.length - 1]];
@@ -471,8 +473,9 @@ export default class RedisGraphConnector {
         query = `MATCH (n)-[]-(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
       }
 
+      const result = await this.g.query(query)
       logger.perfLog(startTime, 300, 'findRelationships()');
-      return formatResult(await this.g.query(query));
+      return formatResult(result);
     }
     return [];
   }
