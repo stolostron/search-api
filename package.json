@@ -55,7 +55,7 @@
     "nocache": "^2.1.0",
     "redis": "^3.0.2",
     "redisgraph.js": "^2.1.0",
-    "requestretry": "^4.1.1",
+    "requestretry": "^1.13.0",
     "security-middleware": "github:open-cluster-management/security-middleware"
   },
   "devDependencies": {
