@@ -8,6 +8,7 @@
  ****************************************************************************** */
 
 import { HttpsAgent } from 'agentkeepalive';
+import logger from './logger';
 
 const httpsAgent = new HttpsAgent({
   keepAlive: true,
@@ -15,11 +16,22 @@ const httpsAgent = new HttpsAgent({
   freeSocketTimeout: 1000 * 60 * 3, // Keep connections alive longer than the cache.
 });
 
+function retryStrategy(err, response /* body, options */) {
+  // retry the request if we had an error or if the response was "429 - too many requests"
+  const retry = !!err || response.statusCode === 429;
+  if (retry) {
+    logger.warn(`Retrying kube-api request. Response code was: ${response.statusCode}`);
+  }
+  return retry;
+}
+
 const request = require('requestretry').defaults({
   agent: httpsAgent,
   json: true,
-  maxAttempts: 1,
+  maxAttempts: 10,
   strictSSL: false,
+  retryDelay: 500,
+  retryStrategy,
 });
 
 export default request;
