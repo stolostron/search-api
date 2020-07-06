@@ -158,7 +158,10 @@ async function getUserAccess(kubeToken, namespace) {
   };
 
   const res = await kubeConnector.post(url, jsonBody);
-  const rules = (isOpenshift ? res.status.rules : res.status.resourceRules) || [];
+  if (res.status === undefined) {
+    logger.warning(`Error from api call to ${url} \n`, res);
+  }
+  const rules = res.status ? res.status.rules : [];
 
   // Check if user can get all resources in namespace.
   if (rules.find(({ verbs = [], apiGroups = [], resources = [] }) => (

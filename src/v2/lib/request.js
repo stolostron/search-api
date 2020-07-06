@@ -18,7 +18,7 @@ const httpsAgent = new HttpsAgent({
 const request = require('requestretry').defaults({
   agent: httpsAgent,
   json: true,
-  maxAttempts: 1,
+  maxAttempts: 5,
   strictSSL: false,
 });
 
