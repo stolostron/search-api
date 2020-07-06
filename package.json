@@ -16,7 +16,7 @@
     "lint": "eslint --ext .js .",
     "lint:fix": "eslint --ext .js --fix .",
     "watch": "nodemon --inspect ./src/index.js --exec babel-node",
-    "test": "jest --verbose",
+    "test": "npm run build && jest --verbose",
     "test:update-snapshot": "jest --updateSnapshot",
     "test:watch": "jest --watch"
   },
