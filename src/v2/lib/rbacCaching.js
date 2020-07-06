@@ -91,7 +91,7 @@ async function getNonNamespacedResources(kubeToken) {
             .filter((resource) => resource.namespaced === false && !resource.name.includes('/'))
             .map((resource) => resource.name);
           return nonNamespaced.filter((item) => item.length > 0)
-            .map((item) => ({ name: item, apiGroup: groupVersion.split('/')[0], groupVersion }));
+            .map((item) => ({ name: item, group: groupVersion.split('/')[0], groupVersion }));
         });
         return mappedResources;
       }));
