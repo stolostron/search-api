@@ -97,6 +97,7 @@ async function getNonNamespacedResources(kubeToken) {
       }));
       return _.flatten(results.filter((item) => item.length > 0));
     }
+    logger.warn('Error getting available cluster scoped apis from /apis. \n', res);
     return 'Error getting available apis.';
   }));
 
@@ -106,6 +107,7 @@ async function getNonNamespacedResources(kubeToken) {
       return res.resources.filter((resource) => resource.namespaced === false && resource.name.indexOf('/') === -1)
         .map((item) => ({ name: item.name, group: '', groupVersion: '/v1' }));
     }
+    logger.warn('Error getting available cluster scoped apis from /api/v1. \n', res);
     return 'Error getting available apis.';
   }));
   logger.perfLog(startTime, 500, 'getNonNamespacedResources()');
