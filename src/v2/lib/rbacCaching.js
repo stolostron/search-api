@@ -72,7 +72,7 @@ async function checkIfOpenShiftPlatform(kubeToken) {
   isOpenshift = false;
 }
 
-// Rename to getClusterScopedResources()
+// Get ClusterScopedResources()
 async function getNonNamespacedResources(kubeToken) {
   const startTime = Date.now();
   const resources = [];
@@ -83,7 +83,7 @@ async function getNonNamespacedResources(kubeToken) {
   // Get cluster scoped resources WITH an api group
   resources.push(kubeConnector.post('/apis', {}).then(async (res) => {
     if (res && res.groups) {
-      const apiGroupVersions = res.groups.map((group) => group.preferredVersion.groupVersion || group.name);
+      const apiGroupVersions = res.groups.map((group) => group.preferredVersion.groupVersion);
       const results = await Promise.all(apiGroupVersions.map((groupVersion) => {
         const mappedResources = kubeConnector.get(`/apis/${groupVersion}`).then((result) => {
           const groupResources = _.get(result, 'resources', []);
@@ -104,7 +104,7 @@ async function getNonNamespacedResources(kubeToken) {
   resources.push(kubeConnector.get('/api/v1').then((res) => {
     if (res && res.resources) {
       return res.resources.filter((resource) => resource.namespaced === false && resource.name.indexOf('/') === -1)
-        .map((item) => ({ name: item.name, groupVersion: 'null' }));
+        .map((item) => ({ name: item.name, group: '', groupVersion: '/v1' }));
     }
     return 'Error getting available apis.';
   }));
@@ -112,7 +112,7 @@ async function getNonNamespacedResources(kubeToken) {
   return _.flatten(await Promise.all(resources));
 }
 
-// Rename to getClusterScopedAcccess()
+// Get ClusterScopedAcccess
 async function getNonNamespacedAccess(kubeToken) {
   const startTime = Date.now();
   const kubeConnector = !isTest
@@ -120,17 +120,12 @@ async function getNonNamespacedAccess(kubeToken) {
     : new MockKubeConnector();
   const nonNamespacedResources = await getNonNamespacedResources(kubeToken);
   const results = await Promise.all(nonNamespacedResources.map((resource) => {
-    if (resource.groupVersion === undefined || resource.group === undefined) {
-      logger.warn(`resource.groupVersion is [${resource.groupVersion}] and resource.group is [${resource.groupVersion}]
-         for resource.name [${resource.name}]. Unable to include these resources on search results.`);
-      return null;
-    }
     const jsonBody = {
       apiVersion: 'authorization.k8s.io/v1',
       kind: 'SelfSubjectAccessReview',
       spec: {
         resourceAttributes: {
-          group: resource.group,
+          group: resource.group || '',
           resource: resource.name,
           verb: 'get',
         },
@@ -138,7 +133,8 @@ async function getNonNamespacedAccess(kubeToken) {
     };
     return kubeConnector.post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', jsonBody).then((res) => {
       if (res && res.status && res.status.allowed) {
-        return `'null_${resource.group}_${resource.name}'`;
+        const apiGroup = resource.group === '' ? 'null' : resource.group;
+        return `'null_${apiGroup}_${resource.name}'`;
       }
       return null;
     });
