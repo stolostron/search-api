@@ -159,7 +159,7 @@ async function getUserAccess(kubeToken, namespace) {
 
   const res = await kubeConnector.post(url, jsonBody);
   if (res.status === undefined) {
-    logger.warning(`Error from api call to ${url} \n`, res);
+    logger.warn(`Error from api call to ${url} \n`, res);
   }
   const rules = res.status ? res.status.rules : [];
 
