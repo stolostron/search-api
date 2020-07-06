@@ -72,6 +72,7 @@ async function checkIfOpenShiftPlatform(kubeToken) {
   isOpenshift = false;
 }
 
+// Get ClusterScopedResources()
 async function getNonNamespacedResources(kubeToken) {
   const startTime = Date.now();
   const resources = [];
@@ -79,38 +80,38 @@ async function getNonNamespacedResources(kubeToken) {
     ? new KubeConnector({ token: `${kubeToken}` })
     : new MockKubeConnector();
 
-  // Get non-namespaced resources WITH an api group
+  // Get cluster scoped resources WITH an api group
   resources.push(kubeConnector.post('/apis', {}).then(async (res) => {
     if (res && res.groups) {
-      const apiGroups = res.groups.map((group) => group.preferredVersion.groupVersion);
-      const results = await Promise.all(apiGroups.map((group) => {
-        const mappedResources = kubeConnector.get(`/apis/${group}`).then((result) => {
-          const groupResources = _.get(result, 'resources', []);
-          const nonNamespaced = groupResources
-            .filter((resource) => resource.namespaced === false && !resource.name.includes('/'))
-            .map((resource) => resource.name);
-          return nonNamespaced.filter((item) => item.length > 0)
-            .map((item) => ({ name: item, apiGroup: group }));
-        });
-        return mappedResources;
-      }));
+      const apiGroupVersions = res.groups.map((group) => group.preferredVersion.groupVersion);
+      const results = await Promise.all(apiGroupVersions.map((groupVersion) => kubeConnector.get(`/apis/${groupVersion}`).then((result) => {
+        const groupResources = _.get(result, 'resources', []);
+        const nonNamespaced = groupResources
+          .filter((resource) => resource.namespaced === false && !resource.name.includes('/'))
+          .map((resource) => resource.name);
+        return nonNamespaced.filter((item) => item.length > 0)
+          .map((item) => ({ name: item, group: groupVersion.split('/')[0], groupVersion }));
+      })));
       return _.flatten(results.filter((item) => item.length > 0));
     }
+    logger.warn('Error getting available cluster scoped apis from /apis. \n', res);
     return 'Error getting available apis.';
   }));
 
-  // Get non-namespaced resources WITHOUT an api group
+  // Get cluster scoped resources WITHOUT an api group
   resources.push(kubeConnector.get('/api/v1').then((res) => {
     if (res && res.resources) {
       return res.resources.filter((resource) => resource.namespaced === false && resource.name.indexOf('/') === -1)
-        .map((item) => ({ name: item.name, apiGroup: 'null' }));
+        .map((item) => ({ name: item.name, group: '', groupVersion: '/v1' }));
     }
+    logger.warn('Error getting available cluster scoped apis from /api/v1. \n', res);
     return 'Error getting available apis.';
   }));
   logger.perfLog(startTime, 500, 'getNonNamespacedResources()');
   return _.flatten(await Promise.all(resources));
 }
 
+// Get ClusterScopedAcccess
 async function getNonNamespacedAccess(kubeToken) {
   const startTime = Date.now();
   const kubeConnector = !isTest
@@ -123,15 +124,16 @@ async function getNonNamespacedAccess(kubeToken) {
       kind: 'SelfSubjectAccessReview',
       spec: {
         resourceAttributes: {
-          verb: 'get',
+          group: resource.group || '',
           resource: resource.name,
+          verb: 'get',
         },
       },
     };
     return kubeConnector.post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', jsonBody).then((res) => {
       if (res && res.status && res.status.allowed) {
-        const apiGroupWithoutVersion = resource.apiGroup.split('/');
-        return `'null_${apiGroupWithoutVersion[0]}_${resource.name}'`;
+        const apiGroup = resource.group === '' ? 'null' : resource.group;
+        return `'null_${apiGroup}_${resource.name}'`;
       }
       return null;
     });
