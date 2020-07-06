@@ -20,7 +20,7 @@ function retryStrategy(err, response /* body, options */) {
   // retry the request if we had an error or if the response was "429 - too many requests"
   const retry = !!err || response.statusCode === 429;
   if (retry) {
-    logger.warn('Retrying kube-api request.');
+    logger.warn(`Retrying kube-api request. Response code was: ${response.statusCode}`);
   }
   return retry;
 }
@@ -28,9 +28,9 @@ function retryStrategy(err, response /* body, options */) {
 const request = require('requestretry').defaults({
   agent: httpsAgent,
   json: true,
-  maxAttempts: 5,
+  maxAttempts: 10,
   strictSSL: false,
-  retryDelay: 1000,
+  retryDelay: 500,
   retryStrategy,
 });
 
