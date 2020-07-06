@@ -84,17 +84,14 @@ async function getNonNamespacedResources(kubeToken) {
   resources.push(kubeConnector.post('/apis', {}).then(async (res) => {
     if (res && res.groups) {
       const apiGroupVersions = res.groups.map((group) => group.preferredVersion.groupVersion);
-      const results = await Promise.all(apiGroupVersions.map((groupVersion) => {
-        const mappedResources = kubeConnector.get(`/apis/${groupVersion}`).then((result) => {
-          const groupResources = _.get(result, 'resources', []);
-          const nonNamespaced = groupResources
-            .filter((resource) => resource.namespaced === false && !resource.name.includes('/'))
-            .map((resource) => resource.name);
-          return nonNamespaced.filter((item) => item.length > 0)
-            .map((item) => ({ name: item, group: groupVersion.split('/')[0], groupVersion }));
-        });
-        return mappedResources;
-      }));
+      const results = await Promise.all(apiGroupVersions.map((groupVersion) => kubeConnector.get(`/apis/${groupVersion}`).then((result) => {
+        const groupResources = _.get(result, 'resources', []);
+        const nonNamespaced = groupResources
+          .filter((resource) => resource.namespaced === false && !resource.name.includes('/'))
+          .map((resource) => resource.name);
+        return nonNamespaced.filter((item) => item.length > 0)
+          .map((item) => ({ name: item, group: groupVersion.split('/')[0], groupVersion }));
+      })));
       return _.flatten(results.filter((item) => item.length > 0));
     }
     logger.warn('Error getting available cluster scoped apis from /apis. \n', res);
