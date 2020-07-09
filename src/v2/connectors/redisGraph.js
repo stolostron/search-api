@@ -206,25 +206,25 @@ export default class RedisGraphConnector {
     return redisClient.connected && redisClient.ready;
   }
 
-  async getRbacString(objAliases = []) {
+  async getRbacValues() {
     const startTime = Date.now();
-    const rbacFilter = await getUserRbacFilter(this.req, objAliases);
-    logger.perfLog(startTime, 1000, 'getRbacString()');
-    return rbacFilter;
+    const rbacValues = await getUserRbacFilter(this.req);
+    logger.perfLog(startTime, 1000, 'getRbacValues()');
+    return rbacValues;
   }
 
   async createWhereClause(filters, aliases) {
-    const rbac = await this.getRbacString(aliases);
+    let whereClause = '';
+    const rbac = await this.getRbacValues();
+    const savedRbacValues = `WITH [${rbac}] as rbacVals`;
+    const whereClauseRbac = aliases.map((alias) => `${alias}._rbac IN rbacVals`).join(' OR ');
     const filterString = getFilterString(filters);
-    if (rbac !== '') {
-      if (filterString !== '') {
-        return `WHERE ${filterString} AND ${rbac}`;
-      }
-      return `WHERE ${rbac}`;
-    } if (filterString !== '') {
-      return `WHERE ${filterString}`;
+    if (filterString !== '') {
+      whereClause = `WHERE ${filterString} AND ${whereClauseRbac}`;
+    } else {
+      whereClause = `WHERE ${whereClauseRbac}`;
     }
-    return '';
+    return { savedRbacValues, whereClause };
   }
 
   /*
@@ -242,8 +242,8 @@ export default class RedisGraphConnector {
    * Get Applications.
    */
   async runApplicationsQuery() {
-    const whereClause = await this.createWhereClause([], ['app']);
-    const query = `MATCH (app:Application) ${whereClause} RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard, app.selfLink, app.label ORDER BY app.name ASC`;
+    const { savedRbacValues, whereClause } = await this.createWhereClause([], ['app']);
+    const query = `${savedRbacValues} MATCH (app:Application) ${whereClause} RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard, app.selfLink, app.label ORDER BY app.name ASC`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runApplicationsQuery' });
   }
 
@@ -258,8 +258,8 @@ export default class RedisGraphConnector {
    * ]
    */
   async runAppClustersQuery() {
-    const whereClause = await this.createWhereClause([], ['app', 'cluster']);
-    const query = `MATCH (app:Application)<-[{_interCluster:true}]-(cluster:Cluster) ${whereClause} RETURN DISTINCT app._uid, count(cluster._uid) as count`;
+    const { savedRbacValues, whereClause } = await this.createWhereClause([], ['app', 'cluster']);
+    const query = `${savedRbacValues} MATCH (app:Application)<-[{_interCluster:true}]-(cluster:Cluster) ${whereClause} RETURN DISTINCT app._uid, count(cluster._uid) as count`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppClustersQuery' });
   }
 
@@ -267,8 +267,8 @@ export default class RedisGraphConnector {
    * Get Applications with their related Hub Subscriptions.
    */
   async runAppHubSubscriptionsQuery() {
-    const whereClause = await this.createWhereClause([], ['app', 'sub']);
-    const query = `MATCH (app:Application)-[]->(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN app._uid, sub._uid, sub.status, sub.channel`;
+    const { savedRbacValues, whereClause } = await this.createWhereClause([], ['app', 'sub']);
+    const query = `${savedRbacValues} MATCH (app:Application)-[]->(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN app._uid, sub._uid, sub.status, sub.channel`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubSubscriptionsQuery' });
   }
 
@@ -277,8 +277,8 @@ export default class RedisGraphConnector {
    * return the number of pods for this app as a string, grouped by their status
   */
   async runAppPodsCountQuery() {
-    const whereClause = await this.createWhereClause([], ['app', 'pod']);
-    const query = `MATCH (app:Application)<-[{_interCluster:true}]-(pod:Pod) ${whereClause} RETURN app._uid, pod._uid, pod.status`;
+    const { savedRbacValues, whereClause } = await this.createWhereClause([], ['app', 'pod']);
+    const query = `${savedRbacValues} MATCH (app:Application)<-[{_interCluster:true}]-(pod:Pod) ${whereClause} RETURN app._uid, pod._uid, pod.status`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppPodsCountQuery' });
   }
 
@@ -287,8 +287,8 @@ export default class RedisGraphConnector {
    # Remote subscriptions are those with the '_hostingSubscription' property.
    */
   async runAppRemoteSubscriptionsQuery() {
-    const whereClause = await this.createWhereClause([], ['app', 'sub']);
-    const query = `MATCH (app:Application)<-[{_interCluster:true}]-(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hostingSubscription)=true RETURN app._uid, sub._uid, sub.status`;
+    const { savedRbacValues, whereClause } = await this.createWhereClause([], ['app', 'sub']);
+    const query = `${savedRbacValues} MATCH (app:Application)<-[{_interCluster:true}]-(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hostingSubscription)=true RETURN app._uid, sub._uid, sub.status`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppRemoteSubscriptionsQuery' });
   }
 
@@ -296,8 +296,8 @@ export default class RedisGraphConnector {
    * Get clusters related to any application.
    */
   async runGlobalAppClusterCountQuery() {
-    const whereClause = await this.createWhereClause([], ['app', 'cluster']);
-    const query = `MATCH (app:Application)<-[{_interCluster:true}]-(cluster:Cluster) ${whereClause} RETURN DISTINCT cluster._uid`;
+    const { savedRbacValues, whereClause } = await this.createWhereClause([], ['app', 'cluster']);
+    const query = `${savedRbacValues} MATCH (app:Application)<-[{_interCluster:true}]-(cluster:Cluster) ${whereClause} RETURN DISTINCT cluster._uid`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppClusterCountQuery' });
   }
 
@@ -305,8 +305,8 @@ export default class RedisGraphConnector {
    * Get channels related to any application.
    */
   async runGlobalAppChannelsQuery() {
-    const whereClause = await this.createWhereClause([], ['app', 'ch']);
-    const query = `MATCH (app:Application)<-[]-(ch:Channel) ${whereClause} RETURN DISTINCT ch`;
+    const { savedRbacValues, whereClause } = await this.createWhereClause([], ['app', 'ch']);
+    const query = `${savedRbacValues} MATCH (app:Application)<-[]-(ch:Channel) ${whereClause} RETURN DISTINCT ch`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppChannelsQuery' });
   }
 
@@ -314,8 +314,8 @@ export default class RedisGraphConnector {
    * Get hub subscriptions related to any application.
    */
   async runGlobalAppHubSubscriptionsQuery() {
-    const whereClause = await this.createWhereClause([], ['app', 'sub']);
-    const query = `MATCH (app:Application)-[]->(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN DISTINCT sub`;
+    const { savedRbacValues, whereClause } = await this.createWhereClause([], ['app', 'sub']);
+    const query = `${savedRbacValues} MATCH (app:Application)-[]->(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN DISTINCT sub`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppHubSubscriptionsQuery' });
   }
 
@@ -323,8 +323,8 @@ export default class RedisGraphConnector {
    * Get remote subscriptions related to any application.
    */
   async runGlobalAppRemoteSubscriptionsQuery() {
-    const whereClause = await this.createWhereClause([], ['app', 'sub']);
-    const query = `MATCH (app:Application)<-[{_interCluster:true}]-(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hostingSubscription)=true RETURN DISTINCT sub`;
+    const { savedRbacValues, whereClause } = await this.createWhereClause([], ['app', 'sub']);
+    const query = `${savedRbacValues} MATCH (app:Application)<-[{_interCluster:true}]-(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hostingSubscription)=true RETURN DISTINCT sub`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppRemoteSubscriptionsQuery' });
   }
 
@@ -342,9 +342,9 @@ export default class RedisGraphConnector {
       // for labels so we need to filter here, which btw is inefficient.
       const labelFilter = filters.find((f) => f.property === 'label');
       if (labelFilter) {
-        const whereClause = await this.createWhereClause(filters.filter((f) => f.property !== 'label'), ['n']);
+        const { savedRbacValues, whereClause } = await this.createWhereClause(filters.filter((f) => f.property !== 'label'), ['n']);
         const startTime = Date.now();
-        const query = `MATCH (n) ${whereClause} RETURN n`;
+        const query = `${savedRbacValues} MATCH (n) ${whereClause} RETURN n`;
         const result = await this.g.query(query);
         logger.perfLog(startTime, 150, 'LabelSearchQuery');
         return formatResult(result).filter((item) => (item.label && labelFilter.values.find((value) => item.label.indexOf(value) > -1)));
@@ -355,9 +355,9 @@ export default class RedisGraphConnector {
           ? `SKIP ${querySkipIdx * config.get('defaultQueryLoopLimit')} LIMIT ${config.get('defaultQueryLoopLimit')}`
           : `LIMIT ${limit}`;
       }
-      const whereClause = await this.createWhereClause(filters, ['n']);
+      const { savedRbacValues, whereClause } = await this.createWhereClause(filters, ['n']);
       const startTime = Date.now();
-      const query = `MATCH (n) ${whereClause} RETURN n ${limitClause}`;
+      const query = `${savedRbacValues} MATCH (n) ${whereClause} RETURN n ${limitClause}`;
       const result = await this.g.query(query);
       logger.perfLog(startTime, 150, 'SearchQuery');
       return formatResult(result);
@@ -376,9 +376,9 @@ export default class RedisGraphConnector {
       if (labelFilter) {
         return this.runSearchQuery(filters, -1, -1).then((r) => r.length);
       }
-      const whereClause = await this.createWhereClause(filters, ['n']);
+      const { savedRbacValues, whereClause } = await this.createWhereClause(filters, ['n']);
       const startTime = Date.now();
-      const result = await this.g.query(`MATCH (n) ${whereClause} RETURN count(n)`);
+      const result = await this.g.query(`${savedRbacValues} MATCH (n) ${whereClause} RETURN count(n)`);
       logger.perfLog(startTime, 150, 'runSearchQueryCountOnly()');
       if (result.hasNext() === true) {
         return result.next().get('count(n)');
@@ -421,9 +421,14 @@ export default class RedisGraphConnector {
       const limitClause = limit <= 0 || property === 'label'
         ? ''
         : `LIMIT ${limit}`;
-      const result = filters.length > 0
-        ? await this.g.query(`MATCH (n) ${await this.createWhereClause(filters, ['n'])} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`)
-        : await this.g.query(`MATCH (n) ${await this.createWhereClause([], ['n'])} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`);
+      let result = null;
+      if (filters.length > 0) {
+        const { savedRbacValues, whereClause } = await this.createWhereClause(filters, ['n']);
+        result = await this.g.query(`${savedRbacValues} MATCH (n) ${whereClause} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`);
+      } else {
+        const { savedRbacValues, whereClause } = await this.createWhereClause([], ['n']);
+        result = await this.g.query(`${savedRbacValues} MATCH (n) ${whereClause} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`);
+      }
       logger.perfLog(startTime, 500, 'getAllValues()');
       result._results.forEach((record) => {
         if (record.values()[0] !== 'NULL' && record.values()[0] !== null) {
@@ -462,15 +467,15 @@ export default class RedisGraphConnector {
 
   async findRelationships({ filters = [], countOnly = false, relatedKinds = [] } = {}) {
     if (this.rbac.length > 0) {
-      const whereClause = await this.createWhereClause(filters, ['n', 'r']);
+      const { savedRbacValues, whereClause } = await this.createWhereClause(filters, ['n', 'r']);
       const startTime = Date.now();
 
       let query = '';
       if (relatedKinds.length > 0) {
         const relatedClause = relatedKinds.map((kind) => `r.kind = '${kind}'`).join(' OR ');
-        query = `MATCH (n)-[]-(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
+        query = `${savedRbacValues} MATCH (n)-[]-(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
       } else {
-        query = `MATCH (n)-[]-(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
+        query = `${savedRbacValues} MATCH (n)-[]-(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
       }
 
       const result = await this.g.query(query);

@@ -190,7 +190,7 @@ async function getUserAccess(kubeToken, namespace) {
   }).filter((r) => r !== null);
 }
 
-async function buildRbacString(req, objAliases) {
+async function buildRbacString(req) {
   const { user: { namespaces, idToken } } = req;
   const startTime = Date.now();
   if (isOpenshift === null) await checkIfOpenShiftPlatform(idToken);
@@ -207,30 +207,30 @@ async function buildRbacString(req, objAliases) {
   }
 
   const rbacData = new Set(_.flattenDeep(data));
-  const aliasesStrings = objAliases.map((alias) => `${alias}._rbac IN [${[...rbacData].join(', ')}]`);
+  const aliasesStrings = [...rbacData].join(', ');
 
   logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaces && namespaces.length} )`);
-  return `${aliasesStrings.join(' AND ')}`;
+  return aliasesStrings;
 }
 
-export async function getUserRbacFilter(req, objAliases) {
-  let rbacFilter = null;
+export async function getUserRbacFilter(req) {
+  let rbacValues = null;
   // update/add user on active list
   activeUsers[req.user.name] = Date.now();
   const currentUser = cache.get(req.user.idToken);
   // 1. if user exists -> return the cached RBAC string
   if (currentUser) {
-    rbacFilter = await buildRbacString(req, objAliases);
+    rbacValues = await buildRbacString(req);
   }
   // 2. if (users 1st time querying || they have been removed b/c inactivity || they otherwise dont have an rbacString)
   //    then  create the RBAC String
-  if (!rbacFilter) {
+  if (!rbacValues) {
     const currentUserCache = cache.get(req.user.idToken); // Get user cache again because it may have changed.
     cache.set(req.user.idToken, { ...currentUserCache });
-    rbacFilter = buildRbacString(req, objAliases);
-    return rbacFilter;
+    rbacValues = buildRbacString(req);
+    return rbacValues;
   }
-  return rbacFilter;
+  return rbacValues;
 }
 
 // Poll users access every 1 mins(default) in the background to determine RBAC revalidation
