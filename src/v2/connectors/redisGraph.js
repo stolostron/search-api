@@ -224,6 +224,9 @@ export default class RedisGraphConnector {
     }
     const whereClauseRbac = aliases.map((alias) => {
       if (nsValues.length > 0) {
+        // When user is allowed to see all resources in a given namespace:
+        //  - For hub resources, we use the `namespace` field.
+        //  - For managed cluster resources, use the `_clusterNamespace`, which is the namespace where the cluster is mapped on the hub.
         return `${alias}._rbac IN allowedResources OR ((exists(${alias}._hubClusterResource) AND (${alias}.namespace IN allowedNS)) OR (exists(${alias}._clusterNamespace) AND ${alias}._clusterNamespace IN allowedNS))`;
       }
       return `${alias}._rbac IN allowedResources`;
