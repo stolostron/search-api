@@ -81,7 +81,7 @@ async function getNonNamespacedResources(kubeToken) {
     : new MockKubeConnector();
 
   // Get cluster scoped resources WITH an api group
-  resources.push(kubeConnector.post('/apis', {}).then(async (res) => {
+  resources.push(kubeConnector.get('/apis', {}).then(async (res) => {
     if (res && res.groups) {
       const apiGroupVersions = res.groups.map((group) => group.preferredVersion.groupVersion);
       const results = await Promise.all(apiGroupVersions.map((groupVersion) => kubeConnector.get(`/apis/${groupVersion}`).then((result) => {
@@ -207,18 +207,10 @@ async function buildRbacString(req, objAliases) {
   }
 
   const rbacData = new Set(_.flattenDeep(data));
-  const aliasesData = objAliases.map((alias) => [...rbacData].map((item) => {
-    // If user can get all reasources in the namespace, we get an rbac string with the format `namespace_*_*`.
-    if (item.endsWith('_*_*')) {
-      // Adds the openCypher clause: `substring(n._rbac,0, 9) = 'namespace'`
-      return `substring(${alias}._rbac, 0, ${item.length - 4}) = '${item.substring(0, item.length - 4)}'`;
-    }
-    return `${alias}._rbac = ${item}`;
-  }));
-  const aliasesStrings = aliasesData.map((a) => a.join(' OR '));
+  const aliasesStrings = objAliases.map((alias) => `${alias}._rbac IN [${[...rbacData].join(', ')}]`);
 
   logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaces && namespaces.length} )`);
-  return `(${aliasesStrings.join(') AND (')})`;
+  return `${aliasesStrings.join(' AND ')}`;
 }
 
 export async function getUserRbacFilter(req, objAliases) {
