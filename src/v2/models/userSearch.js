@@ -13,11 +13,8 @@ import _ from 'lodash';
 import config from '../../../config';
 import { isRequired } from '../lib/utils';
 
-function formatName(name) {
-  if (name) {
-    return name.toLowerCase().replace(/[^a-z0-9-.]/g, '-');
-  }
-  return '';
+function formatName(name = '') {
+  return name.toLowerCase().replace(/[^a-z0-9-.]/g, '-');
 }
 export default class QueryModel {
   constructor({ kubeConnector = isRequired('kubeConnector') }) {

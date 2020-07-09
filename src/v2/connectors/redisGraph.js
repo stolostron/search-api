@@ -434,14 +434,9 @@ export default class RedisGraphConnector {
       const limitClause = limit <= 0 || property === 'label'
         ? ''
         : `LIMIT ${limit}`;
-      let result = null;
-      if (filters.length > 0) {
-        const { withClause, whereClause } = await this.createWhereClause(filters, ['n']);
-        result = await this.g.query(`${withClause} MATCH (n) ${whereClause} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`);
-      } else {
-        const { withClause, whereClause } = await this.createWhereClause([], ['n']);
-        result = await this.g.query(`${withClause} MATCH (n) ${whereClause} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`);
-      }
+      const f = filters.length > 0 ? filters : [];
+      const { withClause, whereClause } = await this.createWhereClause(f, ['n']);
+      const result = await this.g.query(`${withClause} MATCH (n) ${whereClause} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`);
       logger.perfLog(startTime, 500, 'getAllValues()');
       result._results.forEach((record) => {
         if (record.values()[0] !== 'NULL' && record.values()[0] !== null) {
