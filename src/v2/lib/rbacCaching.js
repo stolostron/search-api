@@ -81,7 +81,7 @@ async function getNonNamespacedResources(kubeToken) {
     : new MockKubeConnector();
 
   // Get cluster scoped resources WITH an api group
-  resources.push(kubeConnector.post('/apis', {}).then(async (res) => {
+  resources.push(kubeConnector.get('/apis', {}).then(async (res) => {
     if (res && res.groups) {
       const apiGroupVersions = res.groups.map((group) => group.preferredVersion.groupVersion);
       const results = await Promise.all(apiGroupVersions.map((groupVersion) => kubeConnector.get(`/apis/${groupVersion}`).then((result) => {
@@ -167,7 +167,7 @@ async function getUserAccess(kubeToken, namespace) {
   if (rules.find(({ verbs = [], apiGroups = [], resources = [] }) => (
     verbs.includes('*') || verbs.includes('get')
   ) && apiGroups && apiGroups.includes('*') && resources.includes('*'))) {
-    return [`${namespace}_*_*`];
+    return [`'${namespace}'`];
   }
 
   // Build rbac list for this namespace.
@@ -190,7 +190,7 @@ async function getUserAccess(kubeToken, namespace) {
   }).filter((r) => r !== null);
 }
 
-async function buildRbacString(req, objAliases) {
+async function buildRbacString(req) {
   const { user: { namespaces, idToken } } = req;
   const startTime = Date.now();
   if (isOpenshift === null) await checkIfOpenShiftPlatform(idToken);
@@ -207,38 +207,33 @@ async function buildRbacString(req, objAliases) {
   }
 
   const rbacData = new Set(_.flattenDeep(data));
-  const aliasesData = objAliases.map((alias) => [...rbacData].map((item) => {
-    // If user can get all reasources in the namespace, we get an rbac string with the format `namespace_*_*`.
-    if (item.endsWith('_*_*')) {
-      // Adds the openCypher clause: `substring(n._rbac,0, 9) = 'namespace'`
-      return `substring(${alias}._rbac, 0, ${item.length - 4}) = '${item.substring(0, item.length - 4)}'`;
-    }
-    return `${alias}._rbac = ${item}`;
-  }));
-  const aliasesStrings = aliasesData.map((a) => a.join(' OR '));
+  const allowedNS = [...rbacData].filter((value) => !value.includes('_'));
+  const allowedResources = [...rbacData].filter((value) => value.includes('_'));
 
   logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaces && namespaces.length} )`);
-  return `(${aliasesStrings.join(') AND (')})`;
+  return { allowedResources, allowedNS };
 }
 
-export async function getUserRbacFilter(req, objAliases) {
-  let rbacFilter = null;
+export async function getUserRbacFilter(req) {
+  let allowedResources = null;
+  let allowedNS = null;
   // update/add user on active list
   activeUsers[req.user.name] = Date.now();
   const currentUser = cache.get(req.user.idToken);
   // 1. if user exists -> return the cached RBAC string
   if (currentUser) {
-    rbacFilter = await buildRbacString(req, objAliases);
+    const rbac = await buildRbacString(req);
+    allowedResources = rbac.allowedResources;
+    allowedNS = rbac.allowedNS;
   }
   // 2. if (users 1st time querying || they have been removed b/c inactivity || they otherwise dont have an rbacString)
   //    then  create the RBAC String
-  if (!rbacFilter) {
+  if (!allowedResources) {
     const currentUserCache = cache.get(req.user.idToken); // Get user cache again because it may have changed.
     cache.set(req.user.idToken, { ...currentUserCache });
-    rbacFilter = buildRbacString(req, objAliases);
-    return rbacFilter;
+    return buildRbacString(req);
   }
-  return rbacFilter;
+  return { allowedResources, allowedNS };
 }
 
 // Poll users access every 1 mins(default) in the background to determine RBAC revalidation

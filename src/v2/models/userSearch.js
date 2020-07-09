@@ -13,7 +13,7 @@ import _ from 'lodash';
 import config from '../../../config';
 import { isRequired } from '../lib/utils';
 
-function formatName(name) {
+function formatName(name = '') {
   return name.toLowerCase().replace(/[^a-z0-9-.]/g, '-');
 }
 export default class QueryModel {

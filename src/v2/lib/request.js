@@ -19,7 +19,9 @@ const httpsAgent = new HttpsAgent({
 function retryStrategy(err, response /* body, options */) {
   // retry the request if we had an error or if the response was "429 - too many requests"
   const retry = !!err || response.statusCode === 429;
-  if (retry) {
+  if (err) {
+    logger.warn(`Retrying kube-api request. Error was: ${err}`);
+  } else if (response.statusCode === 429) {
     logger.warn(`Retrying kube-api request. Response code was: ${response.statusCode}`);
   }
   return retry;
