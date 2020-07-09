@@ -150,4 +150,4 @@ Object {
 }
 `;
 
-exports[`RBAC Caching Tests creation of rbac string for search queries 1`] = `"'default_*_*', 'kube-public_*_*', 'kube-system_authorization.openshift.io_clusterroles', 'null_undefined_undefined', 'null_null_namespaces'"`;
+exports[`RBAC Caching Tests creation of rbac string for search queries 1`] = `"'default', 'kube-public', 'kube-system_authorization.openshift.io_clusterroles', 'null_undefined_undefined', 'null_null_namespaces'"`;

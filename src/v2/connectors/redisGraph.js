@@ -217,7 +217,7 @@ export default class RedisGraphConnector {
     let whereClause = '';
     const rbac = await this.getRbacValues();
     const savedRbacValues = `WITH [${rbac}] as rbacVals`;
-    const whereClauseRbac = aliases.map((alias) => `${alias}._rbac IN rbacVals`).join(' OR ');
+    const whereClauseRbac = aliases.map((alias) => `${alias}._rbac IN rbacVals OR ${alias}._clusterNamespace IN rbacVals`).join(' OR ');
     const filterString = getFilterString(filters);
     if (filterString !== '') {
       whereClause = `WHERE ${filterString} AND ${whereClauseRbac}`;
