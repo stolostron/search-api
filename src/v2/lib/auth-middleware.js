@@ -63,7 +63,7 @@ async function getNamespaces(usertoken) {
   return Array.isArray(nsResponse.items) ? nsResponse.items.map((ns) => ns.metadata.name) : [];
 }
 
-async function getUsername(token) {
+async function getUsername(usertoken) {
   const serviceaccountToken = getServiceAccountToken();
   const options = {
     url: `${config.get('API_SERVER_URL')}/apis/authentication.k8s.io/v1/tokenreviews`,
@@ -78,7 +78,7 @@ async function getUsername(token) {
       apiVersion: 'authentication.k8s.io/v1',
       kind: 'TokenReview',
       spec: {
-        token,
+        usertoken,
       },
     },
   };
