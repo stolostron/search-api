@@ -208,9 +208,9 @@ export default class RedisGraphConnector {
 
   async getRbacValues() {
     const startTime = Date.now();
-    const { rbacValues, nsValues } = await getUserRbacFilter(this.req);
+    const { allowedResources, allowedNS } = await getUserRbacFilter(this.req);
     logger.perfLog(startTime, 1000, 'getRbacValues()');
-    return { rbacValues, nsValues };
+    return { allowedResources, allowedNS };
   }
 
   async createWhereClause(filters, aliases) {

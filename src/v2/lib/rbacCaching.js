@@ -207,33 +207,33 @@ async function buildRbacString(req) {
   }
 
   const rbacData = new Set(_.flattenDeep(data));
-  const nsValues = [...rbacData].filter((value) => !value.includes('_'));
-  const rbacValues = [...rbacData].filter((value) => value.includes('_'));
+  const allowedNS = [...rbacData].filter((value) => !value.includes('_'));
+  const allowedResources = [...rbacData].filter((value) => value.includes('_'));
 
   logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaces && namespaces.length} )`);
-  return { rbacValues, nsValues };
+  return { allowedResources, allowedNS };
 }
 
 export async function getUserRbacFilter(req) {
-  let rbacValues = null;
-  let nsValues = null;
+  let allowedResources = null;
+  let allowedNS = null;
   // update/add user on active list
   activeUsers[req.user.name] = Date.now();
   const currentUser = cache.get(req.user.idToken);
   // 1. if user exists -> return the cached RBAC string
   if (currentUser) {
     const rbac = await buildRbacString(req);
-    rbacValues = rbac.rbacValues;
-    nsValues = rbac.nsValues;
+    allowedResources = rbac.allowedResources;
+    allowedNS = rbac.allowedNS;
   }
   // 2. if (users 1st time querying || they have been removed b/c inactivity || they otherwise dont have an rbacString)
   //    then  create the RBAC String
-  if (!rbacValues) {
+  if (!allowedResources) {
     const currentUserCache = cache.get(req.user.idToken); // Get user cache again because it may have changed.
     cache.set(req.user.idToken, { ...currentUserCache });
     return buildRbacString(req);
   }
-  return { rbacValues, nsValues };
+  return { allowedResources, allowedNS };
 }
 
 // Poll users access every 1 mins(default) in the background to determine RBAC revalidation
