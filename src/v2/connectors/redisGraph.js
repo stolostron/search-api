@@ -216,18 +216,18 @@ export default class RedisGraphConnector {
   async createWhereClause(filters, aliases) {
     let whereClause = '';
     const { rbacValues, nsValues } = await this.getRbacValues();
-    const savedRbacValues = `WITH [${rbacValues}] AS rbacVals`;
+    let savedRbacValues = '';
+    if (nsValues.length > 0) {
+      savedRbacValues = `WITH [${rbacValues}] AS allowedResources, [${nsValues}] AS allowedNS`;
+    } else {
+      savedRbacValues = `WITH [${rbacValues}] AS allowedResources`;
+    }
     const whereClauseRbac = aliases.map((alias) => {
-      const rbacClause = `${alias}._rbac IN rbacVals`;
-      const nsClause = nsValues.map((ns) => {
-        const nsStr = `substring(${alias}._rbac, 0, ${ns.length - 2}) = ${ns}`;
-        return nsStr;
-      }).join(' OR ');
-      if (nsClause) {
-        return `${rbacClause} OR ${nsClause}`;
+      if (nsValues.length > 0) {
+        return `${alias}._rbac IN allowedResources OR ((exists(${alias}._hubClusterResource) AND (${alias}.namespace IN allowedNS)) OR (exists(${alias}._clusterNamespace) AND ${alias}._clusterNamespace IN allowedNS))`;
       }
-      return rbacClause;
-    }).join(' OR ');
+      return `${alias}._rbac IN allowedResources`;
+    }).join(' OR');
     const filterString = getFilterString(filters);
     if (filterString !== '') {
       whereClause = `WHERE ${filterString} AND (${whereClauseRbac})`;

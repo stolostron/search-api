@@ -208,7 +208,7 @@ async function buildRbacString(req) {
 
   const rbacData = new Set(_.flattenDeep(data));
   const nsValues = [...rbacData].filter((value) => !value.includes('_'));
-  const rbacValues = [...rbacData].join(', ');
+  const rbacValues = [...rbacData].filter((value) => value.includes('_'));
 
   logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaces && namespaces.length} )`);
   return { rbacValues, nsValues };

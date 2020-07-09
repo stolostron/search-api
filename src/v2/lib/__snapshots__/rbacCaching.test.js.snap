@@ -156,6 +156,10 @@ Object {
     "'default'",
     "'kube-public'",
   ],
-  "rbacValues": "'default', 'kube-public', 'kube-system_authorization.openshift.io_clusterroles', 'null_undefined_undefined', 'null_null_namespaces'",
+  "rbacValues": Array [
+    "'kube-system_authorization.openshift.io_clusterroles'",
+    "'null_undefined_undefined'",
+    "'null_null_namespaces'",
+  ],
 }
 `;
