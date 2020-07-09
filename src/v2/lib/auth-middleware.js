@@ -78,7 +78,7 @@ async function getUsername(usertoken) {
       apiVersion: 'authentication.k8s.io/v1',
       kind: 'TokenReview',
       spec: {
-        usertoken,
+        token: usertoken,
       },
     },
   };
