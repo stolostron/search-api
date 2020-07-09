@@ -207,30 +207,33 @@ async function buildRbacString(req) {
   }
 
   const rbacData = new Set(_.flattenDeep(data));
-  const aliasesStrings = [...rbacData].join(', ');
+  const nsValues = [...rbacData].filter((value) => !value.includes('_'));
+  const rbacValues = [...rbacData].join(', ');
 
   logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaces && namespaces.length} )`);
-  return aliasesStrings;
+  return { rbacValues, nsValues };
 }
 
 export async function getUserRbacFilter(req) {
   let rbacValues = null;
+  let nsValues = null;
   // update/add user on active list
   activeUsers[req.user.name] = Date.now();
   const currentUser = cache.get(req.user.idToken);
   // 1. if user exists -> return the cached RBAC string
   if (currentUser) {
-    rbacValues = await buildRbacString(req);
+    const rbac = await buildRbacString(req);
+    rbacValues = rbac.rbacValues;
+    nsValues = rbac.nsValues;
   }
   // 2. if (users 1st time querying || they have been removed b/c inactivity || they otherwise dont have an rbacString)
   //    then  create the RBAC String
   if (!rbacValues) {
     const currentUserCache = cache.get(req.user.idToken); // Get user cache again because it may have changed.
     cache.set(req.user.idToken, { ...currentUserCache });
-    rbacValues = buildRbacString(req);
-    return rbacValues;
+    return buildRbacString(req);
   }
-  return rbacValues;
+  return { rbacValues, nsValues };
 }
 
 // Poll users access every 1 mins(default) in the background to determine RBAC revalidation

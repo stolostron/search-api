@@ -30,7 +30,7 @@ const jestConfig = {
     global: {
       branches: 38,
       functions: 59,
-      lines: 50,
+      lines: 49,
       statements: 50,
     },
   },

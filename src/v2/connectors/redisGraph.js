@@ -208,21 +208,31 @@ export default class RedisGraphConnector {
 
   async getRbacValues() {
     const startTime = Date.now();
-    const rbacValues = await getUserRbacFilter(this.req);
+    const { rbacValues, nsValues } = await getUserRbacFilter(this.req);
     logger.perfLog(startTime, 1000, 'getRbacValues()');
-    return rbacValues;
+    return { rbacValues, nsValues };
   }
 
   async createWhereClause(filters, aliases) {
     let whereClause = '';
-    const rbac = await this.getRbacValues();
-    const savedRbacValues = `WITH [${rbac}] as rbacVals`;
-    const whereClauseRbac = aliases.map((alias) => `${alias}._rbac IN rbacVals OR ${alias}._clusterNamespace IN rbacVals`).join(' OR ');
+    const { rbacValues, nsValues } = await this.getRbacValues();
+    const savedRbacValues = `WITH [${rbacValues}] AS rbacVals`;
+    const whereClauseRbac = aliases.map((alias) => {
+      const rbacClause = `${alias}._rbac IN rbacVals`;
+      const nsClause = nsValues.map((ns) => {
+        const nsStr = `substring(${alias}._rbac, 0, ${ns.length - 2}) = ${ns}`;
+        return nsStr;
+      }).join(' OR ');
+      if (nsClause) {
+        return `${rbacClause} OR ${nsClause}`;
+      }
+      return rbacClause;
+    }).join(' OR ');
     const filterString = getFilterString(filters);
     if (filterString !== '') {
-      whereClause = `WHERE ${filterString} AND ${whereClauseRbac}`;
+      whereClause = `WHERE ${filterString} AND (${whereClauseRbac})`;
     } else {
-      whereClause = `WHERE ${whereClauseRbac}`;
+      whereClause = `WHERE (${whereClauseRbac})`;
     }
     return { savedRbacValues, whereClause };
   }
