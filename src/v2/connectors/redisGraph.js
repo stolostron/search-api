@@ -272,7 +272,7 @@ export default class RedisGraphConnector {
    */
   async runAppClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'cluster']);
-    const query = `${withClause} MATCH (app:Application)<-[{_interCluster:true}]-(cluster:Cluster) ${whereClause} RETURN DISTINCT app._uid, count(cluster._uid) as count`;
+    const query = `${withClause} MATCH (app:Application)<-[{_interCluster:true}]-(cluster:Cluster) ${whereClause} RETURN DISTINCT app._uid, count(DISTINCT cluster._uid) as count`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppClustersQuery' });
   }
 
