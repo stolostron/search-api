@@ -7,6 +7,7 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 
+import _ from 'lodash';
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
 
@@ -21,10 +22,11 @@ import logger from '../lib/logger';
 function groupByStatus(resources, statusKey) {
   const result = {};
   resources.forEach((r) => {
-    if (result[r[statusKey]]) {
-      result[r[statusKey]] += 1;
+    const status = _.get(r, statusKey);
+    if (result[status]) {
+      result[status] += 1;
     } else {
-      result[r[statusKey]] = 1;
+      result[status] = 1;
     }
   });
   return result;
