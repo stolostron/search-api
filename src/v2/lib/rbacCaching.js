@@ -172,7 +172,7 @@ async function getUserAccess(kubeToken, namespace) {
 
   // Build rbac list for this namespace.
   return rules.map((rule) => {
-    if (rule.verbs.includes('get')) {
+    if (rule.verbs.includes('get') || rule.verbs.includes('*')) {
       // RBAC string is defined as "namespace_apigroup_kind"
       const resources = [];
       const ns = (namespace === '' || namespace === undefined) ? 'null' : namespace;
