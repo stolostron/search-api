@@ -281,8 +281,17 @@ export default class RedisGraphConnector {
    */
   async runAppHubSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
-    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})-[]->(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN app._uid, sub._uid, sub.status, sub.channel`;
+    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})-[]->(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN app._uid, sub._uid, sub._timewindow, sub.status, sub.channel`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubSubscriptionsQuery' });
+  }
+
+  /*
+   * Get Applications with their related Hub Channels.
+   */
+  async runAppHubChannelsQuery() {
+    const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub', 'ch']);
+    const query = `${withClause} MATCH (app:Application)-[*1]->(sub:Subscription)-[*1]->(ch:Channel) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN app._uid, sub._uid, sub._gitbranch, sub._gitpath, sub._gitcommit, ch._uid, ch.type, ch.pathname`;
+    return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubChannelsQuery' });
   }
 
   /*

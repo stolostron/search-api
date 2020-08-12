@@ -27,6 +27,9 @@ export const typeDef = gql`
     # Number of clusters where this application has created any resources.
     clusterCount: Int
 
+    # Hub channels associated with this application
+    hubChannels: [JSON]
+
     # Hub subscriptions associated with this application.
     # Hub subscriptions are those without '_hostingSubscription' AND with _hubClusterResource=true
     hubSubscriptions: [Subscription]
@@ -41,6 +44,7 @@ export const typeDef = gql`
 
   type Subscription {
     _uid: String
+    _timewindow: String
     status: String
     channel: String
   }
@@ -77,6 +81,7 @@ export const resolver = {
     namespace: (parent) => parent['app.namespace'],
     selfLink: (parent) => parent['app.selfLink'],
     clusterCount: (parent, args, { appModel }) => appModel.resolveAppClustersCount(parent['app._uid']),
+    hubChannels: (parent, args, { appModel }) => appModel.resolveAppHubChannels(parent['app._uid']),
     hubSubscriptions: (parent, args, { appModel }) => appModel.resolveAppHubSubscriptions(parent['app._uid']),
     podStatusCount: (parent, args, { appModel }) => appModel.resolveAppPodsCount(parent['app._uid']),
     remoteSubscriptionStatusCount: (parent, args, { appModel }) => appModel.resolveAppRemoteSubscriptions(parent['app._uid']),
@@ -89,6 +94,7 @@ export const resolver = {
   },
   Subscription: {
     _uid: (parent) => parent['sub._uid'],
+    _timewindow: (parent) => parent['sub._timewindow'],
     status: (parent) => parent['sub.status'],
     channel: (parent) => parent['sub.channel'],
   },

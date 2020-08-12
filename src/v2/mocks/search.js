@@ -150,12 +150,43 @@ export default class MockSearchConnector {
         'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
         'sub.status': 'Propagated',
         'sub.channel': 'default/mortgage-channel',
+        'sub._timewindow': 'blocked',
       },
       {
         'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
         'sub._uid': 'local-cluster/66426f24-3bd3-11ea-a488-00000a100f99',
         'sub.status': 'Propagated',
         'sub.channel': 'dev1/dev1',
+        'sub._timewindow': 'active',
+      },
+    ];
+  }
+
+  async runAppHubChannelsQuery() {
+    return [
+      {
+        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+        'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
+        'sub._gitbranch': 'master',
+        'sub._gitpath': 'helloworld',
+        'sub._gitcommit': 'd67d8e10dcfa41dddcac14952e9872e1dfece06f',
+        'ch._uid': 'local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728',
+        'ch.type': 'Git',
+        'ch.pathname': 'https://github.com/fxiang1/app-samples.git',
+      },
+      {
+        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+        'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
+        'ch._uid': 'local-cluster/6c8dcb97-5e6e-4606-9b55-ae3eb05fcfb5',
+        'ch.type': 'Namespace',
+        'ch.pathname': 'sample-ns',
+      },
+      {
+        'app._uid': 'local-cluster/app-02-uid',
+        'sub._uid': 'local-cluster/66426f24-3bd3-11ea-a488-00000a100f99',
+        'ch._uid': 'local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728',
+        'ch.type': 'HelmRepo',
+        'ch.pathname': 'http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts',
       },
     ];
   }

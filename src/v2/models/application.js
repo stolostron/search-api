@@ -59,8 +59,8 @@ export default class AppModel {
       }
       return this[`${searchConnectorQueryName}Promise`];
     }
-    logger.error('Expected to recive a function.', queryFn, searchConnectorQueryName);
-    return Promise.reject(new Error('Expected to recive a function.'));
+    logger.error('Expected to receive a function.', queryFn, searchConnectorQueryName);
+    return Promise.reject(new Error('Expected to receive a function.'));
   }
 
   /*
@@ -94,6 +94,14 @@ export default class AppModel {
    */
   async resolveAppHubSubscriptions(appUid) {
     const subs = await this.runQueryOnlyOnce('runAppHubSubscriptionsQuery');
+    return subs.filter((s) => s['app._uid'] === appUid);
+  }
+
+  /*
+   * For a given application, resolve the hub channels.
+   */
+  async resolveAppHubChannels(appUid) {
+    const subs = await this.runQueryOnlyOnce('runAppHubChannelsQuery');
     return subs.filter((s) => s['app._uid'] === appUid);
   }
 
