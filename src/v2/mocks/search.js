@@ -150,14 +150,14 @@ export default class MockSearchConnector {
         'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
         'sub.status': 'Propagated',
         'sub.channel': 'default/mortgage-channel',
-        'sub._timewindow': 'blocked',
+        'sub.timeWindow': 'blocked',
       },
       {
         'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
         'sub._uid': 'local-cluster/66426f24-3bd3-11ea-a488-00000a100f99',
         'sub.status': 'Propagated',
         'sub.channel': 'dev1/dev1',
-        'sub._timewindow': 'active',
+        'sub.timeWindow': 'active',
       },
     ];
   }

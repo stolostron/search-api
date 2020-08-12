@@ -30,7 +30,7 @@ describe('Application Resolver', () => {
             remoteSubscriptionStatusCount
             hubSubscriptions {
               _uid
-              _timewindow
+              timeWindow
               status
               channel
             }

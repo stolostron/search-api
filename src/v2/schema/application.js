@@ -44,7 +44,7 @@ export const typeDef = gql`
 
   type Subscription {
     _uid: String
-    _timewindow: String
+    timeWindow: String
     status: String
     channel: String
   }
@@ -94,7 +94,7 @@ export const resolver = {
   },
   Subscription: {
     _uid: (parent) => parent['sub._uid'],
-    _timewindow: (parent) => parent['sub._timewindow'],
+    timeWindow: (parent) => parent['sub.timeWindow'],
     status: (parent) => parent['sub.status'],
     channel: (parent) => parent['sub.channel'],
   },

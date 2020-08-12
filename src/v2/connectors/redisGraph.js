@@ -281,7 +281,7 @@ export default class RedisGraphConnector {
    */
   async runAppHubSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
-    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})-[]->(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN app._uid, sub._uid, sub._timewindow, sub.status, sub.channel`;
+    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})-[]->(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN app._uid, sub._uid, sub.timeWindow, sub.status, sub.channel`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubSubscriptionsQuery' });
   }
 
