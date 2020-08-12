@@ -290,7 +290,10 @@ export default class RedisGraphConnector {
    */
   async runAppHubChannelsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub', 'ch']);
-    const query = `${withClause} MATCH (app:Application)-[*1]->(sub:Subscription)-[*1]->(ch:Channel) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN app._uid, sub._uid, sub._gitbranch, sub._gitpath, sub._gitcommit, ch._uid, ch.type, ch.pathname`;
+    const match = `${withClause} MATCH (app:Application)-[*1]->(sub:Subscription)-[*1]->(ch:Channel)`;
+    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
+    const additionalWhere = 'exists(sub._hubClusterResource)=true RETURN app._uid, sub._uid, sub._gitbranch, sub._gitpath, sub._gitcommit, ch._uid, ch.type, ch.pathname';
+    const query = `${match} ${where} ${additionalWhere}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubChannelsQuery' });
   }
 
