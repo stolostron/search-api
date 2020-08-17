@@ -6,6 +6,9 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// eslint-disable-next-line max-classes-per-file
+import _ from 'lodash';
+import RedisGraphConnector from '../connectors/redisGraph';
 
 const resourceTemplate = {
   cluster: (id) => ({
@@ -64,8 +67,191 @@ export const mockSearchResult = {
   },
 };
 
-/* eslint-disable class-methods-use-this */
-export default class MockSearchConnector {
+const MOCK_QUERIES = {
+  /*
+   * Application queries mocks.
+   */
+  runApplicationsQuery: [
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'app.created': '2020-01-23T13:56:32Z',
+      'app.dashboard':
+        'localhost/grafana/dashboard/db/app01-dashboard-via-federated-prometheus?namespace=sample',
+      'app.label': 'label1=value1; label2=value2',
+      'app.name': 'app01',
+      'app.namespace': 'sample',
+      'app.selfLink':
+        '/apis/app.k8s.io/v1beta1/namespaces/sample/applications/app01',
+    },
+    {
+      'app._uid': 'local-cluster/app-02-uid',
+      'app.created': '2020-01-23T13:56:32Z',
+      'app.dashboard':
+        'localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test',
+      'app.name': 'app02',
+      'app.namespace': 'test',
+      'app.selfLink':
+        '/apis/app.k8s.io/v1beta1/namespaces/test/applications/app02',
+    },
+  ],
+
+  runAppClustersQuery: [
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      count: 5,
+    },
+  ],
+
+  runAppHubSubscriptionsQuery: [
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
+      'sub.channel': 'dev1/dev1',
+    },
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
+      'sub.status': 'Propagated',
+      'sub.channel': 'default/mortgage-channel',
+      'sub.timeWindow': 'blocked',
+    },
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'sub._uid': 'local-cluster/66426f24-3bd3-11ea-a488-00000a100f99',
+      'sub.status': 'Propagated',
+      'sub.channel': 'dev1/dev1',
+      'sub.timeWindow': 'active',
+    },
+  ],
+
+  runAppHubChannelsQuery: [
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
+      'sub._gitbranch': 'master',
+      'sub._gitpath': 'helloworld',
+      'sub._gitcommit': 'd67d8e10dcfa41dddcac14952e9872e1dfece06f',
+      'ch._uid': 'local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728',
+      'ch.type': 'Git',
+      'ch.pathname': 'https://github.com/fxiang1/app-samples.git',
+    },
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
+      'ch._uid': 'local-cluster/6c8dcb97-5e6e-4606-9b55-ae3eb05fcfb5',
+      'ch.type': 'Namespace',
+      'ch.pathname': 'sample-ns',
+    },
+    {
+      'app._uid': 'local-cluster/app-02-uid',
+      'sub._uid': 'local-cluster/66426f24-3bd3-11ea-a488-00000a100f99',
+      'ch._uid': 'local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728',
+      'ch.type': 'HelmRepo',
+      'ch.pathname':
+        'http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts',
+    },
+  ],
+
+  runAppPodsCountQuery: [
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'pod.status': 'Running',
+    },
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'pod.status': 'Running',
+    },
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'pod.status': 'Failed',
+    },
+  ],
+
+  runAppRemoteSubscriptionsQuery: [
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
+      'sub.status': 'Subscribed',
+    },
+  ],
+
+  /*
+   * Global Application queries mocks.
+   */
+  runGlobalAppChannelsQuery: [
+    { 'ch._uid': 'local-cluster/mock-channel-1-uid' },
+    { 'ch._uid': 'local-cluster/mock-channel-2-uid' },
+  ],
+
+  runGlobalAppClusterCountQuery: [
+    { 'app._uid': 'local-cluster/mock-cluster-1-uid' },
+    { 'app._uid': 'local-cluster/mock-cluster-2-uid' },
+  ],
+
+  runGlobalAppHubSubscriptionsQuery: [
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
+      'sub.channel': 'dev1/dev1',
+    },
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
+      'sub.status': 'Propagated',
+      'sub.channel': 'default/mortgage-channel',
+    },
+  ],
+
+  runGlobalAppRemoteSubscriptionsQuery: [
+    {
+      'sub._uid': 'cluster-1/mock-remote-subscription-2-uid',
+      'sub.status': 'Subscribed',
+    },
+    {
+      'sub._uid': 'cluster-2/mock-remote-subscription-2-uid',
+      'sub.status': 'Propagated',
+    },
+  ],
+};
+
+export default class MockSearchConnector extends RedisGraphConnector {
+  constructor(args) {
+    super(args);
+
+    // Set up query functions that use the actual query-building code in RedisGraphConnector
+    // but return the result from static data in this file
+    Object.entries(MOCK_QUERIES).forEach(([key, value]) => {
+      this[key] = () => {
+        /* eslint-disable class-methods-use-this */
+        const query = new class extends MockSearchConnector {
+          constructor() {
+            super(args);
+            this.g = {
+              query: () => {
+                const clonedValue = _.cloneDeep(value);
+                const iterator = {
+                  hasNext: () => clonedValue.length > 0,
+                  next: () => {
+                    const record = new Map();
+                    Object.entries(clonedValue.shift()).forEach(([mapKey, mapValue]) => {
+                      record.set(mapKey, mapValue);
+                    });
+                    return {
+                      keys: () => Array.from(record.keys()),
+                      get: (k) => record.get(k),
+                    };
+                  },
+                };
+                return iterator;
+              },
+            };
+          }
+        }();
+        return RedisGraphConnector.prototype[key].call(query);
+      };
+    });
+  }
+
   async isServiceAvailable() {
     return true;
   }
@@ -108,159 +294,7 @@ export default class MockSearchConnector {
     }];
   }
 
-  // Application Query Mocks
-  async runApplicationsQuery() {
-    return [
-      {
-        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-        'app.created': '2020-01-23T13:56:32Z',
-        'app.dashboard': 'localhost/grafana/dashboard/db/app01-dashboard-via-federated-prometheus?namespace=sample',
-        'app.label': 'label1=value1; label2=value2',
-        'app.name': 'app01',
-        'app.namespace': 'sample',
-        'app.selfLink': '/apis/app.k8s.io/v1beta1/namespaces/sample/applications/app01',
-      },
-      {
-        'app._uid': 'local-cluster/app-02-uid',
-        'app.created': '2020-01-23T13:56:32Z',
-        'app.dashboard': 'localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test',
-        'app.name': 'app02',
-        'app.namespace': 'test',
-        'app.selfLink': '/apis/app.k8s.io/v1beta1/namespaces/test/applications/app02',
-      },
-    ];
-  }
-
-  async runAppClustersQuery() {
-    return [{
-      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-      count: 5,
-    }];
-  }
-
-  async runAppHubSubscriptionsQuery() {
-    return [
-      {
-        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-        'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
-        'sub.channel': 'dev1/dev1',
-      },
-      {
-        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-        'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
-        'sub.status': 'Propagated',
-        'sub.channel': 'default/mortgage-channel',
-        'sub.timeWindow': 'blocked',
-      },
-      {
-        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-        'sub._uid': 'local-cluster/66426f24-3bd3-11ea-a488-00000a100f99',
-        'sub.status': 'Propagated',
-        'sub.channel': 'dev1/dev1',
-        'sub.timeWindow': 'active',
-      },
-    ];
-  }
-
-  async runAppHubChannelsQuery() {
-    return [
-      {
-        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-        'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
-        'sub._gitbranch': 'master',
-        'sub._gitpath': 'helloworld',
-        'sub._gitcommit': 'd67d8e10dcfa41dddcac14952e9872e1dfece06f',
-        'ch._uid': 'local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728',
-        'ch.type': 'Git',
-        'ch.pathname': 'https://github.com/fxiang1/app-samples.git',
-      },
-      {
-        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-        'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
-        'ch._uid': 'local-cluster/6c8dcb97-5e6e-4606-9b55-ae3eb05fcfb5',
-        'ch.type': 'Namespace',
-        'ch.pathname': 'sample-ns',
-      },
-      {
-        'app._uid': 'local-cluster/app-02-uid',
-        'sub._uid': 'local-cluster/66426f24-3bd3-11ea-a488-00000a100f99',
-        'ch._uid': 'local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728',
-        'ch.type': 'HelmRepo',
-        'ch.pathname': 'http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts',
-      },
-    ];
-  }
-
-  async runAppPodsCountQuery() {
-    return [
-      {
-        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-        'pod.status': 'Running',
-      },
-      {
-        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-        'pod.status': 'Running',
-      },
-      {
-        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-        'pod.status': 'Failed',
-      },
-    ];
-  }
-
-  async runAppRemoteSubscriptionsQuery() {
-    return [
-      {
-        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-        'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
-        'sub.status': 'Subscribed',
-      },
-    ];
-  }
-
-  /*
-   * Global Application queries mocks.
-   */
-  async runGlobalAppChannelsQuery() {
-    return [
-      { 'ch._uid': 'local-cluster/mock-channel-1-uid' },
-      { 'ch._uid': 'local-cluster/mock-channel-2-uid' },
-    ];
-  }
-
-  async runGlobalAppClusterCountQuery() {
-    return [
-      { 'app._uid': 'local-cluster/mock-cluster-1-uid' },
-      { 'app._uid': 'local-cluster/mock-cluster-2-uid' },
-    ];
-  }
-
-  async runGlobalAppHubSubscriptionsQuery() {
-    return [
-      {
-        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-        'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
-        'sub.channel': 'dev1/dev1',
-      },
-      {
-        'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-        'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
-        'sub.status': 'Propagated',
-        'sub.channel': 'default/mortgage-channel',
-      },
-    ];
-  }
-
-  async runGlobalAppRemoteSubscriptionsQuery() {
-    return [
-      {
-        'sub._uid': 'cluster-1/mock-remote-subscription-2-uid',
-        'sub.status': 'Subscribed',
-      },
-      {
-        'sub._uid': 'cluster-2/mock-remote-subscription-2-uid',
-        'sub.status': 'Propagated',
-      },
-    ];
+  async getRbacValues() {
+    return { allowedResources: [], allowedNS: [] };
   }
 }

@@ -189,6 +189,9 @@ if (process.env.NODE_ENV !== 'test') {
   pollRbacCache();
 }
 
+// Applications queries are only interested in applications on the local cluster, in the API group 'app.k8s.io'
+const APPLICATION_MATCH = "(app:Application {cluster: 'local-cluster', apigroup: 'app.k8s.io'})";
+
 export default class RedisGraphConnector {
   constructor({
     rbac = isRequired('rbac'),
@@ -256,7 +259,9 @@ export default class RedisGraphConnector {
    */
   async runApplicationsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app']);
-    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'}) ${whereClause} RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard, app.selfLink, app.label ORDER BY app.name ASC`;
+    const matchClause = `MATCH ${APPLICATION_MATCH} ${whereClause}`;
+    const returnClause = 'RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard, app.selfLink, app.label ORDER BY app.name ASC';
+    const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runApplicationsQuery' });
   }
 
@@ -272,7 +277,9 @@ export default class RedisGraphConnector {
    */
   async runAppClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'cluster']);
-    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})<-[{_interCluster:true}]-(cluster:Cluster) ${whereClause} RETURN DISTINCT app._uid, count(DISTINCT cluster._uid) as count`;
+    const matchClause = `MATCH ${APPLICATION_MATCH}<-[{_interCluster:true}]-(cluster:Cluster) ${whereClause}`;
+    const returnClause = 'RETURN DISTINCT app._uid, count(DISTINCT cluster._uid) as count';
+    const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppClustersQuery' });
   }
 
@@ -281,7 +288,11 @@ export default class RedisGraphConnector {
    */
   async runAppHubSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
-    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})-[]->(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN app._uid, sub._uid, sub.timeWindow, sub.status, sub.channel`;
+    const matchClause = `MATCH ${APPLICATION_MATCH}-[]->(sub:Subscription)`;
+    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
+    const additionalWhere = 'exists(sub._hubClusterResource)=true';
+    const returnClause = 'RETURN app._uid, sub._uid, sub.timeWindow, sub.status, sub.channel';
+    const query = `${withClause} ${matchClause} ${where} ${additionalWhere} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubSubscriptionsQuery' });
   }
 
@@ -290,7 +301,7 @@ export default class RedisGraphConnector {
    */
   async runAppHubChannelsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub', 'ch']);
-    const match = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})-[*1]->(sub:Subscription)-[*1]->(ch:Channel)`;
+    const match = `${withClause} MATCH ${APPLICATION_MATCH}-[*1]->(sub:Subscription)-[*1]->(ch:Channel)`;
     const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
     const additionalWhere = 'exists(sub._hubClusterResource)=true RETURN app._uid, sub._uid, sub._gitbranch, sub._gitpath, sub._gitcommit, ch._uid, ch.type, ch.pathname';
     const query = `${match} ${where} ${additionalWhere}`;
@@ -303,7 +314,7 @@ export default class RedisGraphConnector {
   */
   async runAppPodsCountQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'pod']);
-    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})<-[{_interCluster:true}]-(pod:Pod) ${whereClause} RETURN app._uid, pod._uid, pod.status`;
+    const query = `${withClause} MATCH ${APPLICATION_MATCH}<-[{_interCluster:true}]-(pod:Pod) ${whereClause} RETURN app._uid, pod._uid, pod.status`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppPodsCountQuery' });
   }
 
@@ -313,7 +324,10 @@ export default class RedisGraphConnector {
    */
   async runAppRemoteSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
-    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})<-[{_interCluster:true}]-(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hostingSubscription)=true RETURN app._uid, sub._uid, sub.status`;
+    const matchClause = `MATCH ${APPLICATION_MATCH}<-[{_interCluster:true}]-(sub:Subscription)`;
+    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
+    const additionalWhere = 'exists(sub._hostingSubscription)=true';
+    const query = `${withClause} ${matchClause} ${where} ${additionalWhere} RETURN app._uid, sub._uid, sub.status`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppRemoteSubscriptionsQuery' });
   }
 
@@ -322,7 +336,7 @@ export default class RedisGraphConnector {
    */
   async runGlobalAppClusterCountQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'cluster']);
-    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})<-[{_interCluster:true}]-(cluster:Cluster) ${whereClause} RETURN DISTINCT cluster._uid`;
+    const query = `${withClause} MATCH ${APPLICATION_MATCH}<-[{_interCluster:true}]-(cluster:Cluster) ${whereClause} RETURN DISTINCT cluster._uid`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppClusterCountQuery' });
   }
 
@@ -331,7 +345,7 @@ export default class RedisGraphConnector {
    */
   async runGlobalAppChannelsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'ch']);
-    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})<-[]-(ch:Channel) ${whereClause} RETURN DISTINCT ch`;
+    const query = `${withClause} MATCH ${APPLICATION_MATCH}<-[]-(ch:Channel) ${whereClause} RETURN DISTINCT ch`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppChannelsQuery' });
   }
 
@@ -340,7 +354,10 @@ export default class RedisGraphConnector {
    */
   async runGlobalAppHubSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
-    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})-[]->(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=true RETURN DISTINCT sub`;
+    const matchClause = `MATCH ${APPLICATION_MATCH}-[]->(sub:Subscription)`;
+    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
+    const additionalWhere = 'exists(sub._hubClusterResource)=true';
+    const query = `${withClause} ${matchClause} ${where} ${additionalWhere} RETURN DISTINCT sub`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppHubSubscriptionsQuery' });
   }
 
@@ -349,7 +366,10 @@ export default class RedisGraphConnector {
    */
   async runGlobalAppRemoteSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
-    const query = `${withClause} MATCH (app:Application {apigroup: 'app.k8s.io'})<-[{_interCluster:true}]-(sub:Subscription) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hostingSubscription)=true RETURN DISTINCT sub._uid, sub.status`;
+    const matchClause = `MATCH ${APPLICATION_MATCH}<-[{_interCluster:true}]-(sub:Subscription)`;
+    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
+    const additionalWhere = 'exists(sub._hostingSubscription)=true';
+    const query = `${withClause} ${matchClause} ${where} ${additionalWhere} RETURN DISTINCT sub._uid, sub.status`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppRemoteSubscriptionsQuery' });
   }
 
