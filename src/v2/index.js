@@ -60,7 +60,7 @@ const apolloServer = new ApolloServer({
     let kubeConnector;
 
     if (isTest) {
-      searchConnector = new MockSearchConnector();
+      searchConnector = new MockSearchConnector({ rbac: req.user.namespaces, req });
       kubeConnector = new MockKubeConnector();
     } else {
       searchConnector = new RedisGraphConnector({ rbac: req.user.namespaces, req });
