@@ -31,6 +31,7 @@ describe('Application Resolver', () => {
             hubSubscriptions {
               _uid
               timeWindow
+              localPlacement
               status
               channel
             }

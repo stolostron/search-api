@@ -45,6 +45,7 @@ export const typeDef = gql`
   type Subscription {
     _uid: String
     timeWindow: String
+    localPlacement: Boolean
     status: String
     channel: String
   }
@@ -95,6 +96,7 @@ export const resolver = {
   Subscription: {
     _uid: (parent) => parent['sub._uid'],
     timeWindow: (parent) => parent['sub.timeWindow'],
+    localPlacement: (parent) => (parent['sub.localPlacement'] || '').toLowerCase() === 'true',
     status: (parent) => parent['sub.status'],
     channel: (parent) => parent['sub.channel'],
   },

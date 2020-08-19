@@ -107,6 +107,7 @@ const MOCK_QUERIES = {
       'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
       'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
       'sub.channel': 'dev1/dev1',
+      'sub.localPlacement': 'True',
     },
     {
       'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
