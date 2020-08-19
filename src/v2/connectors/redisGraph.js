@@ -291,7 +291,7 @@ export default class RedisGraphConnector {
     const matchClause = `MATCH ${APPLICATION_MATCH}-[]->(sub:Subscription)`;
     const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
     const additionalWhere = 'exists(sub._hubClusterResource)=true';
-    const returnClause = 'RETURN app._uid, sub._uid, sub.timeWindow, sub.status, sub.channel';
+    const returnClause = 'RETURN app._uid, sub._uid, sub.timeWindow, sub.localPlacement, sub.status, sub.channel';
     const query = `${withClause} ${matchClause} ${where} ${additionalWhere} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubSubscriptionsQuery' });
   }
