@@ -15,6 +15,7 @@ type Query {
   # Special query to search for applications and their related resources efficiently.
   # Optionally, pass name and namespace to filter the results.
   applications(name:String namespace: String): [Application]
+  subscriptions(name:String namespace: String): [Subscription]
 
   # Aggregated data from all applications.
   globalAppData: GlobalAppData
