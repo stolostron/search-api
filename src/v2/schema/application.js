@@ -44,10 +44,16 @@ export const typeDef = gql`
 
   type Subscription {
     _uid: String
+    name: String
+    namespace: String
+    created: String
+    selfLink: String
+    channel: String
+    appCount: Int
+    clusterCount: Int
     timeWindow: String
     localPlacement: Boolean
     status: String
-    channel: String
   }
 
   # Aggregated data from all applications.
@@ -72,6 +78,7 @@ export const resolver = {
   Query: {
     globalAppData: () => ({}),
     applications: (parent, { name, namespace }, { appModel }) => appModel.resolveApplications({ name, namespace }),
+    subscriptions: (parent, { name, namespace }, { appModel }) => appModel.resolveSubscriptions({ name, namespace }),
   },
   Application: {
     _uid: (parent) => parent['app._uid'],
@@ -95,9 +102,15 @@ export const resolver = {
   },
   Subscription: {
     _uid: (parent) => parent['sub._uid'],
+    name: (parent) => parent['sub.name'],
+    namespace: (parent) => parent['sub.namespace'],
+    created: (parent) => parent['sub.created'],
+    selfLink: (parent) => parent['sub.selfLink'],
     timeWindow: (parent) => parent['sub.timeWindow'],
     localPlacement: (parent) => (parent['sub.localPlacement'] || '').toLowerCase() === 'true',
     status: (parent) => parent['sub.status'],
     channel: (parent) => parent['sub.channel'],
+    appCount: (parent, args, { appModel }) => appModel.resolveSubAppsCount(parent['sub._uid']),
+    clusterCount: (parent, args, { appModel }) => appModel.resolveSubClustersCount(parent['sub._uid']),
   },
 };
