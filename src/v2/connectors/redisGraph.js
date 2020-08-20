@@ -244,7 +244,7 @@ export default class RedisGraphConnector {
         return `${alias}._rbac IN allowedResources OR ((exists(${alias}._hubClusterResource) AND (${alias}.namespace IN allowedNS)) OR (exists(${alias}._clusterNamespace) AND ${alias}._clusterNamespace IN allowedNS))`;
       }
       return `${alias}._rbac IN allowedResources`;
-    }).join(' OR ');
+    }).join(' AND ');
     const filterString = getFilterString(filters);
     if (filterString !== '') {
       whereClause = `WHERE ${filterString} AND (${whereClauseRbac})`;
