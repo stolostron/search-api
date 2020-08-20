@@ -177,6 +177,55 @@ const MOCK_QUERIES = {
   ],
 
   /*
+   * Subscription queries mocks.
+   */
+  runSubscriptionsQuery: [
+    {
+      'sub._uid': 'local-cluster/sub-01-uid',
+      'sub.name': 'sub01',
+      'sub.namespace': 'applications',
+      'sub.created': '2020-08-20T14:16:05Z',
+      'sub.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/applications/sub01',
+      'sub.status': 'Propagated',
+      'sub.channel': 'git-ch-ns/git-ch',
+      'sub.timeWindow': 'blocked',
+      'sub.localPlacement': 'True',
+    },
+    {
+      'sub._uid': 'local-cluster/sub-02-uid',
+      'sub.name': 'sub02',
+      'sub.namespace': 'test',
+      'sub.created': '2020-08-20T14:17:05Z',
+      'sub.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/test/sub02',
+      'sub.status': 'PropagationFailed',
+      'sub.channel': 'object-ch-ns/object-ch',
+      'sub.localPlacement': 'False',
+    },
+  ],
+
+  runSubClustersQuery: [
+    {
+      'sub._uid': 'local-cluster/sub-01-uid',
+      count: 0,
+    },
+    {
+      'sub._uid': 'local-cluster/sub-02-uid',
+      count: 3,
+    },
+  ],
+
+  runSubAppsQuery: [
+    {
+      'sub._uid': 'local-cluster/sub-01-uid',
+      count: 1,
+    },
+    {
+      'sub._uid': 'local-cluster/sub-02-uid',
+      count: 2,
+    },
+  ],
+
+  /*
    * Global Application queries mocks.
    */
   runGlobalAppChannelsQuery: [
@@ -218,6 +267,12 @@ const MOCK_QUERIES = {
 export default class MockSearchConnector extends RedisGraphConnector {
   constructor(args) {
     super(args);
+
+    this.g = {
+      query: (queryString) => {
+        throw new Error(`No mock data for query: ${queryString}`);
+      },
+    };
 
     // Set up query functions that use the actual query-building code in RedisGraphConnector
     // but return the result from static data in this file

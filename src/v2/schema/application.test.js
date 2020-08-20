@@ -98,6 +98,83 @@ describe('Application Resolver', () => {
   }));
 });
 
+describe('Subscription Resolver', () => {
+  test('Correctly Resolves Subscriptions Query', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          subscriptions {
+            _uid
+            name
+            namespace
+            created
+            selfLink
+            timeWindow
+            localPlacement
+            status
+            channel
+            appCount
+            clusterCount
+          }
+        }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+
+  test('Correctly Resolves Single Subscription', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          subscriptions(namespace: "test", name: "sub02") {
+            _uid
+            name
+            namespace
+            created
+            selfLink
+            timeWindow
+            localPlacement
+            status
+            channel
+            appCount
+            clusterCount
+          }
+        }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+
+  test('Ignores filters when only name or namespace is passed.', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          subscriptions (name: "sub02") {
+            _uid
+            name
+          }
+        }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+});
+
 describe('Global Application Resolver', () => {
   test('Correctly Resolves Global Application Data', () => new Promise((done) => {
     supertest(server)
