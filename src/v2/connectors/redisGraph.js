@@ -413,6 +413,7 @@ export default class RedisGraphConnector {
   async runSearchQueryCountOnly(filters) {
     // logger.info('runSearchQueryCountOnly()', filters);
 
+    logger.warn('runSearchQueryCountOnly this.rbac - ', this.rbac);
     if (this.rbac.length > 0) {
       // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
       // encode labels in a single string. As a result we can't use an openCypher query to search
@@ -422,8 +423,11 @@ export default class RedisGraphConnector {
         return this.runSearchQuery(filters, -1, -1).then((r) => r.length);
       }
       const { withClause, whereClause } = await this.createWhereClause(filters, ['n']);
+      logger.warn('runSearchQueryCountOnly whereClause - ', whereClause);
       const startTime = Date.now();
+      logger.warn('runSearchQueryCountOnly pre redis query');
       const result = await this.g.query(`${withClause} MATCH (n) ${whereClause} RETURN count(n)`);
+      logger.warn('runSearchQueryCountOnly post redis query', result);
       logger.perfLog(startTime, 150, 'runSearchQueryCountOnly()');
       if (result.hasNext() === true) {
         return result.next().get('count(n)');
@@ -437,10 +441,15 @@ export default class RedisGraphConnector {
 
     // Adding these first to rank them higher when showin in UI.
     const values = ['cluster', 'kind', 'label', 'name', 'namespace', 'status'];
-
+    logger.warn('SearchSchema this.rbac - ', this.rbac);
     if (this.rbac.length > 0) {
+      logger.warn('getAllProperties pre isServiceAvailable');
+      await this.isServiceAvailable();
+      logger.warn('getAllProperties post isServiceAvailable');
       const startTime = Date.now();
+      logger.warn('getAllProperties pre redis query');
       const result = await this.g.query('CALL db.propertyKeys()');
+      logger.warn('getAllProperties post redis query', result);
       logger.perfLog(startTime, 150, 'getAllProperties()');
 
       result._results.forEach((record) => {
