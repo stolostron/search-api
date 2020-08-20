@@ -56,6 +56,16 @@ export const typeDef = gql`
     status: String
   }
 
+  type PlacementRule {
+    _uid: String
+    name: String
+    namespace: String
+    created: String
+    selfLink: String
+    clusterCount: JSON
+    replicas: Int
+  }
+
   # Aggregated data from all applications.
   type GlobalAppData {
     # All chanels being referenced by any application.
@@ -79,6 +89,7 @@ export const resolver = {
     globalAppData: () => ({}),
     applications: (parent, { name, namespace }, { appModel }) => appModel.resolveApplications({ name, namespace }),
     subscriptions: (parent, { name, namespace }, { appModel }) => appModel.resolveSubscriptions({ name, namespace }),
+    placementRules: (parent, { name, namespace }, { appModel }) => appModel.resolvePlacementRules({ name, namespace }),
   },
   Application: {
     _uid: (parent) => parent['app._uid'],
@@ -112,5 +123,14 @@ export const resolver = {
     channel: (parent) => parent['sub.channel'],
     appCount: (parent, args, { appModel }) => appModel.resolveSubAppsCount(parent['sub._uid']),
     clusterCount: (parent, args, { appModel }) => appModel.resolveSubClustersCount(parent['sub._uid']),
+  },
+  PlacementRule: {
+    _uid: (parent) => parent['pr._uid'],
+    name: (parent) => parent['pr.name'],
+    namespace: (parent) => parent['pr.namespace'],
+    created: (parent) => parent['pr.created'],
+    selfLink: (parent) => parent['pr.selfLink'],
+    replicas: (parent) => parent['pr.replicas'],
+    clusterCount: (parent, args, { appModel }) => appModel.resolvePRClustersCount(parent['pr._uid']),
   },
 };

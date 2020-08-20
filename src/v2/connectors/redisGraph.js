@@ -192,6 +192,7 @@ if (process.env.NODE_ENV !== 'test') {
 // Applications queries are only interested in resources on the local cluster, in the appropriate API group
 const APPLICATION_MATCH = "(app:Application {cluster: 'local-cluster', apigroup: 'app.k8s.io'})";
 const SUBSCRIPTION_MATCH = "(sub:Subscription {cluster: 'local-cluster', apigroup: 'apps.open-cluster-management.io'})";
+const PLACEMENTRULE_MATCH = "(pr:PlacementRule {cluster: 'local-cluster', apigroup: 'apps.open-cluster-management.io'})";
 
 export default class RedisGraphConnector {
   constructor({
@@ -420,6 +421,36 @@ export default class RedisGraphConnector {
     const returnClause = 'RETURN DISTINCT sub._uid, count(DISTINCT app._uid) as count';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runSubAppsQuery' });
+  }
+
+  /*
+   * Get PlacementRules.
+   */
+  async runPlacementRulesQuery() {
+    const { withClause, whereClause } = await this.createWhereClause([], ['pr']);
+    const matchClause = `MATCH ${PLACEMENTRULE_MATCH} ${whereClause}`;
+    const returnClause = 'RETURN DISTINCT pr._uid, pr.name, pr.namespace, pr.created, pr.selfLink, pr.replicas';
+    const orderClause = 'ORDER BY pr.name, pr.namespace ASC';
+    const query = `${withClause} ${matchClause} ${returnClause} ${orderClause}`;
+    return this.executeQuery({ query, removePrefix: false, queryName: 'runSubscriptionsQuery' });
+  }
+
+  /*
+   * Get a list of placement rules that have related clusters.
+   * NOTE: If a placement rule doesn't have any related clusters it won't be in the result.
+   *
+   * Sample result:
+   * [
+   *   {pr._uid: 'pr1', count: 3 },
+   *   {pr._uid: 'pr2', count: 1 },
+   * ]
+   */
+  async runPRClustersQuery() {
+    const { withClause, whereClause } = await this.createWhereClause([], ['pr', 'sub', 'cluster']);
+    const matchClause = `MATCH ${PLACEMENTRULE_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}<-[]-(cluster:Cluster) ${whereClause}`;
+    const returnClause = 'RETURN DISTINCT pr._uid, count(DISTINCT cluster._uid) as count';
+    const query = `${withClause} ${matchClause} ${returnClause}`;
+    return this.executeQuery({ query, removePrefix: false, queryName: 'runPRClustersQuery' });
   }
 
   /**
