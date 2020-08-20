@@ -147,3 +147,77 @@ Object {
   },
 }
 `;
+
+exports[`Subscription Resolver Correctly Resolves Single Subscription 1`] = `
+Object {
+  "data": Object {
+    "subscriptions": Array [
+      Object {
+        "_uid": "local-cluster/sub-02-uid",
+        "appCount": 2,
+        "channel": "object-ch-ns/object-ch",
+        "clusterCount": 3,
+        "created": "2020-08-20T14:17:05Z",
+        "localPlacement": false,
+        "name": "sub02",
+        "namespace": "test",
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/test/sub02",
+        "status": "PropagationFailed",
+        "timeWindow": null,
+      },
+    ],
+  },
+}
+`;
+
+exports[`Subscription Resolver Correctly Resolves Subscriptions Query 1`] = `
+Object {
+  "data": Object {
+    "subscriptions": Array [
+      Object {
+        "_uid": "local-cluster/sub-01-uid",
+        "appCount": 1,
+        "channel": "git-ch-ns/git-ch",
+        "clusterCount": 0,
+        "created": "2020-08-20T14:16:05Z",
+        "localPlacement": true,
+        "name": "sub01",
+        "namespace": "applications",
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/applications/sub01",
+        "status": "Propagated",
+        "timeWindow": "blocked",
+      },
+      Object {
+        "_uid": "local-cluster/sub-02-uid",
+        "appCount": 2,
+        "channel": "object-ch-ns/object-ch",
+        "clusterCount": 3,
+        "created": "2020-08-20T14:17:05Z",
+        "localPlacement": false,
+        "name": "sub02",
+        "namespace": "test",
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/test/sub02",
+        "status": "PropagationFailed",
+        "timeWindow": null,
+      },
+    ],
+  },
+}
+`;
+
+exports[`Subscription Resolver Ignores filters when only name or namespace is passed. 1`] = `
+Object {
+  "data": Object {
+    "subscriptions": Array [
+      Object {
+        "_uid": "local-cluster/sub-01-uid",
+        "name": "sub01",
+      },
+      Object {
+        "_uid": "local-cluster/sub-02-uid",
+        "name": "sub02",
+      },
+    ],
+  },
+}
+`;
