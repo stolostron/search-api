@@ -99,7 +99,13 @@ graphQLServer.get('/livenessProbe', (req, res) => {
 
 graphQLServer.get('/readinessProbe', (req, res) => {
   // ping redisClient to make sure connection hasn't gone bad
-  this.searchConnector.pingRedisClientConnection();
+  let searchConnector;
+  if (isTest) {
+    searchConnector = new MockSearchConnector({ rbac: req.user.namespaces, req });
+  } else {
+    searchConnector = new RedisGraphConnector({ rbac: req.user.namespaces, req });
+  }
+  searchConnector.pingRedisClientConnection();
   res.send(`Testing readinessProbe --> ${new Date().toLocaleString()}`);
 });
 
