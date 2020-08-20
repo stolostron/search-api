@@ -181,6 +181,17 @@ function getRedisClient() {
   });
 }
 
+export function pingRedisClientConnection() {
+  redisClient.ping((error, result) => {
+    if (error) {
+      logger.error('Error with Redis SSL connection: ', error);
+      getRedisClient();
+    } else {
+      logger.info('Redis SSL connection respone : ', result);
+    }
+  });
+}
+
 // Skip while running tests until we can mock Redis.
 if (process.env.NODE_ENV !== 'test') {
   // Initializes the Redis client on startup.
