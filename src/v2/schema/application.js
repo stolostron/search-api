@@ -118,7 +118,7 @@ export const resolver = {
     created: (parent) => parent['sub.created'],
     selfLink: (parent) => parent['sub.selfLink'],
     timeWindow: (parent) => parent['sub.timeWindow'],
-    localPlacement: (parent) => (parent['sub.localPlacement'] || '').toLowerCase() === 'true',
+    localPlacement: (parent) => !!parent['sub.localPlacement'],
     status: (parent) => parent['sub.status'],
     channel: (parent) => parent['sub.channel'],
     appCount: (parent, args, { appModel }) => appModel.resolveSubAppsCount(parent['sub._uid']),
