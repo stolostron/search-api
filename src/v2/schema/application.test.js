@@ -98,6 +98,75 @@ describe('Application Resolver', () => {
   }));
 });
 
+describe('Placement Rule Resolver', () => {
+  test('Correctly Resolves Placement Rules Query', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          placementRules {
+            _uid
+            name
+            namespace
+            created
+            selfLink
+            clusterCount
+            replicas
+          }
+        }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+
+  test('Correctly Resolves Single Placement Rule', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          placementRules(namespace: "applications", name: "pr01") {
+            _uid
+            name
+            namespace
+            created
+            selfLink
+            clusterCount
+            replicas
+          }
+        }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+
+  test('Ignores filters when only name or namespace is passed.', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          placementRules (name: "sub02") {
+            _uid
+            name
+          }
+        }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+});
+
 describe('Subscription Resolver', () => {
   test('Correctly Resolves Subscriptions Query', () => new Promise((done) => {
     supertest(server)
@@ -132,22 +201,22 @@ describe('Subscription Resolver', () => {
       .post(GRAPHQL_PATH)
       .send({
         query: `
-        {
-          subscriptions(namespace: "test", name: "sub02") {
-            _uid
-            name
-            namespace
-            created
-            selfLink
-            timeWindow
-            localPlacement
-            status
-            channel
-            appCount
-            clusterCount
-          }
+      {
+        subscriptions(namespace: "test", name: "sub02") {
+          _uid
+          name
+          namespace
+          created
+          selfLink
+          timeWindow
+          localPlacement
+          status
+          channel
+          appCount
+          clusterCount
         }
-      `,
+      }
+    `,
       })
       .end((err, res) => {
         expect(JSON.parse(res.text)).toMatchSnapshot();
@@ -160,13 +229,13 @@ describe('Subscription Resolver', () => {
       .post(GRAPHQL_PATH)
       .send({
         query: `
-        {
-          subscriptions (name: "sub02") {
-            _uid
-            name
-          }
+      {
+        subscriptions (name: "sub02") {
+          _uid
+          name
         }
-      `,
+      }
+    `,
       })
       .end((err, res) => {
         expect(JSON.parse(res.text)).toMatchSnapshot();

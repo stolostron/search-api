@@ -188,4 +188,27 @@ export default class AppModel {
     const a = apps.find((sub) => sub['sub._uid'] === subUid);
     return a ? a.count : 0;
   }
+
+  /*
+   * Resolve PlacementRules.
+   */
+  async resolvePlacementRules({ name, namespace }) {
+    this.checkSearchServiceAvailable();
+
+    const prs = await this.searchConnector.runPlacementRulesQuery();
+    if (name != null && namespace != null) {
+      const resolvedPRs = await prs;
+      return resolvedPRs.filter((pr) => (pr['pr.name'] === name && pr['pr.namespace'] === namespace));
+    }
+    return prs;
+  }
+
+  /*
+   * For a given placement rule, return the number of clusters it matches.
+   */
+  async resolvePRClustersCount(prUid) {
+    const clusters = await this.runQueryOnlyOnce('runPRClustersQuery');
+    const c = clusters.find((pr) => pr['pr._uid'] === prUid);
+    return c ? c.count : 0;
+  }
 }

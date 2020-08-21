@@ -107,7 +107,7 @@ const MOCK_QUERIES = {
       'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
       'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
       'sub.channel': 'dev1/dev1',
-      'sub.localPlacement': 'True',
+      'sub.localPlacement': true,
     },
     {
       'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
@@ -189,7 +189,7 @@ const MOCK_QUERIES = {
       'sub.status': 'Propagated',
       'sub.channel': 'git-ch-ns/git-ch',
       'sub.timeWindow': 'blocked',
-      'sub.localPlacement': 'True',
+      'sub.localPlacement': true,
     },
     {
       'sub._uid': 'local-cluster/sub-02-uid',
@@ -199,7 +199,7 @@ const MOCK_QUERIES = {
       'sub.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/test/sub02',
       'sub.status': 'PropagationFailed',
       'sub.channel': 'object-ch-ns/object-ch',
-      'sub.localPlacement': 'False',
+      'sub.localPlacement': false,
     },
   ],
 
@@ -222,6 +222,38 @@ const MOCK_QUERIES = {
     {
       'sub._uid': 'local-cluster/sub-02-uid',
       count: 2,
+    },
+  ],
+
+  /*
+   * Placement rules  queries mocks.
+   */
+  runPlacementRulesQuery: [
+    {
+      'pr._uid': 'local-cluster/pr-01-uid',
+      'pr.name': 'pr01',
+      'pr.namespace': 'applications',
+      'pr.created': '2020-08-20T14:16:05Z',
+      'pr.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/placementrules/pr01',
+      'pr.replicas': 3,
+    },
+    {
+      'pr._uid': 'local-cluster/pr-02-uid',
+      'pr.name': 'pr02',
+      'pr.namespace': 'test',
+      'pr.created': '2020-08-20T14:17:05Z',
+      'pr.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/test/pr02',
+    },
+  ],
+
+  runPRClustersQuery: [
+    {
+      'pr._uid': 'local-cluster/pr-01-uid',
+      count: 2,
+    },
+    {
+      'pr._uid': 'local-cluster/pr-02-uid',
+      count: 0,
     },
   ],
 

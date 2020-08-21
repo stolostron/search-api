@@ -16,6 +16,7 @@ type Query {
   # Optionally, pass name and namespace to filter the results.
   applications(name:String namespace: String): [Application]
   subscriptions(name:String namespace: String): [Subscription]
+  placementRules(name:String namespace: String): [PlacementRule]
 
   # Aggregated data from all applications.
   globalAppData: GlobalAppData

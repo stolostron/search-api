@@ -148,6 +148,68 @@ Object {
 }
 `;
 
+exports[`Placement Rule Resolver Correctly Resolves Placement Rules Query 1`] = `
+Object {
+  "data": Object {
+    "placementRules": Array [
+      Object {
+        "_uid": "local-cluster/pr-01-uid",
+        "clusterCount": 2,
+        "created": "2020-08-20T14:16:05Z",
+        "name": "pr01",
+        "namespace": "applications",
+        "replicas": 3,
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/placementrules/pr01",
+      },
+      Object {
+        "_uid": "local-cluster/pr-02-uid",
+        "clusterCount": 0,
+        "created": "2020-08-20T14:17:05Z",
+        "name": "pr02",
+        "namespace": "test",
+        "replicas": null,
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/test/pr02",
+      },
+    ],
+  },
+}
+`;
+
+exports[`Placement Rule Resolver Correctly Resolves Single Placement Rule 1`] = `
+Object {
+  "data": Object {
+    "placementRules": Array [
+      Object {
+        "_uid": "local-cluster/pr-01-uid",
+        "clusterCount": 2,
+        "created": "2020-08-20T14:16:05Z",
+        "name": "pr01",
+        "namespace": "applications",
+        "replicas": 3,
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/placementrules/pr01",
+      },
+    ],
+  },
+}
+`;
+
+exports[`Placement Rule Resolver Ignores filters when only name or namespace is passed. 1`] = `
+Object {
+  "data": Object {
+    "placementRules": Array [
+      Object {
+        "_uid": "local-cluster/pr-01-uid",
+        "name": "pr01",
+      },
+      Object {
+        "_uid": "local-cluster/pr-02-uid",
+        "name": "pr02",
+      },
+    ],
+  },
+}
+`;
+
 exports[`Subscription Resolver Correctly Resolves Single Subscription 1`] = `
 Object {
   "data": Object {
