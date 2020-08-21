@@ -226,6 +226,38 @@ const MOCK_QUERIES = {
   ],
 
   /*
+   * Placement rules  queries mocks.
+   */
+  runPlacementRulesQuery: [
+    {
+      'pr._uid': 'local-cluster/pr-01-uid',
+      'pr.name': 'pr01',
+      'pr.namespace': 'applications',
+      'pr.created': '2020-08-20T14:16:05Z',
+      'pr.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/placementrules/pr01',
+      'pr.replicas': 3,
+    },
+    {
+      'pr._uid': 'local-cluster/pr-02-uid',
+      'pr.name': 'pr02',
+      'pr.namespace': 'test',
+      'pr.created': '2020-08-20T14:17:05Z',
+      'pr.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/test/pr02',
+    },
+  ],
+
+  runPRClustersQuery: [
+    {
+      'pr._uid': 'local-cluster/pr-01-uid',
+      count: 2,
+    },
+    {
+      'pr._uid': 'local-cluster/pr-02-uid',
+      count: 0,
+    },
+  ],
+
+  /*
    * Global Application queries mocks.
    */
   runGlobalAppChannelsQuery: [
