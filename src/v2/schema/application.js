@@ -62,8 +62,21 @@ export const typeDef = gql`
     namespace: String
     created: String
     selfLink: String
-    clusterCount: JSON
+    clusterCount: Int
     replicas: Int
+  }
+
+  type Channel {
+    _uid: String
+    name: String
+    namespace: String
+    created: String
+    selfLink: String
+    type: String
+    pathname: String
+    localPlacement: Boolean
+    subscriptionCount: Int
+    clusterCount: Int
   }
 
   # Aggregated data from all applications.
@@ -90,6 +103,7 @@ export const resolver = {
     applications: (parent, { name, namespace }, { appModel }) => appModel.resolveApplications({ name, namespace }),
     subscriptions: (parent, { name, namespace }, { appModel }) => appModel.resolveSubscriptions({ name, namespace }),
     placementRules: (parent, { name, namespace }, { appModel }) => appModel.resolvePlacementRules({ name, namespace }),
+    channels: (parent, { name, namespace }, { appModel }) => appModel.resolveChannels({ name, namespace }),
   },
   Application: {
     _uid: (parent) => parent['app._uid'],
@@ -132,5 +146,17 @@ export const resolver = {
     selfLink: (parent) => parent['pr.selfLink'],
     replicas: (parent) => parent['pr.replicas'],
     clusterCount: (parent, args, { appModel }) => appModel.resolvePRClustersCount(parent['pr._uid']),
+  },
+  Channel: {
+    _uid: (parent) => parent['ch._uid'],
+    name: (parent) => parent['ch.name'],
+    namespace: (parent) => parent['ch.namespace'],
+    created: (parent) => parent['ch.created'],
+    selfLink: (parent) => parent['ch.selfLink'],
+    type: (parent) => parent['ch.type'],
+    pathname: (parent) => parent['ch.pathname'],
+    localPlacement: (parent, args, { appModel }) => appModel.resolveChannelLocalPlacement(parent['ch._uid']),
+    subscriptionCount: (parent, args, { appModel }) => appModel.resolveChannelSubsCount(parent['ch._uid']),
+    clusterCount: (parent, args, { appModel }) => appModel.resolveChannelClustersCount(parent['ch._uid']),
   },
 };
