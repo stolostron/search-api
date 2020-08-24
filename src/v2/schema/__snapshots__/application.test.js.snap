@@ -132,6 +132,77 @@ Object {
 }
 `;
 
+exports[`Channel Resolver Correctly Resolves Channels Query 1`] = `
+Object {
+  "data": Object {
+    "channels": Array [
+      Object {
+        "_uid": "local-cluster/ch-01-uid",
+        "clusterCount": 1,
+        "created": "2020-08-20T14:16:05Z",
+        "localPlacement": true,
+        "name": "ch01",
+        "namespace": "applications",
+        "pathname": "http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts",
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/applications/channels/ch01",
+        "subscriptionCount": 0,
+        "type": "HelmRepo",
+      },
+      Object {
+        "_uid": "local-cluster/ch-02-uid",
+        "clusterCount": 2,
+        "created": "2020-08-20T14:17:05Z",
+        "localPlacement": false,
+        "name": "ch02",
+        "namespace": "test",
+        "pathname": "https://github.com/fxiang1/app-samples.git",
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/test/channels/ch02",
+        "subscriptionCount": 3,
+        "type": "Git",
+      },
+    ],
+  },
+}
+`;
+
+exports[`Channel Resolver Correctly Resolves Single Channel 1`] = `
+Object {
+  "data": Object {
+    "channels": Array [
+      Object {
+        "_uid": "local-cluster/ch-02-uid",
+        "clusterCount": 2,
+        "created": "2020-08-20T14:17:05Z",
+        "localPlacement": false,
+        "name": "ch02",
+        "namespace": "test",
+        "pathname": "https://github.com/fxiang1/app-samples.git",
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/test/channels/ch02",
+        "subscriptionCount": 3,
+        "type": "Git",
+      },
+    ],
+  },
+}
+`;
+
+exports[`Channel Resolver Ignores filters when only name or namespace is passed. 1`] = `
+Object {
+  "data": Object {
+    "channels": Array [
+      Object {
+        "_uid": "local-cluster/ch-01-uid",
+        "name": "ch01",
+      },
+      Object {
+        "_uid": "local-cluster/ch-02-uid",
+        "name": "ch02",
+      },
+    ],
+  },
+}
+`;
+
 exports[`Global Application Resolver Correctly Resolves Global Application Data 1`] = `
 Object {
   "data": Object {

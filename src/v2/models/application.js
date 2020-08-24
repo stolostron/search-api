@@ -211,4 +211,45 @@ export default class AppModel {
     const c = clusters.find((pr) => pr['pr._uid'] === prUid);
     return c ? c.count : 0;
   }
+
+  /*
+   * Resolve Channels.
+   */
+  async resolveChannels({ name, namespace }) {
+    this.checkSearchServiceAvailable();
+
+    const chs = await this.searchConnector.runChannelsQuery();
+    if (name != null && namespace != null) {
+      const resolvedChs = await chs;
+      return resolvedChs.filter((ch) => (ch['ch.name'] === name && ch['ch.namespace'] === namespace));
+    }
+    return chs;
+  }
+
+  /*
+   * For a given channel, return whether any of the subscriptions use local placement
+   */
+  async resolveChannelLocalPlacement(chUid) {
+    const subs = await this.runQueryOnlyOnce('runChannelSubsQuery');
+    const s = subs.find((ch) => ch['ch._uid'] === chUid);
+    return s ? s.localPlacement.includes('true') : false;
+  }
+
+  /*
+   * For a given channel, return the number of subscriptions it matches.
+   */
+  async resolveChannelSubsCount(chUid) {
+    const subs = await this.runQueryOnlyOnce('runChannelSubsQuery');
+    const s = subs.find((ch) => ch['ch._uid'] === chUid);
+    return s ? s.count : 0;
+  }
+
+  /*
+   * For a given channel, return the number of clusters it matches.
+   */
+  async resolveChannelClustersCount(chUid) {
+    const clusters = await this.runQueryOnlyOnce('runChannelClustersQuery');
+    const c = clusters.find((ch) => ch['ch._uid'] === chUid);
+    return c ? c.count : 0;
+  }
 }
