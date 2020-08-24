@@ -17,6 +17,7 @@ type Query {
   applications(name:String namespace: String): [Application]
   subscriptions(name:String namespace: String): [Subscription]
   placementRules(name:String namespace: String): [PlacementRule]
+  channels(name: String namespace: String): [Channel]
 
   # Aggregated data from all applications.
   globalAppData: GlobalAppData

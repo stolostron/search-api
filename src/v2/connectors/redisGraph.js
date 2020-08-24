@@ -193,6 +193,7 @@ if (process.env.NODE_ENV !== 'test') {
 const APPLICATION_MATCH = "(app:Application {cluster: 'local-cluster', apigroup: 'app.k8s.io'})";
 const SUBSCRIPTION_MATCH = "(sub:Subscription {cluster: 'local-cluster', apigroup: 'apps.open-cluster-management.io'})";
 const PLACEMENTRULE_MATCH = "(pr:PlacementRule {cluster: 'local-cluster', apigroup: 'apps.open-cluster-management.io'})";
+const CHANNEL_MATCH = "(ch:Channel {cluster: 'local-cluster', apigroup: 'apps.open-cluster-management.io'})";
 
 export default class RedisGraphConnector {
   constructor({
@@ -262,7 +263,7 @@ export default class RedisGraphConnector {
   async runApplicationsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app']);
     const matchClause = `MATCH ${APPLICATION_MATCH} ${whereClause}`;
-    const returnClause = 'RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard, app.selfLink, app.label ORDER BY app.name ASC';
+    const returnClause = 'RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard, app.selfLink, app.label ORDER BY app.name, app.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runApplicationsQuery' });
   }
@@ -432,7 +433,7 @@ export default class RedisGraphConnector {
     const returnClause = 'RETURN DISTINCT pr._uid, pr.name, pr.namespace, pr.created, pr.selfLink, pr.replicas';
     const orderClause = 'ORDER BY pr.name, pr.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause} ${orderClause}`;
-    return this.executeQuery({ query, removePrefix: false, queryName: 'runSubscriptionsQuery' });
+    return this.executeQuery({ query, removePrefix: false, queryName: 'runPlacementRulesQuery' });
   }
 
   /*
@@ -451,6 +452,54 @@ export default class RedisGraphConnector {
     const returnClause = 'RETURN DISTINCT pr._uid, count(DISTINCT cluster._uid) as count';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runPRClustersQuery' });
+  }
+
+  /*
+   * Get Channels.
+   */
+  async runChannelsQuery() {
+    const { withClause, whereClause } = await this.createWhereClause([], ['ch']);
+    const matchClause = `MATCH ${CHANNEL_MATCH} ${whereClause}`;
+    const returnClause = 'RETURN DISTINCT ch._uid, ch.name, ch.namespace, ch.created, ch.selfLink, ch.type, ch.pathname';
+    const orderClause = 'ORDER BY ch.name, ch.namespace ASC';
+    const query = `${withClause} ${matchClause} ${returnClause} ${orderClause}`;
+    return this.executeQuery({ query, removePrefix: false, queryName: 'runChannelsQuery' });
+  }
+
+  /*
+   * Get a list of channels that have related subscriptions.
+   * NOTE: If a channel doesn't have any related subscriptions it won't be in the result.
+   *
+   * Sample result:
+   * [
+   *   {ch._uid: 'ch1', localPlacement: [], count: 2 },
+   *   {ch._uid: 'ch2', localPlacement: [true, false], count: 1 },
+   * ]
+   */
+  async runChannelSubsQuery() {
+    const { withClause, whereClause } = await this.createWhereClause([], ['ch', 'sub']);
+    const matchClause = `MATCH ${CHANNEL_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}`;
+    const returnClause = 'RETURN DISTINCT ch._uid, collect(DISTINCT sub.localPlacement) as localPlacement, count(DISTINCT sub._uid) as count';
+    const query = `${withClause} ${matchClause} ${whereClause} ${returnClause}`;
+    return this.executeQuery({ query, removePrefix: false, queryName: 'runChannelSubsQuery' });
+  }
+
+  /*
+   * Get a list of channels that have related clusters.
+   * NOTE: If a channel doesn't have any related subscriptions and clusters, it won't be in the result.
+   *
+   * Sample result:
+   * [
+   *   {ch._uid: 'ch1', count: 1 },
+   *   {ch._uid: 'ch2', count: 1 },
+   * ]
+   */
+  async runChannelClustersQuery() {
+    const { withClause, whereClause } = await this.createWhereClause([], ['ch', 'sub', 'cluster']);
+    const matchClause = `MATCH ${CHANNEL_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}<-[]-(cluster:Cluster)`;
+    const returnClause = 'RETURN DISTINCT ch._uid, count(DISTINCT cluster._uid) as count';
+    const query = `${withClause} ${matchClause} ${whereClause} ${returnClause}`;
+    return this.executeQuery({ query, removePrefix: false, queryName: 'runChannelClustersQuery' });
   }
 
   /**
