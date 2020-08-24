@@ -474,6 +474,16 @@ export default class RedisGraphConnector {
         logger.perfLog(startTime, 150, 'LabelSearchQuery');
         return formatResult(result).filter((item) => (item.label && labelFilter.values.find((value) => item.label.indexOf(value) > -1)));
       }
+      // Same workaround as above, but for roles.
+      const roleFilter = filters.find((f) => f.property === 'role');
+      if (roleFilter) {
+        const { withClause, whereClause } = await this.createWhereClause(filters.filter((f) => f.property !== 'role'), ['n']);
+        const startTime = Date.now();
+        const query = `${withClause} MATCH (n) ${whereClause} RETURN n`;
+        const result = await this.g.query(query);
+        logger.perfLog(startTime, 150, 'RoleSearchQuery');
+        return formatResult(result).filter((item) => (item.role && roleFilter.values.find((value) => item.role.indexOf(value) > -1)));
+      }
       let limitClause = '';
       if (limit > 0) {
         limitClause = querySkipIdx > -1
@@ -558,7 +568,7 @@ export default class RedisGraphConnector {
 
       // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
       // encode labels in a single string. Here we need to decode the string to get all labels.
-      if (property === 'label') {
+      if (property === 'label' || property === 'role') {
         const labels = [];
         valuesList.forEach((value) => {
           value.split('; ').forEach((label) => {
