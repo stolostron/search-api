@@ -477,11 +477,11 @@ export default class RedisGraphConnector {
       // Same workaround as above, but for roles.
       const roleFilter = filters.find((f) => f.property === 'role');
       if (roleFilter) {
-        const { withClause, whereClause } = await this.createWhereClause(filters.filter((f) => f.property !== 'role'), ['n']);
-        const query = `${withClause} MATCH (n) ${whereClause} RETURN n`;
-        const result = await this.g.query(query);
+        const { withClauseRole, whereClauseRole } = await this.createWhereClause(filters.filter((f) => f.property !== 'role'), ['n']);
+        const q = `${withClauseRole} MATCH (n) ${whereClauseRole} RETURN n`;
+        const res = await this.g.query(q);
         logger.perfLog(startTime, 150, 'RoleSearchQuery');
-        return formatResult(result).filter((item) => (item.role && roleFilter.values.find((value) => item.role.indexOf(value) > -1)));
+        return formatResult(res).filter((item) => (item.role && roleFilter.values.find((value) => item.role.indexOf(value) > -1)));
       }
 
       let limitClause = '';
