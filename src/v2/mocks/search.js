@@ -226,7 +226,7 @@ const MOCK_QUERIES = {
   ],
 
   /*
-   * Placement rules  queries mocks.
+   * Placement rules queries mocks.
    */
   runPlacementRulesQuery: [
     {
@@ -254,6 +254,54 @@ const MOCK_QUERIES = {
     {
       'pr._uid': 'local-cluster/pr-02-uid',
       count: 0,
+    },
+  ],
+
+  /*
+   * Channels queries mocks.
+   */
+  runChannelsQuery: [
+    {
+      'ch._uid': 'local-cluster/ch-01-uid',
+      'ch.name': 'ch01',
+      'ch.namespace': 'applications',
+      'ch.created': '2020-08-20T14:16:05Z',
+      'ch.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/applications/channels/ch01',
+      'ch.type': 'HelmRepo',
+      'ch.pathname': 'http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts',
+    },
+    {
+      'ch._uid': 'local-cluster/ch-02-uid',
+      'ch.name': 'ch02',
+      'ch.namespace': 'test',
+      'ch.created': '2020-08-20T14:17:05Z',
+      'ch.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/test/channels/ch02',
+      'ch.type': 'Git',
+      'ch.pathname': 'https://github.com/fxiang1/app-samples.git',
+    },
+  ],
+
+  runChannelSubsQuery: [
+    {
+      'ch._uid': 'local-cluster/ch-01-uid',
+      localPlacement: ['true', 'false'],
+      count: 0,
+    },
+    {
+      'ch._uid': 'local-cluster/ch-02-uid',
+      localPlacement: ['false'],
+      count: 3,
+    },
+  ],
+
+  runChannelClustersQuery: [
+    {
+      'ch._uid': 'local-cluster/ch-01-uid',
+      count: 1,
+    },
+    {
+      'ch._uid': 'local-cluster/ch-02-uid',
+      count: 2,
     },
   ],
 

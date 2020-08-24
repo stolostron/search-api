@@ -244,6 +244,81 @@ describe('Subscription Resolver', () => {
   }));
 });
 
+describe('Channel Resolver', () => {
+  test('Correctly Resolves Channels Query', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          channels {
+            _uid
+            name
+            namespace
+            created
+            selfLink
+            type
+            pathname
+            localPlacement
+            subscriptionCount
+            clusterCount
+          }
+        }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+
+  test('Correctly Resolves Single Channel', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          channels(namespace: "test", name: "ch02") {
+            _uid
+            name
+            namespace
+            created
+            selfLink
+            type
+            pathname
+            localPlacement
+            subscriptionCount
+            clusterCount
+          }
+        }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+
+  test('Ignores filters when only name or namespace is passed.', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          channels (name: "ch02") {
+            _uid
+            name
+          }
+        }
+      `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+});
+
 describe('Global Application Resolver', () => {
   test('Correctly Resolves Global Application Data', () => new Promise((done) => {
     supertest(server)
