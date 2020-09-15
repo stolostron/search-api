@@ -280,7 +280,7 @@ export default class RedisGraphConnector {
    */
   async runAppClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'cluster']);
-    const matchClause = `MATCH ${APPLICATION_MATCH}-[]->(:Subscription)-[]-(:Subscription)-[]->(cluster:Cluster) ${whereClause}`;
+    const matchClause = `MATCH ${APPLICATION_MATCH}-->(:Subscription)<--(:Subscription)-->(cluster:Cluster) ${whereClause}`;
     const returnClause = 'RETURN DISTINCT app._uid, count(DISTINCT cluster._uid) as count';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppClustersQuery' });
@@ -294,9 +294,8 @@ export default class RedisGraphConnector {
     const matchClause = `MATCH ${APPLICATION_MATCH}-[]->${SUBSCRIPTION_MATCH}`;
     const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
     const additionalWhere = 'exists(sub._hubClusterResource)=true AND NOT exists(sub._hostingSubscription)';
-    const returnClause = 'RETURN app._uid, sub._uid, sub.timeWindow, sub.localPlacement, sub.status, sub.channel, sub.name';
+    const returnClause = 'RETURN app._uid, sub._uid, sub.timeWindow, sub.localPlacement, sub.status, sub.channel';
     const query = `${withClause} ${matchClause} ${where} ${additionalWhere} ${returnClause}`;
-    logger.warn(query);
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubSubscriptionsQuery' });
   }
 
@@ -318,7 +317,7 @@ export default class RedisGraphConnector {
   */
   async runAppPodsCountQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'pod']);
-    const query = `${withClause} MATCH ${APPLICATION_MATCH}-[]->(:Subscription)-[]-(:Subscription)-[]-(pod:Pod) ${whereClause} RETURN app._uid, pod._uid, pod.status`;
+    const query = `${withClause} MATCH ${APPLICATION_MATCH}-->(:Subscription)<--(:Subscription)--(pod:Pod) ${whereClause} RETURN app._uid, pod._uid, pod.status`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppPodsCountQuery' });
   }
 
@@ -328,7 +327,7 @@ export default class RedisGraphConnector {
    */
   async runAppRemoteSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
-    const matchClause = `MATCH ${APPLICATION_MATCH}-[]->(:Subscription)-[]-(sub:Subscription)`;
+    const matchClause = `MATCH ${APPLICATION_MATCH}-->(:Subscription)<--(sub:Subscription)`;
     const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
     const additionalWhere = 'exists(sub._hostingSubscription)=true';
     const query = `${withClause} ${matchClause} ${where} ${additionalWhere} RETURN app._uid, sub._uid, sub.status`;
@@ -340,7 +339,7 @@ export default class RedisGraphConnector {
    */
   async runGlobalAppClusterCountQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'cluster']);
-    const query = `${withClause} MATCH ${APPLICATION_MATCH}-[]->(:Subscription)-[]-(:Subscription)-[]->(cluster:Cluster) ${whereClause} RETURN DISTINCT cluster._uid`;
+    const query = `${withClause} MATCH ${APPLICATION_MATCH}-->(:Subscription)<--(:Subscription)-->(cluster:Cluster) ${whereClause} RETURN DISTINCT cluster._uid`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppClusterCountQuery' });
   }
 
@@ -370,7 +369,7 @@ export default class RedisGraphConnector {
    */
   async runGlobalAppRemoteSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
-    const matchClause = `MATCH ${APPLICATION_MATCH}-[]->(:Subscription)-[]-(sub:Subscription)`;
+    const matchClause = `MATCH ${APPLICATION_MATCH}-->(:Subscription)<--(sub:Subscription)`;
     const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
     const additionalWhere = 'exists(sub._hostingSubscription)=true';
     const query = `${withClause} ${matchClause} ${where} ${additionalWhere} RETURN DISTINCT sub._uid, sub.status`;
@@ -402,7 +401,7 @@ export default class RedisGraphConnector {
   // TODO need to verify these queries/results not sure where they are being used
   async runSubClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['sub', 'cluster']);
-    const matchClause = `MATCH ${SUBSCRIPTION_MATCH}-[]-(:Subscription)-[]-(cluster:Cluster) ${whereClause}`;
+    const matchClause = `MATCH ${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster) ${whereClause}`;
     const returnClause = 'RETURN DISTINCT sub._uid, count(DISTINCT cluster._uid) as count';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runSubClustersQuery' });
@@ -452,7 +451,7 @@ export default class RedisGraphConnector {
   // TODO need to verify these queries/results not sure where they are being used
   async runPRClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['pr', 'sub', 'cluster']);
-    const matchClause = `MATCH ${PLACEMENTRULE_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}-[]-(:Subscription)-[]-(cluster:Cluster) ${whereClause}`;
+    const matchClause = `MATCH ${PLACEMENTRULE_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster) ${whereClause}`;
     const returnClause = 'RETURN DISTINCT pr._uid, count(DISTINCT cluster._uid) as count';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runPRClustersQuery' });
@@ -650,12 +649,29 @@ export default class RedisGraphConnector {
       let query = '';
       if (relatedKinds.length > 0) {
         const relatedClause = relatedKinds.map((kind) => `r.kind = '${kind}'`).join(' OR ');
-        query = `${withClause} MATCH (n)-[]-(r) WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} RETURN DISTINCT r`;
+        const where = `WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')}`;
+        const returnClause = 'RETURN DISTINCT r';
+        query = `${withClause} MATCH (n)-[]-(r) ${where} ${returnClause}
+        UNION ${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${where} ${returnClause}
+        UNION ${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${where} ${returnClause}
+        UNION ${withClause} MATCH (n:Application)-->(:Subscription)<--(r:Subscription) ${where} ${returnClause}
+        UNION ${withClause} MATCH (r:Application)-->(:Subscription)<--(n:Subscription)  ${where} ${returnClause}
+        UNION ${withClause} MATCH (n:Subscription)<--(:Subscription)--(r)  ${where} ${returnClause}
+        UNION ${withClause} MATCH (r:Subscription)<--(:Subscription)--(n)  ${where} ${returnClause}
+        UNION ${withClause} MATCH (n:Application)-->(:Subscription)--(r)  ${where} ${returnClause}
+        UNION ${withClause} MATCH (r:Application)-->(:Subscription)--(n)  ${where} ${returnClause}`;
       } else {
-        // TOOD need to replace with union query to get around need for intercluster edges logic
-        query = `${withClause} MATCH (n)-[]-(r) ${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
+        const returnClause = `${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
+        query = `${withClause} MATCH (n)-[]-(r) ${returnClause}
+        UNION ${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${returnClause}
+        UNION ${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${returnClause}
+        UNION ${withClause} MATCH (n:Application)-->(:Subscription)<--(r:Subscription) ${returnClause}
+        UNION ${withClause} MATCH (r:Application)-->(:Subscription)<--(n:Subscription) ${returnClause}
+        UNION ${withClause} MATCH (n:Subscription)<--(:Subscription)--(r) ${returnClause}
+        UNION ${withClause} MATCH (r:Subscription)<--(:Subscription)--(n) ${returnClause}
+        UNION ${withClause} MATCH (n:Application)-->(:Subscription)--(r) ${returnClause}
+        UNION ${withClause} MATCH (r:Application)-->(:Subscription)--(n) ${returnClause}`;
       }
-
       const result = await this.g.query(query);
       logger.perfLog(startTime, 300, 'findRelationships()');
       return formatResult(result);
