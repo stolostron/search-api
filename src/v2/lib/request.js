@@ -29,11 +29,15 @@ function retryStrategy(err, response /* body, options */) {
 
 const request = require('requestretry').defaults({
   agent: httpsAgent,
+  httpsAgent,
   json: true,
   maxAttempts: 10,
   strictSSL: false,
   retryDelay: 500,
   retryStrategy,
 });
+
+console.log('Request >>>>', request.Request); // eslint-disable-line no-console
+request.Request.HttpsAgent = httpsAgent;
 
 export default request;
