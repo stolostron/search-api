@@ -38,6 +38,11 @@ const request = require('requestretry').defaults({
 });
 
 console.log('Request >>>>', request.Request); // eslint-disable-line no-console
-request.Request.HttpsAgent = httpsAgent;
+console.log('\nRequest.options >>>>', request.Request.options); // eslint-disable-line no-console
+console.log('\nRequest.defaults >>>>', request.Request.defaults); // eslint-disable-line no-console
+request.Request.options.HttpsAgent = httpsAgent;
+request.Request.defaults.HttpsAgent = httpsAgent;
+request.Request.options.agent = httpsAgent;
+request.Request.defaults.agent = httpsAgent;
 
 export default request;
