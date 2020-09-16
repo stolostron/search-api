@@ -7,17 +7,17 @@
  * Contract with IBM Corp.
  * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
-// import https from 'https';
+
+import https from 'https';
 import { HttpsAgent } from 'agentkeepalive';
 import logger from './logger';
 
-// const httpsAgent = new HttpsAgent({
-//   keepAlive: true,
-//   timeout: 1000 * 60 * 5,
-//   freeSocketTimeout: 1000 * 60 * 3, // Keep connections alive longer than the cache.
-// });
-
-// https.globalAgent = httpsAgent;
+const httpsAgent = new HttpsAgent({
+  keepAlive: true,
+  timeout: 1000 * 60 * 5,
+  freeSocketTimeout: 1000 * 60 * 5, // 5 mins
+});
+https.globalAgent = httpsAgent;
 
 function retryStrategy(err, response /* body, options */) {
   // retry the request if we had an error or if the response was "429 - too many requests"
@@ -31,11 +31,7 @@ function retryStrategy(err, response /* body, options */) {
 }
 
 const request = require('requestretry').defaults({
-  agent: new HttpsAgent({
-    keepAlive: true,
-    timeout: 1000 * 60 * 5,
-    freeSocketTimeout: 1000 * 60 * 3, // Keep connections alive longer than the cache.
-  }),
+  agent: httpsAgent, // This isn't working so setting above with https.globalAgent
   json: true,
   maxAttempts: 10,
   strictSSL: false,
