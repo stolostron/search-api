@@ -6,7 +6,7 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
-
+import https from 'https';
 import { HttpsAgent } from 'agentkeepalive';
 import logger from './logger';
 
@@ -15,6 +15,8 @@ const httpsAgent = new HttpsAgent({
   timeout: 1000 * 60 * 5,
   freeSocketTimeout: 1000 * 60 * 3, // Keep connections alive longer than the cache.
 });
+
+https.globalAgent = httpsAgent
 
 function retryStrategy(err, response /* body, options */) {
   // retry the request if we had an error or if the response was "429 - too many requests"
@@ -28,8 +30,8 @@ function retryStrategy(err, response /* body, options */) {
 }
 
 const request = require('requestretry').defaults({
-  agent: httpsAgent,
-  httpsAgent,
+  // agent: httpsAgent,
+  // httpsAgent,
   json: true,
   maxAttempts: 10,
   strictSSL: false,
@@ -37,12 +39,12 @@ const request = require('requestretry').defaults({
   retryStrategy,
 });
 
-console.log('Request >>>>', request.Request); // eslint-disable-line no-console
-console.log('\nRequest.options >>>>', request.Request.request.options()); // eslint-disable-line no-console
-console.log('\nRequest.defaults >>>>', request.Request.request.defaults()); // eslint-disable-line no-console
-request.Request.request.options.HttpsAgent = httpsAgent;
-request.Request.request.defaults.HttpsAgent = httpsAgent;
-request.Request.request.options.agent = httpsAgent;
-request.Request.request.defaults.agent = httpsAgent;
+// console.log('Request >>>>', request.Request); // eslint-disable-line no-console
+// console.log('\nRequest.options >>>>', request.Request.request.options()); // eslint-disable-line no-console
+// console.log('\nRequest.defaults >>>>', request.Request.request.defaults()); // eslint-disable-line no-console
+// request.Request.request.options.HttpsAgent = httpsAgent;
+// request.Request.request.defaults.HttpsAgent = httpsAgent;
+// request.Request.request.options.agent = httpsAgent;
+// request.Request.request.defaults.agent = httpsAgent;
 
 export default request;
