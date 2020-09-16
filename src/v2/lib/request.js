@@ -31,7 +31,6 @@ function retryStrategy(err, response /* body, options */) {
 }
 
 const request = require('requestretry').defaults({
-  agent: httpsAgent, // This isn't working so setting above with https.globalAgent
   json: true,
   maxAttempts: 10,
   strictSSL: false,
