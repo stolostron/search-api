@@ -649,7 +649,7 @@ export default class RedisGraphConnector {
       let query = '';
       if (relatedKinds.length > 0) {
         const relatedClause = relatedKinds.map((kind) => `r.kind = '${kind}'`).join(' OR ');
-        const where = `WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')}`;
+        const where = `WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} AND (r._uid <> n._uid)`;
         const returnClause = 'RETURN DISTINCT r';
         query = `${withClause} MATCH (n)-[]-(r) ${where} ${returnClause}
         UNION ${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${where} ${returnClause}
@@ -661,7 +661,7 @@ export default class RedisGraphConnector {
         UNION ${withClause} MATCH (n:Application)-->(:Subscription)--(r)  ${where} ${returnClause}
         UNION ${withClause} MATCH (r:Application)-->(:Subscription)--(n)  ${where} ${returnClause}`;
       } else {
-        const returnClause = `${whereClause} RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
+        const returnClause = `${whereClause} AND (r._uid <> n._uid) RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
         query = `${withClause} MATCH (n)-[]-(r) ${returnClause}
         UNION ${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${returnClause}
         UNION ${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${returnClause}
