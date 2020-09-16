@@ -304,10 +304,10 @@ export default class RedisGraphConnector {
    */
   async runAppHubChannelsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub', 'ch']);
-    const match = `${withClause} MATCH ${APPLICATION_MATCH}-[*1]->${SUBSCRIPTION_MATCH}-[*1]->(ch:Channel)`;
-    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
-    const additionalWhere = 'exists(sub._hubClusterResource)=true AND NOT exists(sub._hostingSubscription) RETURN app._uid, sub._uid, sub._gitbranch, sub._gitpath, sub._gitcommit, ch._uid, ch.type, ch.pathname';
-    const query = `${match} ${where} ${additionalWhere}`;
+    const matchClause = `${withClause} MATCH ${APPLICATION_MATCH}-[*1]->${SUBSCRIPTION_MATCH}-[*1]->(ch:Channel)`;
+    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND exists(sub._hubClusterResource)=true AND NOT exists(sub._hostingSubscription)`;
+    const returnClause = 'RETURN app._uid, sub._uid, sub._gitbranch, sub._gitpath, sub._gitcommit, ch._uid, ch.type, ch.pathname';
+    const query = `${matchClause} ${where} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubChannelsQuery' });
   }
 
@@ -381,7 +381,7 @@ export default class RedisGraphConnector {
    */
   async runSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['sub']);
-    const matchClause = `MATCH ${SUBSCRIPTION_MATCH} ${whereClause}`;
+    const matchClause = `MATCH ${SUBSCRIPTION_MATCH} ${whereClause} AND NOT exists(sub._hostingSubscription)`;
     const returnClause = 'RETURN DISTINCT sub._uid, sub.name, sub.namespace, sub.created, sub.selfLink, sub.status, sub.channel, sub.timeWindow, sub.localPlacement';
     const orderClause = 'ORDER BY sub.name, sub.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause} ${orderClause}`;
@@ -398,10 +398,9 @@ export default class RedisGraphConnector {
    *   {sub._uid: 'sub2', count: 1 },
    * ]
    */
-  // TODO need to verify these queries/results not sure where they are being used
   async runSubClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['sub', 'cluster']);
-    const matchClause = `MATCH ${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster) ${whereClause}`;
+    const matchClause = `MATCH ${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster) ${whereClause} AND NOT exists(sub._hostingSubscription)`;
     const returnClause = 'RETURN DISTINCT sub._uid, count(DISTINCT cluster._uid) as count';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runSubClustersQuery' });
@@ -417,10 +416,9 @@ export default class RedisGraphConnector {
    *   {sub._uid: 'sub2', count: 1 },
    * ]
    */
-  // TODO need to verify these queries/results not sure where they are being used
   async runSubAppsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['sub', 'app']);
-    const matchClause = `MATCH ${SUBSCRIPTION_MATCH}<-[*1]-${APPLICATION_MATCH} ${whereClause}`;
+    const matchClause = `MATCH ${SUBSCRIPTION_MATCH}<-[*1]-${APPLICATION_MATCH} ${whereClause} AND NOT exists(sub._hostingSubscription)`;
     const returnClause = 'RETURN DISTINCT sub._uid, count(DISTINCT app._uid) as count';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runSubAppsQuery' });
@@ -448,10 +446,9 @@ export default class RedisGraphConnector {
    *   {pr._uid: 'pr2', count: 1 },
    * ]
    */
-  // TODO need to verify these queries/results not sure where they are being used
   async runPRClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['pr', 'sub', 'cluster']);
-    const matchClause = `MATCH ${PLACEMENTRULE_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster) ${whereClause}`;
+    const matchClause = `MATCH ${PLACEMENTRULE_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster) ${whereClause} AND NOT exists(sub._hostingSubscription)`;
     const returnClause = 'RETURN DISTINCT pr._uid, count(DISTINCT cluster._uid) as count';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runPRClustersQuery' });
@@ -479,13 +476,11 @@ export default class RedisGraphConnector {
    *   {ch._uid: 'ch2', localPlacement: [true, false], count: 1 },
    * ]
    */
-  // TODO need to verify these queries/results not sure where they are being used
   async runChannelSubsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['ch', 'sub']);
     const matchClause = `MATCH ${CHANNEL_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}`;
-    // const matchClause = `MATCH ${CHANNEL_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}-[]-(:Subscription)`;
     const returnClause = 'RETURN DISTINCT ch._uid, collect(DISTINCT sub.localPlacement) as localPlacement, count(DISTINCT sub._uid) as count';
-    const query = `${withClause} ${matchClause} ${whereClause} ${returnClause}`;
+    const query = `${withClause} ${matchClause} ${whereClause} AND NOT exists(sub._hostingSubscription) ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runChannelSubsQuery' });
   }
 
@@ -499,13 +494,11 @@ export default class RedisGraphConnector {
    *   {ch._uid: 'ch2', count: 1 },
    * ]
    */
-  // TODO need to verify these queries/results not sure where they are being used
   async runChannelClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['ch', 'sub', 'cluster']);
-    const matchClause = `MATCH ${CHANNEL_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}<-[]-(cluster:Cluster)`;
-    // const matchClause = `MATCH ${CHANNEL_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}-[]-(:Subscription)-[]-(cluster:Cluster)`;
+    const matchClause = `MATCH ${CHANNEL_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster)`;
     const returnClause = 'RETURN DISTINCT ch._uid, count(DISTINCT cluster._uid) as count';
-    const query = `${withClause} ${matchClause} ${whereClause} ${returnClause}`;
+    const query = `${withClause} ${matchClause} ${whereClause} AND NOT exists(sub._hostingSubscription) ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runChannelClustersQuery' });
   }
 
