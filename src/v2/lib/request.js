@@ -5,18 +5,19 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
+ * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
-import https from 'https';
+// import https from 'https';
 import { HttpsAgent } from 'agentkeepalive';
 import logger from './logger';
 
-const httpsAgent = new HttpsAgent({
-  keepAlive: true,
-  timeout: 1000 * 60 * 5,
-  freeSocketTimeout: 1000 * 60 * 3, // Keep connections alive longer than the cache.
-});
+// const httpsAgent = new HttpsAgent({
+//   keepAlive: true,
+//   timeout: 1000 * 60 * 5,
+//   freeSocketTimeout: 1000 * 60 * 3, // Keep connections alive longer than the cache.
+// });
 
-https.globalAgent = httpsAgent;
+// https.globalAgent = httpsAgent;
 
 function retryStrategy(err, response /* body, options */) {
   // retry the request if we had an error or if the response was "429 - too many requests"
@@ -30,21 +31,16 @@ function retryStrategy(err, response /* body, options */) {
 }
 
 const request = require('requestretry').defaults({
-  // agent: httpsAgent,
-  // httpsAgent,
+  agent: new HttpsAgent({
+    keepAlive: true,
+    timeout: 1000 * 60 * 5,
+    freeSocketTimeout: 1000 * 60 * 3, // Keep connections alive longer than the cache.
+  }),
   json: true,
   maxAttempts: 10,
   strictSSL: false,
   retryDelay: 500,
   retryStrategy,
 });
-
-// console.log('Request >>>>', request.Request); // eslint-disable-line no-console
-// console.log('\nRequest.options >>>>', request.Request.request.options()); // eslint-disable-line no-console
-// console.log('\nRequest.defaults >>>>', request.Request.request.defaults()); // eslint-disable-line no-console
-// request.Request.request.options.HttpsAgent = httpsAgent;
-// request.Request.request.defaults.HttpsAgent = httpsAgent;
-// request.Request.request.options.agent = httpsAgent;
-// request.Request.request.defaults.agent = httpsAgent;
 
 export default request;
