@@ -647,8 +647,6 @@ export default class RedisGraphConnector {
         query = `${withClause} MATCH (n)-[]-(r) ${where} ${returnClause}
         UNION ${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${where} ${returnClause}
         UNION ${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${where} ${returnClause}
-        UNION ${withClause} MATCH (n:Application)-->(:Subscription)<--(r:Subscription) ${where} ${returnClause}
-        UNION ${withClause} MATCH (r:Application)-->(:Subscription)<--(n:Subscription)  ${where} ${returnClause}
         UNION ${withClause} MATCH (n:Subscription)<--(:Subscription)--(r)  ${where} ${returnClause}
         UNION ${withClause} MATCH (r:Subscription)<--(:Subscription)--(n)  ${where} ${returnClause}
         UNION ${withClause} MATCH (n:Application)-->(:Subscription)--(r)  ${where} ${returnClause}
@@ -658,8 +656,6 @@ export default class RedisGraphConnector {
         query = `${withClause} MATCH (n)-[]-(r) ${returnClause}
         UNION ${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${returnClause}
         UNION ${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${returnClause}
-        UNION ${withClause} MATCH (n:Application)-->(:Subscription)<--(r:Subscription) ${returnClause}
-        UNION ${withClause} MATCH (r:Application)-->(:Subscription)<--(n:Subscription) ${returnClause}
         UNION ${withClause} MATCH (n:Subscription)<--(:Subscription)--(r) ${returnClause}
         UNION ${withClause} MATCH (r:Subscription)<--(:Subscription)--(n) ${returnClause}
         UNION ${withClause} MATCH (n:Application)-->(:Subscription)--(r) ${returnClause}
