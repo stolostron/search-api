@@ -293,7 +293,7 @@ export default class RedisGraphConnector {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
     const matchClause = `MATCH ${APPLICATION_MATCH}-[]->${SUBSCRIPTION_MATCH}`;
     const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
-    const additionalWhere = 'exists(sub._hubClusterResource)=true AND NOT exists(sub._hostingSubscription)';
+    const additionalWhere = 'NOT exists(sub._hostingSubscription)';
     const returnClause = 'RETURN app._uid, sub._uid, sub.timeWindow, sub.localPlacement, sub.status, sub.channel';
     const query = `${withClause} ${matchClause} ${where} ${additionalWhere} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubSubscriptionsQuery' });
@@ -305,7 +305,7 @@ export default class RedisGraphConnector {
   async runAppHubChannelsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub', 'ch']);
     const matchClause = `${withClause} MATCH ${APPLICATION_MATCH}-[*1]->${SUBSCRIPTION_MATCH}-[*1]->(ch:Channel)`;
-    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND exists(sub._hubClusterResource)=true AND NOT exists(sub._hostingSubscription)`;
+    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND NOT exists(sub._hostingSubscription)`;
     const returnClause = 'RETURN app._uid, sub._uid, sub._gitbranch, sub._gitpath, sub._gitcommit, ch._uid, ch.type, ch.pathname';
     const query = `${matchClause} ${where} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubChannelsQuery' });
@@ -359,7 +359,7 @@ export default class RedisGraphConnector {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
     const matchClause = `MATCH ${APPLICATION_MATCH}-[]->${SUBSCRIPTION_MATCH}`;
     const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
-    const additionalWhere = 'exists(sub._hubClusterResource)=true AND NOT exists(sub._hostingSubscription)';
+    const additionalWhere = 'NOT exists(sub._hostingSubscription)';
     const query = `${withClause} ${matchClause} ${where} ${additionalWhere} RETURN DISTINCT sub`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppHubSubscriptionsQuery' });
   }
