@@ -274,15 +274,17 @@ export default class RedisGraphConnector {
    *
    * Sample result:
    * [
-   *   {app._uid: 'app1', count: 3 },
-   *   {app._uid: 'app2', count: 1 },
+   *    { 'app._uid': 'local-cluster/12345-67890', local: false, clusterCount: 1 },
+   *    { 'app._uid': 'local-cluster/12345-67890', local: true, clusterCount: 1 }
    * ]
    */
   async runAppClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'cluster']);
-    const matchClause = `MATCH ${APPLICATION_MATCH}-->(:Subscription)<--(:Subscription)-->(cluster:Cluster) ${whereClause}`;
     const returnClause = "RETURN DISTINCT app._uid, cluster.name='local-cluster' as local, count(*) as clusterCount";
-    const query = `${withClause} ${matchClause} ${returnClause}`;
+    const query = `
+      ${withClause} MATCH ${APPLICATION_MATCH}-->(:Subscription)<--(:Subscription)--(cluster:Cluster) ${whereClause} ${returnClause}
+      UNION ${withClause} MATCH ${APPLICATION_MATCH}-->(:Subscription {cluster: 'local-cluster', localPlacement: 'true', apigroup: 'apps.open-cluster-management.io'})--(cluster:Cluster) ${whereClause} ${returnClause}
+    `;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppClustersQuery' });
   }
 
@@ -394,15 +396,17 @@ export default class RedisGraphConnector {
    *
    * Sample result:
    * [
-   *   {sub._uid: 'sub1', count: 3 },
-   *   {sub._uid: 'sub2', count: 1 },
+   *    { 'sub._uid': 'local-cluster/12345-67890', local: false, clusterCount: 1 },
+   *    { 'sub._uid': 'local-cluster/12345-67890', local: true, clusterCount: 1 }
    * ]
    */
   async runSubClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['sub', 'cluster']);
-    const matchClause = `MATCH ${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster) ${whereClause} AND NOT exists(sub._hostingSubscription)`;
     const returnClause = "RETURN DISTINCT sub._uid, cluster.name='local-cluster' as local, count(*) as clusterCount";
-    const query = `${withClause} ${matchClause} ${returnClause}`;
+    const query = `
+      ${withClause} MATCH ${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster) ${whereClause} AND NOT exists(sub._hostingSubscription) ${returnClause}
+      UNION ${withClause} MATCH (sub:Subscription {cluster: 'local-cluster', localPlacement: 'true', apigroup: 'apps.open-cluster-management.io'})--(cluster:Cluster) ${whereClause} AND NOT exists(sub._hostingSubscription) ${returnClause}
+    `;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runSubClustersQuery' });
   }
 
@@ -442,15 +446,21 @@ export default class RedisGraphConnector {
    *
    * Sample result:
    * [
-   *   {pr._uid: 'pr1', count: 3 },
-   *   {pr._uid: 'pr2', count: 1 },
+   *    { 'pr._uid': 'local-cluster/12345-67890', local: false, clusterCount: 1 },
+   *    { 'pr._uid': 'local-cluster/12345-67890', local: true, clusterCount: 1 }
    * ]
    */
   async runPRClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['pr', 'sub', 'cluster']);
-    const matchClause = `MATCH ${PLACEMENTRULE_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster) ${whereClause} AND NOT exists(sub._hostingSubscription)`;
     const returnClause = "RETURN DISTINCT pr._uid, cluster.name='local-cluster' as local, count(*) as clusterCount";
-    const query = `${withClause} ${matchClause} ${returnClause}`;
+    const query = `
+      ${withClause}
+      MATCH ${PLACEMENTRULE_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster)
+      ${whereClause} AND NOT exists(sub._hostingSubscription) ${returnClause}
+      UNION ${withClause}
+      MATCH ${PLACEMENTRULE_MATCH}<-[*1]-(sub:Subscription {cluster: 'local-cluster', localPlacement: 'true', apigroup: 'apps.open-cluster-management.io'})--(cluster:Cluster)
+      ${whereClause} AND NOT exists(sub._hostingSubscription) ${returnClause}
+    `;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runPRClustersQuery' });
   }
 
@@ -490,15 +500,21 @@ export default class RedisGraphConnector {
    *
    * Sample result:
    * [
-   *   {ch._uid: 'ch1', count: 1 },
-   *   {ch._uid: 'ch2', count: 1 },
+   *    { 'ch._uid': 'local-cluster/12345-67890', local: false, clusterCount: 1 },
+   *    { 'ch._uid': 'local-cluster/12345-67890', local: true, clusterCount: 1 }
    * ]
    */
   async runChannelClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['ch', 'sub', 'cluster']);
-    const matchClause = `MATCH ${CHANNEL_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster)`;
     const returnClause = "RETURN DISTINCT ch._uid, cluster.name='local-cluster' as local, count(*) as clusterCount";
-    const query = `${withClause} ${matchClause} ${whereClause} AND NOT exists(sub._hostingSubscription) ${returnClause}`;
+    const query = `
+      ${withClause}
+      MATCH ${CHANNEL_MATCH}<-[*1]-${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster)
+      ${whereClause} AND NOT exists(sub._hostingSubscription) ${returnClause}
+      UNION ${withClause}
+      MATCH ${CHANNEL_MATCH}<-[*1]-(sub:Subscription {cluster: 'local-cluster', localPlacement: 'true', apigroup: 'apps.open-cluster-management.io'})--(cluster:Cluster)
+      ${whereClause} AND NOT exists(sub._hostingSubscription) ${returnClause}
+    `;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runChannelClustersQuery' });
   }
 

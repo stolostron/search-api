@@ -7,8 +7,8 @@ Object {
       Object {
         "_uid": "local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99",
         "clusterCount": Object {
-          "localCount": 0,
-          "remoteCount": 0,
+          "localCount": 1,
+          "remoteCount": 2,
         },
         "created": "2020-01-23T13:56:32Z",
         "dashboard": "localhost/grafana/dashboard/db/app01-dashboard-via-federated-prometheus?namespace=sample",
@@ -148,8 +148,8 @@ Object {
       Object {
         "_uid": "local-cluster/ch-01-uid",
         "clusterCount": Object {
-          "localCount": 0,
-          "remoteCount": 0,
+          "localCount": 1,
+          "remoteCount": 2,
         },
         "created": "2020-08-20T14:16:05Z",
         "localPlacement": true,
@@ -164,7 +164,7 @@ Object {
         "_uid": "local-cluster/ch-02-uid",
         "clusterCount": Object {
           "localCount": 0,
-          "remoteCount": 0,
+          "remoteCount": 2,
         },
         "created": "2020-08-20T14:17:05Z",
         "localPlacement": false,
@@ -188,7 +188,7 @@ Object {
         "_uid": "local-cluster/ch-02-uid",
         "clusterCount": Object {
           "localCount": 0,
-          "remoteCount": 0,
+          "remoteCount": 2,
         },
         "created": "2020-08-20T14:17:05Z",
         "localPlacement": false,
@@ -318,7 +318,7 @@ Object {
         "channel": "object-ch-ns/object-ch",
         "clusterCount": Object {
           "localCount": 0,
-          "remoteCount": 0,
+          "remoteCount": 2,
         },
         "created": "2020-08-20T14:17:05Z",
         "localPlacement": false,
@@ -342,8 +342,8 @@ Object {
         "appCount": 1,
         "channel": "git-ch-ns/git-ch",
         "clusterCount": Object {
-          "localCount": 0,
-          "remoteCount": 0,
+          "localCount": 1,
+          "remoteCount": 2,
         },
         "created": "2020-08-20T14:16:05Z",
         "localPlacement": true,
@@ -359,7 +359,7 @@ Object {
         "channel": "object-ch-ns/object-ch",
         "clusterCount": Object {
           "localCount": 0,
-          "remoteCount": 0,
+          "remoteCount": 2,
         },
         "created": "2020-08-20T14:17:05Z",
         "localPlacement": false,
