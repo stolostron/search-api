@@ -32,6 +32,24 @@ function groupByStatus(resources, statusKey) {
   return result;
 }
 
+// Returns the local and remote cluster counts for a specific resource
+function getLocalRemoteClusterCounts(resourceUid, resourceType, data) {
+  const clusterCount = {
+    localCount: 0,
+    remoteCount: 0,
+  };
+  data.forEach((res) => {
+    if (res[`${resourceType}._uid`] === resourceUid) {
+      if (res.local) {
+        clusterCount.localCount = res.clusterCount || 0;
+      } else {
+        clusterCount.remoteCount = res.clusterCount || 0;
+      }
+    }
+  });
+  return clusterCount;
+}
+
 export default class AppModel {
   constructor({ searchConnector = isRequired('searchConnector') }) {
     this.searchConnector = searchConnector;
@@ -119,8 +137,7 @@ export default class AppModel {
    */
   async resolveAppClustersCount(appUid) {
     const clusters = await this.runQueryOnlyOnce('runAppClustersQuery');
-    const c = clusters.find((app) => app['app._uid'] === appUid);
-    return c ? c.count : 0;
+    return getLocalRemoteClusterCounts(appUid, 'app', clusters);
   }
 
   /*
@@ -176,8 +193,7 @@ export default class AppModel {
    */
   async resolveSubClustersCount(subUid) {
     const clusters = await this.runQueryOnlyOnce('runSubClustersQuery');
-    const c = clusters.find((sub) => sub['sub._uid'] === subUid);
-    return c ? c.count : 0;
+    return getLocalRemoteClusterCounts(subUid, 'sub', clusters);
   }
 
   /*
@@ -208,8 +224,7 @@ export default class AppModel {
    */
   async resolvePRClustersCount(prUid) {
     const clusters = await this.runQueryOnlyOnce('runPRClustersQuery');
-    const c = clusters.find((pr) => pr['pr._uid'] === prUid);
-    return c ? c.count : 0;
+    return getLocalRemoteClusterCounts(prUid, 'pr', clusters);
   }
 
   /*
@@ -249,7 +264,6 @@ export default class AppModel {
    */
   async resolveChannelClustersCount(chUid) {
     const clusters = await this.runQueryOnlyOnce('runChannelClustersQuery');
-    const c = clusters.find((ch) => ch['ch._uid'] === chUid);
-    return c ? c.count : 0;
+    return getLocalRemoteClusterCounts(chUid, 'ch', clusters);
   }
 }

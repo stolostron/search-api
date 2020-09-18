@@ -6,7 +6,10 @@ Object {
     "applications": Array [
       Object {
         "_uid": "local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99",
-        "clusterCount": 5,
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
         "created": "2020-01-23T13:56:32Z",
         "dashboard": "localhost/grafana/dashboard/db/app01-dashboard-via-federated-prometheus?namespace=sample",
         "hubChannels": Array [
@@ -68,7 +71,10 @@ Object {
       },
       Object {
         "_uid": "local-cluster/app-02-uid",
-        "clusterCount": 0,
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
         "created": "2020-01-23T13:56:32Z",
         "dashboard": "localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test",
         "hubChannels": Array [
@@ -99,7 +105,10 @@ Object {
     "applications": Array [
       Object {
         "_uid": "local-cluster/app-02-uid",
-        "clusterCount": 0,
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
         "created": "2020-01-23T13:56:32Z",
         "dashboard": "localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test",
         "hubSubscriptions": Array [],
@@ -138,7 +147,10 @@ Object {
     "channels": Array [
       Object {
         "_uid": "local-cluster/ch-01-uid",
-        "clusterCount": 1,
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
         "created": "2020-08-20T14:16:05Z",
         "localPlacement": true,
         "name": "ch01",
@@ -150,7 +162,10 @@ Object {
       },
       Object {
         "_uid": "local-cluster/ch-02-uid",
-        "clusterCount": 2,
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
         "created": "2020-08-20T14:17:05Z",
         "localPlacement": false,
         "name": "ch02",
@@ -171,7 +186,10 @@ Object {
     "channels": Array [
       Object {
         "_uid": "local-cluster/ch-02-uid",
-        "clusterCount": 2,
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
         "created": "2020-08-20T14:17:05Z",
         "localPlacement": false,
         "name": "ch02",
@@ -225,7 +243,10 @@ Object {
     "placementRules": Array [
       Object {
         "_uid": "local-cluster/pr-01-uid",
-        "clusterCount": 2,
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
         "created": "2020-08-20T14:16:05Z",
         "name": "pr01",
         "namespace": "applications",
@@ -234,7 +255,10 @@ Object {
       },
       Object {
         "_uid": "local-cluster/pr-02-uid",
-        "clusterCount": 0,
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
         "created": "2020-08-20T14:17:05Z",
         "name": "pr02",
         "namespace": "test",
@@ -252,7 +276,10 @@ Object {
     "placementRules": Array [
       Object {
         "_uid": "local-cluster/pr-01-uid",
-        "clusterCount": 2,
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
         "created": "2020-08-20T14:16:05Z",
         "name": "pr01",
         "namespace": "applications",
@@ -289,7 +316,10 @@ Object {
         "_uid": "local-cluster/sub-02-uid",
         "appCount": 2,
         "channel": "object-ch-ns/object-ch",
-        "clusterCount": 3,
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
         "created": "2020-08-20T14:17:05Z",
         "localPlacement": false,
         "name": "sub02",
@@ -311,7 +341,10 @@ Object {
         "_uid": "local-cluster/sub-01-uid",
         "appCount": 1,
         "channel": "git-ch-ns/git-ch",
-        "clusterCount": 0,
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
         "created": "2020-08-20T14:16:05Z",
         "localPlacement": true,
         "name": "sub01",
@@ -324,7 +357,10 @@ Object {
         "_uid": "local-cluster/sub-02-uid",
         "appCount": 2,
         "channel": "object-ch-ns/object-ch",
-        "clusterCount": 3,
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
         "created": "2020-08-20T14:17:05Z",
         "localPlacement": false,
         "name": "sub02",
