@@ -24,8 +24,8 @@ export const typeDef = gql`
     namespace: String
     selfLink: String
 
-    # Number of clusters where this application has created any resources.
-    clusterCount: Int
+    # Number of application deployments on local and remote clusters.
+    clusterCount: JSON
 
     # Hub channels associated with this application
     hubChannels: [JSON]
@@ -50,7 +50,7 @@ export const typeDef = gql`
     selfLink: String
     channel: String
     appCount: Int
-    clusterCount: Int
+    clusterCount: JSON
     timeWindow: String
     localPlacement: Boolean
     status: String
@@ -62,7 +62,7 @@ export const typeDef = gql`
     namespace: String
     created: String
     selfLink: String
-    clusterCount: Int
+    clusterCount: JSON
     replicas: Int
   }
 
@@ -76,7 +76,7 @@ export const typeDef = gql`
     pathname: String
     localPlacement: Boolean
     subscriptionCount: Int
-    clusterCount: Int
+    clusterCount: JSON
   }
 
   # Aggregated data from all applications.

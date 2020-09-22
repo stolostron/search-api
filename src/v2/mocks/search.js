@@ -98,7 +98,13 @@ const MOCK_QUERIES = {
   runAppClustersQuery: [
     {
       'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-      count: 5,
+      local: false,
+      clusterCount: 2,
+    },
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      local: true,
+      clusterCount: 1,
     },
   ],
 
@@ -206,11 +212,18 @@ const MOCK_QUERIES = {
   runSubClustersQuery: [
     {
       'sub._uid': 'local-cluster/sub-01-uid',
-      count: 0,
+      local: false,
+      clusterCount: 2,
+    },
+    {
+      'sub._uid': 'local-cluster/sub-01-uid',
+      local: true,
+      clusterCount: 1,
     },
     {
       'sub._uid': 'local-cluster/sub-02-uid',
-      count: 3,
+      local: false,
+      clusterCount: 2,
     },
   ],
 
@@ -248,12 +261,19 @@ const MOCK_QUERIES = {
 
   runPRClustersQuery: [
     {
-      'pr._uid': 'local-cluster/pr-01-uid',
-      count: 2,
+      'pr._uid': 'local-cluster/sub-01-uid',
+      local: false,
+      clusterCount: 2,
     },
     {
-      'pr._uid': 'local-cluster/pr-02-uid',
-      count: 0,
+      'pr._uid': 'local-cluster/sub-01-uid',
+      local: true,
+      clusterCount: 1,
+    },
+    {
+      'pr._uid': 'local-cluster/sub-02-uid',
+      local: false,
+      clusterCount: 2,
     },
   ],
 
@@ -297,11 +317,18 @@ const MOCK_QUERIES = {
   runChannelClustersQuery: [
     {
       'ch._uid': 'local-cluster/ch-01-uid',
-      count: 1,
+      local: false,
+      clusterCount: 2,
+    },
+    {
+      'ch._uid': 'local-cluster/ch-01-uid',
+      local: true,
+      clusterCount: 1,
     },
     {
       'ch._uid': 'local-cluster/ch-02-uid',
-      count: 2,
+      local: false,
+      clusterCount: 2,
     },
   ],
 
