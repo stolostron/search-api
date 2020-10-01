@@ -10,6 +10,7 @@
  ****************************************************************************** */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
+import _ from 'lodash';
 import fs from 'fs';
 import redis from 'redis';
 import dns from 'dns';
@@ -655,31 +656,39 @@ export default class RedisGraphConnector {
       const { withClause, whereClause } = await this.createWhereClause(filters, ['n', 'r']);
       const startTime = Date.now();
 
-      let query = '';
+      let relatedQueries = [];
       if (relatedKinds.length > 0) {
         const relatedClause = relatedKinds.map((kind) => `r.kind = '${kind}'`).join(' OR ');
         const where = `WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} AND (r._uid <> n._uid)`;
         const returnClause = 'RETURN DISTINCT r';
-        query = `${withClause} MATCH (n)-[]-(r) ${where} ${returnClause}
-        UNION ${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${where} ${returnClause}
-        UNION ${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${where} ${returnClause}
-        UNION ${withClause} MATCH (n:Subscription)<--(:Subscription)--(r)  ${where} ${returnClause}
-        UNION ${withClause} MATCH (r:Subscription)<--(:Subscription)--(n)  ${where} ${returnClause}
-        UNION ${withClause} MATCH (n:Application)-->(:Subscription)--(r)  ${where} ${returnClause}
-        UNION ${withClause} MATCH (r:Application)-->(:Subscription)--(n)  ${where} ${returnClause}`;
+        relatedQueries = [
+          `${withClause} MATCH (n)-[]-(r) ${where} ${returnClause}`,
+          `${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${where} ${returnClause}`,
+          `${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${where} ${returnClause}`,
+          `${withClause} MATCH (n:Subscription)<--(:Subscription)--(r) ${where} ${returnClause}`,
+          `${withClause} MATCH (r:Subscription)<--(:Subscription)--(n) ${where} ${returnClause}`,
+          `${withClause} MATCH (n:Application)-->(:Subscription)--(r) ${where} ${returnClause}`,
+          `${withClause} MATCH (r:Application)-->(:Subscription)--(n) ${where} ${returnClause}`,
+        ];
       } else {
         const returnClause = `${whereClause} AND (r._uid <> n._uid) RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
-        query = `${withClause} MATCH (n)-[]-(r) ${returnClause}
-        UNION ${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${returnClause}
-        UNION ${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${returnClause}
-        UNION ${withClause} MATCH (n:Subscription)<--(:Subscription)--(r) ${returnClause}
-        UNION ${withClause} MATCH (r:Subscription)<--(:Subscription)--(n) ${returnClause}
-        UNION ${withClause} MATCH (n:Application)-->(:Subscription)--(r) ${returnClause}
-        UNION ${withClause} MATCH (r:Application)-->(:Subscription)--(n) ${returnClause}`;
+        relatedQueries = [
+          `${withClause} MATCH (n)-[]-(r) ${returnClause}`,
+          `${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${returnClause}`,
+          `${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${returnClause}`,
+          `${withClause} MATCH (n:Subscription)<--(:Subscription)--(r) ${returnClause}`,
+          `${withClause} MATCH (r:Subscription)<--(:Subscription)--(n) ${returnClause}`,
+          `${withClause} MATCH (n:Application)-->(:Subscription)--(r) ${returnClause}`,
+          `${withClause} MATCH (r:Application)-->(:Subscription)--(n) ${returnClause}`,
+        ];
       }
-      const result = await this.g.query(query);
+      let results = await Promise.all(relatedQueries.map(async (q) => formatResult(await this.g.query(q))));
+      // Compress to a single array (originally an array of arrays)
+      results = _.flatten(results);
+      // Need to ger rid of duplicate resources
+      results = _.uniqBy(results, (item) => item._uid);
       logger.perfLog(startTime, 300, 'findRelationships()');
-      return formatResult(result);
+      return results;
     }
     return [];
   }
