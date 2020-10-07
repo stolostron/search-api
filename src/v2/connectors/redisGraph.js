@@ -651,6 +651,9 @@ export default class RedisGraphConnector {
     return valuesList;
   }
 
+  // WORKAROUND: This function divides the query to prevent hitting the maximum query size. The tradeoff is 
+  // a slower execution time. Long term we need to replace with a more efficient query or rethink how we enforce 
+  // rbac. Technical debt being tracked with: https://github.com/open-cluster-management/backlog/issues/6016
   async getRelationshipsWithSeparatedQueryWorkaround(withClause, whereClause, relatedKinds, countOnly) {
     const startTime = Date.now();
     let relatedQueries = [];
