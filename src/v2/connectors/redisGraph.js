@@ -715,6 +715,7 @@ export default class RedisGraphConnector {
         UNION ${withClause} MATCH (r:Application)-->(:Subscription)--(n) ${returnClause}`;
       }
       const result = await this.g.query(query);
+      logger.perfLog(startTime, 300, 'findRelationships()');
       return formatResult(result);
     }
     return [];
