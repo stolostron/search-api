@@ -651,47 +651,52 @@ export default class RedisGraphConnector {
     return valuesList;
   }
 
+  async getRelationshipsWithSeparatedQueryWorkaround(withClause, whereClause, relatedKinds, countOnly) {
+    const startTime = Date.now();
+    let relatedQueries = [];
+    if (relatedKinds.length > 0) {
+      const relatedClause = relatedKinds.map((kind) => `r.kind = '${kind}'`).join(' OR ');
+      const where = `WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} AND (r._uid <> n._uid)`;
+      const returnClause = 'RETURN DISTINCT r';
+      relatedQueries = [
+        `${withClause} MATCH (n)-[]-(r) ${where} ${returnClause}`,
+        `${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${where} ${returnClause}`,
+        `${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${where} ${returnClause}`,
+        `${withClause} MATCH (n:Subscription)<--(:Subscription)--(r) ${where} ${returnClause}`,
+        `${withClause} MATCH (r:Subscription)<--(:Subscription)--(n) ${where} ${returnClause}`,
+        `${withClause} MATCH (n:Application)-->(:Subscription)--(r) ${where} ${returnClause}`,
+        `${withClause} MATCH (r:Application)-->(:Subscription)--(n) ${where} ${returnClause}`,
+      ];
+    } else {
+      const returnClause = `${whereClause} AND (r._uid <> n._uid) RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
+      relatedQueries = [
+        `${withClause} MATCH (n)-[]-(r) ${returnClause}`,
+        `${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${returnClause}`,
+        `${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${returnClause}`,
+        `${withClause} MATCH (n:Subscription)<--(:Subscription)--(r) ${returnClause}`,
+        `${withClause} MATCH (r:Subscription)<--(:Subscription)--(n) ${returnClause}`,
+        `${withClause} MATCH (n:Application)-->(:Subscription)--(r) ${returnClause}`,
+        `${withClause} MATCH (r:Application)-->(:Subscription)--(n) ${returnClause}`,
+      ];
+    }
+    let results = await Promise.all(relatedQueries.map(async (q) => formatResult(await this.g.query(q))));
+    // Compress to a single array (originally an array of arrays)
+    results = _.flatten(results);
+    // Need to ger rid of duplicate resources
+    results = _.uniqBy(results, (item) => item._uid);
+    logger.perfLog(startTime, 500, 'findRelationships() - Using separate query workaround');
+    return results;
+  }
+
   async findRelationships({ filters = [], countOnly = false, relatedKinds = [] } = {}) {
     const MAX_LENGTH_WITH_CLAUSE = 148500;
     if (this.rbac.length > 0) {
       const { withClause, whereClause } = await this.createWhereClause(filters, ['n', 'r']);
       const startTime = Date.now();
       let query = '';
-      let relatedQueries = [];
-      // This is tech debt tracking with: https://github.com/open-cluster-management/backlog/issues/6016
+      // This is tech debt, tracking with: https://github.com/open-cluster-management/backlog/issues/6016
       if (withClause.length > MAX_LENGTH_WITH_CLAUSE) {
-        if (relatedKinds.length > 0) {
-          const relatedClause = relatedKinds.map((kind) => `r.kind = '${kind}'`).join(' OR ');
-          const where = `WHERE (${relatedClause}) AND ${whereClause.replace('WHERE ', '')} AND (r._uid <> n._uid)`;
-          const returnClause = 'RETURN DISTINCT r';
-          relatedQueries = [
-            `${withClause} MATCH (n)-[]-(r) ${where} ${returnClause}`,
-            `${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${where} ${returnClause}`,
-            `${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${where} ${returnClause}`,
-            `${withClause} MATCH (n:Subscription)<--(:Subscription)--(r) ${where} ${returnClause}`,
-            `${withClause} MATCH (r:Subscription)<--(:Subscription)--(n) ${where} ${returnClause}`,
-            `${withClause} MATCH (n:Application)-->(:Subscription)--(r) ${where} ${returnClause}`,
-            `${withClause} MATCH (r:Application)-->(:Subscription)--(n) ${where} ${returnClause}`,
-          ];
-        } else {
-          const returnClause = `${whereClause} AND (r._uid <> n._uid) RETURN DISTINCT ${countOnly ? 'r._uid, r.kind' : 'r'}`;
-          relatedQueries = [
-            `${withClause} MATCH (n)-[]-(r) ${returnClause}`,
-            `${withClause} MATCH (n:Application)-->(:Subscription)<--(:Subscription)--(r) ${returnClause}`,
-            `${withClause} MATCH (r:Application)-->(:Subscription)<--(:Subscription)--(n) ${returnClause}`,
-            `${withClause} MATCH (n:Subscription)<--(:Subscription)--(r) ${returnClause}`,
-            `${withClause} MATCH (r:Subscription)<--(:Subscription)--(n) ${returnClause}`,
-            `${withClause} MATCH (n:Application)-->(:Subscription)--(r) ${returnClause}`,
-            `${withClause} MATCH (r:Application)-->(:Subscription)--(n) ${returnClause}`,
-          ];
-        }
-        let results = await Promise.all(relatedQueries.map(async (q) => formatResult(await this.g.query(q))));
-        // Compress to a single array (originally an array of arrays)
-        results = _.flatten(results);
-        // Need to ger rid of duplicate resources
-        results = _.uniqBy(results, (item) => item._uid);
-        logger.perfLog(startTime, 300, 'findRelationships()');
-        return results;
+        return this.getRelationshipsWithSeparatedQueryWorkaround(withClause, whereClause, relatedKinds, countOnly);
       }
       if (relatedKinds.length > 0) {
         const relatedClause = relatedKinds.map((kind) => `r.kind = '${kind}'`).join(' OR ');
