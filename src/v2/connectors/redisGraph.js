@@ -652,7 +652,7 @@ export default class RedisGraphConnector {
   }
 
   async findRelationships({ filters = [], countOnly = false, relatedKinds = [] } = {}) {
-    const MAX_LENGTH_WITH_CLAUSE = 149500;
+    const MAX_LENGTH_WITH_CLAUSE = 148500;
     if (this.rbac.length > 0) {
       const { withClause, whereClause } = await this.createWhereClause(filters, ['n', 'r']);
       const startTime = Date.now();
