@@ -545,7 +545,8 @@ export default class RedisGraphConnector {
               const values = value.replace(' ', '').split(',');
               return values.every((v) => item.role.includes(v));
             });
-          } if (item.label && specialFilters.findIndex((filter) => filter.property === 'label') >= 0) {
+          }
+          if (item.label && specialFilters.findIndex((filter) => filter.property === 'label') >= 0) {
             const labelIdx = specialFilters.findIndex((filter) => filter.property === 'label');
             return item.label && specialFilters[labelIdx].values.find((value) => item.label.indexOf(value) > -1);
           }
@@ -624,7 +625,9 @@ export default class RedisGraphConnector {
       const limitClause = limit <= 0 || property === 'label'
         ? ''
         : `LIMIT ${limit}`;
-      const f = filters.length > 0 ? filters : [];
+      let f = filters.length > 0 ? filters : [];
+      // Workaround for node resource queries - this will need to be removed when redis 2.0 features are used
+      f = filters.filter((filter) => filter.property !== 'role' && filter.property !== 'label');
       const { withClause, whereClause } = await this.createWhereClause(f, ['n']);
       const result = await this.g.query(`${withClause} MATCH (n) ${whereClause} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`);
       logger.perfLog(startTime, 500, 'getAllValues()');
