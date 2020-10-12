@@ -527,19 +527,33 @@ export default class RedisGraphConnector {
 
   async runSearchQuery(filters, limit = config.get('defaultQueryLimit'), querySkipIdx = 0) {
     // logger.info('runSearchQuery()', filters);
+    const startTime = Date.now();
     if (this.rbac.length > 0) {
       // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
       // encode labels in a single string. As a result we can't use an openCypher query to search
       // for labels so we need to filter here, which btw is inefficient.
-      const labelFilter = filters.find((f) => f.property === 'label');
-      if (labelFilter) {
-        const { withClause, whereClause } = await this.createWhereClause(filters.filter((f) => f.property !== 'label'), ['n']);
-        const startTime = Date.now();
-        const query = `${withClause} MATCH (n) ${whereClause} RETURN n`;
-        const result = await this.g.query(query);
-        logger.perfLog(startTime, 150, 'LabelSearchQuery');
-        return formatResult(result).filter((item) => (item.label && labelFilter.values.find((value) => item.label.indexOf(value) > -1)));
+      const specialFilters = filters.filter((f) => (f.property === 'label' || f.property === 'role'));
+      if (specialFilters) {
+        const { withClause, whereClause } = await this.createWhereClause(filters.filter((f) => f.property !== 'role' && f.property !== 'label'), ['n']);
+        const q = `${withClause} MATCH (n) ${whereClause} RETURN n`;
+        const res = await this.g.query(q);
+        logger.perfLog(startTime, 150, 'SpecialFilterSearchQuery');
+        return formatResult(res).filter((item) => {
+          if (item.role && specialFilters.findIndex((filter) => filter.property === 'role') >= 0) {
+            const roleIdx = specialFilters.findIndex((filter) => filter.property === 'role');
+            return specialFilters[roleIdx].values.find((value) => {
+              const values = value.replace(' ', '').split(',');
+              return values.every((v) => item.role.includes(v));
+            });
+          }
+          if (item.label && specialFilters.findIndex((filter) => filter.property === 'label') >= 0) {
+            const labelIdx = specialFilters.findIndex((filter) => filter.property === 'label');
+            return item.label && specialFilters[labelIdx].values.find((value) => item.label.indexOf(value) > -1);
+          }
+          return item;
+        });
       }
+
       let limitClause = '';
       if (limit > 0) {
         limitClause = querySkipIdx > -1
@@ -547,7 +561,6 @@ export default class RedisGraphConnector {
           : `LIMIT ${limit}`;
       }
       const { withClause, whereClause } = await this.createWhereClause(filters, ['n']);
-      const startTime = Date.now();
       const query = `${withClause} MATCH (n) ${whereClause} RETURN n ${limitClause}`;
       const result = await this.g.query(query);
       logger.perfLog(startTime, 150, 'SearchQuery');
@@ -563,7 +576,7 @@ export default class RedisGraphConnector {
       // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
       // encode labels in a single string. As a result we can't use an openCypher query to search
       // for labels so we need to filter here, which btw is inefficient.
-      const labelFilter = filters.find((f) => f.property === 'label');
+      const labelFilter = filters.find((f) => (f.property === 'label' || f.property === 'role'));
       if (labelFilter) {
         return this.runSearchQuery(filters, -1, -1).then((r) => r.length);
       }
@@ -612,7 +625,9 @@ export default class RedisGraphConnector {
       const limitClause = limit <= 0 || property === 'label'
         ? ''
         : `LIMIT ${limit}`;
-      const f = filters.length > 0 ? filters : [];
+      let f = filters.length > 0 ? filters : [];
+      // Workaround for node resource queries - this will need to be removed when redis 2.0 features are used
+      f = filters.filter((filter) => filter.property !== 'role' && filter.property !== 'label');
       const { withClause, whereClause } = await this.createWhereClause(f, ['n']);
       const result = await this.g.query(`${withClause} MATCH (n) ${whereClause} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`);
       logger.perfLog(startTime, 500, 'getAllValues()');
@@ -636,6 +651,20 @@ export default class RedisGraphConnector {
         });
         return labels;
       }
+      // Same workaround as above, but for roles.
+      if (property === 'role') {
+        const roles = [];
+        valuesList.forEach((value) => {
+          value.split(', ').forEach((role) => {
+            // We don't want duplicates, so we check if it already exists.
+            if (roles.indexOf(role) === -1) {
+              roles.push(role);
+            }
+          });
+        });
+        return roles;
+      }
+
       if (isDate(valuesList[0])) {
         return ['isDate'];
       } if (isNumber(valuesList[0])) { //  || isNumWithChars(valuesList[0]))
