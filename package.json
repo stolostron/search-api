@@ -1,6 +1,6 @@
 {
   "name": "@open-cluster-management/search-api",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "API server for search.",
   "main": "index.js",
   "scripts": {
