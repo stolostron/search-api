@@ -113,7 +113,7 @@ const MOCK_QUERIES = {
       'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
       'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
       'sub.channel': 'dev1/dev1',
-      'sub.localPlacement': true,
+      'sub.localPlacement': 'true',
     },
     {
       'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
@@ -195,7 +195,7 @@ const MOCK_QUERIES = {
       'sub.status': 'Propagated',
       'sub.channel': 'git-ch-ns/git-ch',
       'sub.timeWindow': 'blocked',
-      'sub.localPlacement': true,
+      'sub.localPlacement': 'true',
     },
     {
       'sub._uid': 'local-cluster/sub-02-uid',
@@ -205,7 +205,7 @@ const MOCK_QUERIES = {
       'sub.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/test/sub02',
       'sub.status': 'PropagationFailed',
       'sub.channel': 'object-ch-ns/object-ch',
-      'sub.localPlacement': false,
+      'sub.localPlacement': 'false',
     },
   ],
 
