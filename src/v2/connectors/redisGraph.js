@@ -309,7 +309,7 @@ export default class RedisGraphConnector {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub', 'ch']);
     const matchClause = `${withClause} MATCH ${APPLICATION_MATCH}-[*1]->${SUBSCRIPTION_MATCH}-[*1]->(ch:Channel)`;
     const where = whereClause === '' ? 'WHERE' : `${whereClause} AND NOT exists(sub._hostingSubscription)`;
-    const returnClause = 'RETURN app._uid, sub._uid, sub._gitbranch, sub._gitpath, sub._gitcommit, ch._uid, ch.type, ch.pathname';
+    const returnClause = 'RETURN app._uid, sub._uid, sub._gitbranch, sub._gitpath, sub._gitcommit, sub.package, sub.packageFilterVersion, ch._uid, ch.type, ch.pathname';
     const query = `${matchClause} ${where} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubChannelsQuery' });
   }

@@ -84,6 +84,8 @@ Object {
             "ch.pathname": "http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts",
             "ch.type": "HelmRepo",
             "sub._uid": "local-cluster/66426f24-3bd3-11ea-a488-00000a100f99",
+            "sub.package": "application-chart",
+            "sub.packageFilterVersion": "2.2.0",
           },
         ],
         "hubSubscriptions": Array [],
