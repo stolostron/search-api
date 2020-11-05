@@ -152,6 +152,8 @@ const MOCK_QUERIES = {
     {
       'app._uid': 'local-cluster/app-02-uid',
       'sub._uid': 'local-cluster/66426f24-3bd3-11ea-a488-00000a100f99',
+      'sub.package': 'application-chart',
+      'sub.packageFilterVersion': '2.2.0',
       'ch._uid': 'local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728',
       'ch.type': 'HelmRepo',
       'ch.pathname':
