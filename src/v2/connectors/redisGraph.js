@@ -283,8 +283,8 @@ export default class RedisGraphConnector {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'cluster']);
     const returnClause = "RETURN DISTINCT app._uid, cluster.name='local-cluster' as local, count(DISTINCT cluster._uid) as clusterCount";
     const query = `
-      ${withClause} MATCH ${APPLICATION_MATCH}-->(:Subscription)<--(:Subscription)--(cluster:Cluster) ${whereClause} ${returnClause}
-      UNION ${withClause} MATCH ${APPLICATION_MATCH}-->(:Subscription {cluster: 'local-cluster', localPlacement: 'true', apigroup: 'apps.open-cluster-management.io'})--(cluster:Cluster) ${whereClause} ${returnClause}
+      ${withClause} MATCH ${APPLICATION_MATCH}-[:contains]->(:Subscription)<--(:Subscription)--(cluster:Cluster) ${whereClause} ${returnClause}
+      UNION ${withClause} MATCH ${APPLICATION_MATCH}-[:contains]->(:Subscription {cluster: 'local-cluster', localPlacement: 'true', apigroup: 'apps.open-cluster-management.io'})--(cluster:Cluster) ${whereClause} ${returnClause}
     `;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppClustersQuery' });
   }
@@ -294,11 +294,9 @@ export default class RedisGraphConnector {
    */
   async runAppHubSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
-    const matchClause = `MATCH ${APPLICATION_MATCH}-->${SUBSCRIPTION_MATCH}`;
-    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
-    const additionalWhere = 'NOT exists(sub._hostingSubscription)';
+    const matchClause = `MATCH ${APPLICATION_MATCH}-[:contains]->${SUBSCRIPTION_MATCH}`;
     const returnClause = 'RETURN app._uid, sub._uid, sub.timeWindow, sub.localPlacement, sub.status, sub.channel, sub.name';
-    const query = `${withClause} ${matchClause} ${where} ${additionalWhere} ${returnClause}`;
+    const query = `${withClause} ${matchClause} ${whereClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubSubscriptionsQuery' });
   }
 
@@ -307,10 +305,9 @@ export default class RedisGraphConnector {
    */
   async runAppHubChannelsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub', 'ch']);
-    const matchClause = `${withClause} MATCH ${APPLICATION_MATCH}-[*1]->${SUBSCRIPTION_MATCH}-[*1]->(ch:Channel)`;
-    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND NOT exists(sub._hostingSubscription)`;
+    const matchClause = `${withClause} MATCH ${APPLICATION_MATCH}-[:contains]->${SUBSCRIPTION_MATCH}-[*1]->(ch:Channel)`;
     const returnClause = 'RETURN app._uid, sub._uid, sub._gitbranch, sub._gitpath, sub._gitcommit, sub.package, sub.packageFilterVersion, ch._uid, ch.type, ch.pathname';
-    const query = `${matchClause} ${where} ${returnClause}`;
+    const query = `${matchClause} ${whereClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubChannelsQuery' });
   }
 
@@ -325,66 +322,11 @@ export default class RedisGraphConnector {
   }
 
   /*
-   * Get Applications with their related remote subscriptions.
-   # Remote subscriptions are those with the '_hostingSubscription' property.
-   */
-  async runAppRemoteSubscriptionsQuery() {
-    const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
-    const matchClause = `MATCH ${APPLICATION_MATCH}-->(:Subscription)<--(sub:Subscription)`;
-    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
-    const additionalWhere = 'exists(sub._hostingSubscription)=true';
-    const query = `${withClause} ${matchClause} ${where} ${additionalWhere} RETURN app._uid, sub._uid, sub.status`;
-    return this.executeQuery({ query, removePrefix: false, queryName: 'runAppRemoteSubscriptionsQuery' });
-  }
-
-  /*
-   * Get clusters related to any application.
-   */
-  async runGlobalAppClusterCountQuery() {
-    const { withClause, whereClause } = await this.createWhereClause([], ['app', 'cluster']);
-    const query = `${withClause} MATCH ${APPLICATION_MATCH}-->(:Subscription)<--(:Subscription)-->(cluster:Cluster) ${whereClause} RETURN DISTINCT cluster._uid`;
-    return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppClusterCountQuery' });
-  }
-
-  /*
-   * Get channels related to any application.
-   */
-  async runGlobalAppChannelsQuery() {
-    const { withClause, whereClause } = await this.createWhereClause([], ['app', 'ch']);
-    const query = `${withClause} MATCH ${APPLICATION_MATCH}<-[]-(ch:Channel) ${whereClause} RETURN DISTINCT ch`;
-    return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppChannelsQuery' });
-  }
-
-  /*
-   * Get hub subscriptions related to any application.
-   */
-  async runGlobalAppHubSubscriptionsQuery() {
-    const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
-    const matchClause = `MATCH ${APPLICATION_MATCH}-[]->${SUBSCRIPTION_MATCH}`;
-    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
-    const additionalWhere = 'NOT exists(sub._hostingSubscription)';
-    const query = `${withClause} ${matchClause} ${where} ${additionalWhere} RETURN DISTINCT sub`;
-    return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppHubSubscriptionsQuery' });
-  }
-
-  /*
-   * Get remote subscriptions related to any application.
-   */
-  async runGlobalAppRemoteSubscriptionsQuery() {
-    const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
-    const matchClause = `MATCH ${APPLICATION_MATCH}-->(:Subscription)<--(sub:Subscription)`;
-    const where = whereClause === '' ? 'WHERE' : `${whereClause} AND`;
-    const additionalWhere = 'exists(sub._hostingSubscription)=true';
-    const query = `${withClause} ${matchClause} ${where} ${additionalWhere} RETURN DISTINCT sub._uid, sub.status`;
-    return this.executeQuery({ query, removePrefix: false, queryName: 'runGlobalAppRemoteSubscriptionsQuery' });
-  }
-
-  /*
    * Get Subscriptions.
    */
   async runSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['sub']);
-    const matchClause = `MATCH ${SUBSCRIPTION_MATCH} ${whereClause} AND NOT exists(sub._hostingSubscription)`;
+    const matchClause = `MATCH ${SUBSCRIPTION_MATCH} ${whereClause}`;
     const returnClause = 'RETURN DISTINCT sub._uid, sub.name, sub.namespace, sub.created, sub.selfLink, sub.status, sub.channel, sub.timeWindow, sub.localPlacement';
     const orderClause = 'ORDER BY sub.name, sub.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause} ${orderClause}`;
@@ -405,8 +347,8 @@ export default class RedisGraphConnector {
     const { withClause, whereClause } = await this.createWhereClause([], ['sub', 'cluster']);
     const returnClause = "RETURN DISTINCT sub._uid, cluster.name='local-cluster' as local, count(DISTINCT cluster._uid) as clusterCount";
     const query = `
-      ${withClause} MATCH ${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster) ${whereClause} AND NOT exists(sub._hostingSubscription) ${returnClause}
-      UNION ${withClause} MATCH (sub:Subscription {cluster: 'local-cluster', localPlacement: 'true', apigroup: 'apps.open-cluster-management.io'})--(cluster:Cluster) ${whereClause} AND NOT exists(sub._hostingSubscription) ${returnClause}
+      ${withClause} MATCH ${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster) ${whereClause} ${returnClause}
+      UNION ${withClause} MATCH (sub:Subscription {cluster: 'local-cluster', localPlacement: 'true', apigroup: 'apps.open-cluster-management.io'})--(cluster:Cluster) ${whereClause} ${returnClause}
     `;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runSubClustersQuery' });
   }
@@ -423,7 +365,7 @@ export default class RedisGraphConnector {
    */
   async runSubAppsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['sub', 'app']);
-    const matchClause = `MATCH ${SUBSCRIPTION_MATCH}<-[*1]-${APPLICATION_MATCH} ${whereClause} AND NOT exists(sub._hostingSubscription)`;
+    const matchClause = `MATCH ${SUBSCRIPTION_MATCH}<-[:contains]-${APPLICATION_MATCH} ${whereClause}`;
     const returnClause = 'RETURN DISTINCT sub._uid, count(DISTINCT app._uid) as count';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runSubAppsQuery' });

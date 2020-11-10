@@ -176,14 +176,6 @@ const MOCK_QUERIES = {
     },
   ],
 
-  runAppRemoteSubscriptionsQuery: [
-    {
-      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-      'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
-      'sub.status': 'Subscribed',
-    },
-  ],
-
   /*
    * Subscription queries mocks.
    */
@@ -331,44 +323,6 @@ const MOCK_QUERIES = {
       'ch._uid': 'local-cluster/ch-02-uid',
       local: false,
       clusterCount: 2,
-    },
-  ],
-
-  /*
-   * Global Application queries mocks.
-   */
-  runGlobalAppChannelsQuery: [
-    { 'ch._uid': 'local-cluster/mock-channel-1-uid' },
-    { 'ch._uid': 'local-cluster/mock-channel-2-uid' },
-  ],
-
-  runGlobalAppClusterCountQuery: [
-    { 'app._uid': 'local-cluster/mock-cluster-1-uid' },
-    { 'app._uid': 'local-cluster/mock-cluster-2-uid' },
-  ],
-
-  runGlobalAppHubSubscriptionsQuery: [
-    {
-      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-      'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
-      'sub.channel': 'dev1/dev1',
-    },
-    {
-      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
-      'sub._uid': 'local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99',
-      'sub.status': 'Propagated',
-      'sub.channel': 'default/mortgage-channel',
-    },
-  ],
-
-  runGlobalAppRemoteSubscriptionsQuery: [
-    {
-      'sub._uid': 'cluster-1/mock-remote-subscription-2-uid',
-      'sub.status': 'Subscribed',
-    },
-    {
-      'sub._uid': 'cluster-2/mock-remote-subscription-2-uid',
-      'sub.status': 'Propagated',
     },
   ],
 };

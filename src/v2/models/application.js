@@ -81,40 +81,6 @@ export default class AppModel {
     return Promise.reject(new Error('Expected to receive a function.'));
   }
 
-  /* ***  GLOBAL APPLICATION DATA RESOLVERS *** */
-
-  /*
-   * Number of channels associated to any application.
-   */
-  async resolveGlobalAppChannelsCount() {
-    const ch = await this.searchConnector.runGlobalAppChannelsQuery();
-    return ch.length;
-  }
-
-  /*
-   * Number of clusters where any application has resources.
-   */
-  async resolveGlobalAppClusterCount() {
-    const clusters = await this.searchConnector.runGlobalAppClusterCountQuery();
-    return clusters.length;
-  }
-
-  /*
-   * Number of hub subscriptions associated to any application.
-   */
-  async resolveGlobalAppHubSubscriptionsCount() {
-    const subs = await this.searchConnector.runGlobalAppHubSubscriptionsQuery();
-    return subs.length;
-  }
-
-  /*
-   * Remote subscriptions associated to any application. Grouped by state.
-   */
-  async resolveGlobalAppRemoteSubscriptions() {
-    const subs = await this.searchConnector.runGlobalAppRemoteSubscriptionsQuery();
-    return groupByStatus(subs, 'sub.status');
-  }
-
   /* *** APPLICATION RESOLVERS *** */
 
   /*
@@ -162,14 +128,6 @@ export default class AppModel {
   async resolveAppPodsCount(appUid) {
     const pods = await this.runQueryOnlyOnce('runAppPodsCountQuery');
     return groupByStatus(pods.filter((p) => p['app._uid'] === appUid), 'pod.status');
-  }
-
-  /*
-   * For a given application, resolve the mote subscriptions, grouped by status.
-   */
-  async resolveAppRemoteSubscriptions(appUid) {
-    const subs = await this.runQueryOnlyOnce('runAppRemoteSubscriptionsQuery');
-    return groupByStatus(subs.filter((s) => s['app._uid'] === appUid), 'sub.status');
   }
 
   /* *** SUBSCRIPTION RESOLVERS *** */
