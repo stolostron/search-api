@@ -3,18 +3,18 @@ VCS_URL ?=$(shell git config --get remote.origin.url)
 IMAGE_VERSION :=$(shell git rev-parse --short HEAD)
 endif
 IMAGE_NAME =search-api
-IMAGE_DISPLAY_NAME =Search API Backend
+IMAGE_DISPLAY_NAME =Search API
 ARCH = $(shell uname -m)
 ifeq ($(ARCH), x86_64)
 	IMAGE_NAME_ARCH =$(IMAGE_NAME)-amd64
 else
 	IMAGE_NAME_ARCH =$(IMAGE_NAME)-$(ARCH)
 endif
-IMAGE_MAINTAINER =jpadilla@us.ibm.com
-IMAGE_VENDOR =IBM
+IMAGE_MAINTAINER =acm-contact@redhat.com
+IMAGE_VENDOR =Red Hat
 IMAGE_DESCRIPTION =Search API Container
 IMAGE_SUMMARY =$(IMAGE_DESCRIPTION)
-IMAGE_OPENSHIFT_TAGS =Search API Backend
+IMAGE_OPENSHIFT_TAGS =Search API
 
 DOCKER_BUILD_OPTS=--build-arg "VCS_REF=$(SEMVERSION)" \
 	--build-arg "VCS_URL=$(VCS_URL)" \
