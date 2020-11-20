@@ -533,7 +533,7 @@ export default class RedisGraphConnector {
       // encode labels in a single string. As a result we can't use an openCypher query to search
       // for labels so we need to filter here, which btw is inefficient.
       const specialFilters = filters.filter((f) => (f.property === 'label' || f.property === 'role'));
-      if (specialFilters) {
+      if (specialFilters.length > 0) {
         const { withClause, whereClause } = await this.createWhereClause(filters.filter((f) => f.property !== 'role' && f.property !== 'label'), ['n']);
         const q = `${withClause} MATCH (n) ${whereClause} RETURN n`;
         const res = await this.g.query(q);
