@@ -140,23 +140,25 @@ export default class AppModel {
 
     const subs = await this.searchConnector.runSubscriptionsQuery();
     const localSuffix = '-local';
+    const nameKey = 'sub.name';
+    const namespaceKey = 'sub.namespace';
 
     // Filter subscriptions ending with '-local' unless there is no corresponding subscription without '-local'
     // These subscriptions are added automatically when a PlacementRule subscribes the local cluster, and they
     // are not really part of the application definition
     const resolvedSubs = (await subs).filter((sub) => {
-      const subName = sub['sub.name'];
+      const subName = sub[nameKey];
 
       if (!subName.endsWith(localSuffix)) {
         return true;
       }
       const subNameWithoutLocal = subName.substr(0, subName.length - localSuffix.length);
-      return subs.find((subNonLocal) => subNonLocal['sub.namespace'] === sub['sub.namespace']
-        && subNonLocal['sub.name'] === subNameWithoutLocal) === undefined;
+      return subs.find((subNonLocal) => subNonLocal[namespaceKey] === sub[namespaceKey]
+        && subNonLocal[nameKey] === subNameWithoutLocal) === undefined;
     });
 
     if (name != null && namespace != null) {
-      return resolvedSubs.filter((sub) => (sub['sub.name'] === name && sub['sub.namespace'] === namespace));
+      return resolvedSubs.filter((sub) => (sub[nameKey] === name && sub[namespaceKey] === namespace));
     }
     return resolvedSubs;
   }

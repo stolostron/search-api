@@ -284,7 +284,8 @@ export default class RedisGraphConnector {
     const returnClause = "RETURN DISTINCT app._uid, cluster.name='local-cluster' as local, count(DISTINCT cluster._uid) as clusterCount";
     const query = `
       ${withClause} MATCH ${APPLICATION_MATCH}-[:contains]->(:Subscription)<--(:Subscription)--(cluster:Cluster) ${whereClause} ${returnClause}
-      UNION ${withClause} MATCH ${APPLICATION_MATCH}-[:contains]->(:Subscription {cluster: 'local-cluster', localPlacement: 'true', apigroup: 'apps.open-cluster-management.io'})--(cluster:Cluster) ${whereClause} ${returnClause}
+      UNION ${withClause} MATCH ${APPLICATION_MATCH}-[:contains]->(:Subscription {cluster: 'local-cluster', localPlacement: 'true',
+        apigroup: 'apps.open-cluster-management.io'})--(cluster:Cluster) ${whereClause} ${returnClause}
     `;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppClustersQuery' });
   }
@@ -348,7 +349,8 @@ export default class RedisGraphConnector {
     const returnClause = "RETURN DISTINCT sub._uid, cluster.name='local-cluster' as local, count(DISTINCT cluster._uid) as clusterCount";
     const query = `
       ${withClause} MATCH ${SUBSCRIPTION_MATCH}<--(:Subscription)--(cluster:Cluster) ${whereClause} ${returnClause}
-      UNION ${withClause} MATCH (sub:Subscription {cluster: 'local-cluster', localPlacement: 'true', apigroup: 'apps.open-cluster-management.io'})--(cluster:Cluster) ${whereClause} ${returnClause}
+      UNION ${withClause} MATCH (sub:Subscription {cluster: 'local-cluster', localPlacement: 'true',
+        apigroup: 'apps.open-cluster-management.io'})--(cluster:Cluster) ${whereClause} ${returnClause}
     `;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runSubClustersQuery' });
   }
