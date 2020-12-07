@@ -26,8 +26,6 @@ describe('Application Resolver', () => {
             name
             namespace
             selfLink
-            podStatusCount
-            remoteSubscriptionStatusCount
             hubSubscriptions {
               _uid
               timeWindow
@@ -61,8 +59,6 @@ describe('Application Resolver', () => {
             name
             namespace
             selfLink
-            podStatusCount
-            remoteSubscriptionStatusCount
             hubSubscriptions {
               _uid
               status
@@ -308,29 +304,6 @@ describe('Channel Resolver', () => {
           channels (name: "ch02") {
             _uid
             name
-          }
-        }
-      `,
-      })
-      .end((err, res) => {
-        expect(JSON.parse(res.text)).toMatchSnapshot();
-        done();
-      });
-  }));
-});
-
-describe('Global Application Resolver', () => {
-  test('Correctly Resolves Global Application Data', () => new Promise((done) => {
-    supertest(server)
-      .post(GRAPHQL_PATH)
-      .send({
-        query: `
-        {
-          globalAppData {
-            channelsCount
-            clusterCount
-            hubSubscriptionCount
-            remoteSubscriptionStatusCount
           }
         }
       `,

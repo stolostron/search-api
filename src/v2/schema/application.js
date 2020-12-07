@@ -31,15 +31,8 @@ export const typeDef = gql`
     hubChannels: [JSON]
 
     # Hub subscriptions associated with this application.
-    # Hub subscriptions are those without '_hostingSubscription' AND with _hubClusterResource=true
+    # Hub subscriptions are those contained by an application AND with _hubClusterResource=true
     hubSubscriptions: [Subscription]
-
-    # Pods associated with this app, grouped by pod status, in this format { Running: 2, ImageLoopBackOff: 10 }.
-    podStatusCount: JSON
-
-    # Remote subscriptions for this app, grouped by status, in this format { Failed:2, Subscribed: 2, null: 3 }.
-    # Remote subscriptions are those with the '_hostingSubscription' property.
-    remoteSubscriptionStatusCount: JSON
   }
 
   type Subscription {
@@ -78,28 +71,10 @@ export const typeDef = gql`
     subscriptionCount: Int
     clusterCount: JSON
   }
-
-  # Aggregated data from all applications.
-  type GlobalAppData {
-    # All chanels being referenced by any application.
-    channelsCount: Int
-
-    # Number of clusters where any application has created resources.
-    clusterCount: Int
-
-    # Subscriptions in the hub associated with any application.
-    # Subscriptions without '_hostingSubscription' AND with _hubClusterResource=true
-    hubSubscriptionCount: Int
-
-    # Remote Subscriptions grouped by status, in this format { Failed:2, Subscribed: 2, null: 3 }.
-    # Remote subscriptions are those with the '_hostingSubscription' property.
-    remoteSubscriptionStatusCount: JSON
-  }
 `;
 
 export const resolver = {
   Query: {
-    globalAppData: () => ({}),
     applications: (parent, { name, namespace }, { appModel }) => appModel.resolveApplications({ name, namespace }),
     subscriptions: (parent, { name, namespace }, { appModel }) => appModel.resolveSubscriptions({ name, namespace }),
     placementRules: (parent, { name, namespace }, { appModel }) => appModel.resolvePlacementRules({ name, namespace }),
@@ -116,14 +91,6 @@ export const resolver = {
     clusterCount: (parent, args, { appModel }) => appModel.resolveAppClustersCount(parent['app._uid']),
     hubChannels: (parent, args, { appModel }) => appModel.resolveAppHubChannels(parent['app._uid']),
     hubSubscriptions: (parent, args, { appModel }) => appModel.resolveAppHubSubscriptions(parent['app._uid']),
-    podStatusCount: (parent, args, { appModel }) => appModel.resolveAppPodsCount(parent['app._uid']),
-    remoteSubscriptionStatusCount: (parent, args, { appModel }) => appModel.resolveAppRemoteSubscriptions(parent['app._uid']),
-  },
-  GlobalAppData: {
-    channelsCount: (parent, args, { appModel }) => appModel.resolveGlobalAppChannelsCount(),
-    clusterCount: (parent, args, { appModel }) => appModel.resolveGlobalAppClusterCount(),
-    hubSubscriptionCount: (parent, args, { appModel }) => appModel.resolveGlobalAppHubSubscriptionsCount(),
-    remoteSubscriptionStatusCount: (parent, args, { appModel }) => appModel.resolveGlobalAppRemoteSubscriptions(),
   },
   Subscription: {
     _uid: (parent) => parent['sub._uid'],

@@ -60,13 +60,6 @@ Object {
         ],
         "name": "app01",
         "namespace": "sample",
-        "podStatusCount": Object {
-          "Failed": 1,
-          "Running": 2,
-        },
-        "remoteSubscriptionStatusCount": Object {
-          "Subscribed": 1,
-        },
         "selfLink": "/apis/app.k8s.io/v1beta1/namespaces/sample/applications/app01",
       },
       Object {
@@ -92,8 +85,6 @@ Object {
         "labels": Array [],
         "name": "app02",
         "namespace": "test",
-        "podStatusCount": Object {},
-        "remoteSubscriptionStatusCount": Object {},
         "selfLink": "/apis/app.k8s.io/v1beta1/namespaces/test/applications/app02",
       },
     ],
@@ -117,8 +108,6 @@ Object {
         "labels": Array [],
         "name": "app02",
         "namespace": "test",
-        "podStatusCount": Object {},
-        "remoteSubscriptionStatusCount": Object {},
         "selfLink": "/apis/app.k8s.io/v1beta1/namespaces/test/applications/app02",
       },
     ],
@@ -219,22 +208,6 @@ Object {
         "name": "ch02",
       },
     ],
-  },
-}
-`;
-
-exports[`Global Application Resolver Correctly Resolves Global Application Data 1`] = `
-Object {
-  "data": Object {
-    "globalAppData": Object {
-      "channelsCount": 2,
-      "clusterCount": 2,
-      "hubSubscriptionCount": 2,
-      "remoteSubscriptionStatusCount": Object {
-        "Propagated": 1,
-        "Subscribed": 1,
-      },
-    },
   },
 }
 `;

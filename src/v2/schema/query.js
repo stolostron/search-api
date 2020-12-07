@@ -19,9 +19,6 @@ type Query {
   placementRules(name:String namespace: String): [PlacementRule]
   channels(name: String namespace: String): [Channel]
 
-  # Aggregated data from all applications.
-  globalAppData: GlobalAppData
-
   # Search for resources.
   search(input: [SearchInput]): [SearchResult]
 
