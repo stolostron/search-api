@@ -104,8 +104,9 @@ export default function createAuthMiddleWare({
   shouldLocalAuth,
 } = {}) {
   return asyncMiddleware(async (req, res, next) => {
+    console.log('\n >>>> Request cookies:', req.cookies); // eslint-disable-line no-console
     const idToken = await getKubeToken({
-      authorization: req.headers.authorization || req.headers.Authorization,
+      authorization: req.headers.authorization || req.headers.Authorization || req.cookies['acm-access-token-cookie'],
       shouldLocalAuth,
     });
     req.kubeToken = idToken;
