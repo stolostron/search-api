@@ -23,12 +23,12 @@ describe('Auth Middleware', () => {
   }));
 
   test('should accept token from acm-access-token-cookie', () => new Promise((done) => {
-    const mockRequest = { headers: {}, cookies: { 'acm-access-token-cookie': 'auth-from-cookie' } };
+    const mockRequest = { headers: {}, cookies: { 'acm-access-token-cookie': 'fake-auth-token-cookie' } };
     const authMiddleware = createAuthMiddleWare({ shouldLocalAuth: false });
 
     authMiddleware(mockRequest, null, (err) => {
       expect(err).not.toBeDefined();
-      expect(mockRequest.kubeToken).toBe('auth-from-cookie');
+      expect(mockRequest.kubeToken).toBe('fake-auth-token-cookie');
       done();
     });
   }));
