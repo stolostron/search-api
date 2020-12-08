@@ -7,30 +7,8 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 
-import _ from 'lodash';
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
-
-/*
- * Format results grouping by status.
- * Sample output:
- *   {
- *     ContainerCreating: 1,
- *     Running: 3,
- *   }
- */
-function groupByStatus(resources, statusKey) {
-  const result = {};
-  resources.forEach((r) => {
-    const status = _.get(r, statusKey);
-    if (result[status]) {
-      result[status] += 1;
-    } else {
-      result[status] = 1;
-    }
-  });
-  return result;
-}
 
 // Returns the local and remote cluster counts for a specific resource
 function getLocalRemoteClusterCounts(resourceUid, resourceType, data) {
@@ -48,6 +26,27 @@ function getLocalRemoteClusterCounts(resourceUid, resourceType, data) {
     }
   });
   return clusterCount;
+}
+
+const SUB_NAME = 'sub.name';
+const SUB_NAMESPACE = 'sub.namespace';
+
+function filterLocalSubscriptions(subs) {
+  const localSuffix = '-local';
+
+  // Filter subscriptions ending with '-local' unless there is no corresponding subscription without '-local'
+  // These subscriptions are added automatically when a PlacementRule subscribes the local cluster, and they
+  // are not really part of the application definition
+  return subs.filter((sub) => {
+    const subName = sub[SUB_NAME];
+
+    if (!(subName && subName.endsWith(localSuffix))) {
+      return true;
+    }
+    const subNameWithoutLocal = subName.substr(0, subName.length - localSuffix.length);
+    return subs.find((subNonLocal) => subNonLocal[SUB_NAMESPACE] === sub[SUB_NAMESPACE]
+      && subNonLocal[SUB_NAME] === subNameWithoutLocal) === undefined;
+  });
 }
 
 export default class AppModel {
@@ -111,7 +110,8 @@ export default class AppModel {
    */
   async resolveAppHubSubscriptions(appUid) {
     const subs = await this.runQueryOnlyOnce('runAppHubSubscriptionsQuery');
-    return subs.filter((s) => s['app._uid'] === appUid);
+    const filteredSubs = filterLocalSubscriptions(subs);
+    return filteredSubs.filter((s) => s['app._uid'] === appUid);
   }
 
   /*
@@ -119,15 +119,8 @@ export default class AppModel {
    */
   async resolveAppHubChannels(appUid) {
     const subs = await this.runQueryOnlyOnce('runAppHubChannelsQuery');
-    return subs.filter((s) => s['app._uid'] === appUid);
-  }
-
-  /*
-   * For a given application, resolve the pod count, grouped by status.
-   */
-  async resolveAppPodsCount(appUid) {
-    const pods = await this.runQueryOnlyOnce('runAppPodsCountQuery');
-    return groupByStatus(pods.filter((p) => p['app._uid'] === appUid), 'pod.status');
+    const filteredSubs = filterLocalSubscriptions(subs);
+    return filteredSubs.filter((s) => s['app._uid'] === appUid);
   }
 
   /* *** SUBSCRIPTION RESOLVERS *** */
@@ -139,26 +132,10 @@ export default class AppModel {
     this.checkSearchServiceAvailable();
 
     const subs = await this.searchConnector.runSubscriptionsQuery();
-    const localSuffix = '-local';
-    const nameKey = 'sub.name';
-    const namespaceKey = 'sub.namespace';
-
-    // Filter subscriptions ending with '-local' unless there is no corresponding subscription without '-local'
-    // These subscriptions are added automatically when a PlacementRule subscribes the local cluster, and they
-    // are not really part of the application definition
-    const resolvedSubs = (await subs).filter((sub) => {
-      const subName = sub[nameKey];
-
-      if (!subName.endsWith(localSuffix)) {
-        return true;
-      }
-      const subNameWithoutLocal = subName.substr(0, subName.length - localSuffix.length);
-      return subs.find((subNonLocal) => subNonLocal[namespaceKey] === sub[namespaceKey]
-        && subNonLocal[nameKey] === subNameWithoutLocal) === undefined;
-    });
+    const resolvedSubs = filterLocalSubscriptions(await subs);
 
     if (name != null && namespace != null) {
-      return resolvedSubs.filter((sub) => (sub[nameKey] === name && sub[namespaceKey] === namespace));
+      return resolvedSubs.filter((sub) => (sub[SUB_NAME] === name && sub[SUB_NAMESPACE] === namespace));
     }
     return resolvedSubs;
   }

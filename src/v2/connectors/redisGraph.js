@@ -296,7 +296,7 @@ export default class RedisGraphConnector {
   async runAppHubSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub']);
     const matchClause = `MATCH ${APPLICATION_MATCH}-[:contains]->${SUBSCRIPTION_MATCH}`;
-    const returnClause = 'RETURN app._uid, sub._uid, sub.timeWindow, sub.localPlacement, sub.status, sub.channel, sub.name';
+    const returnClause = 'RETURN app._uid, sub._uid, sub.timeWindow, sub.localPlacement, sub.status, sub.channel, sub.name, sub.namespace';
     const query = `${withClause} ${matchClause} ${whereClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubSubscriptionsQuery' });
   }
@@ -307,19 +307,9 @@ export default class RedisGraphConnector {
   async runAppHubChannelsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app', 'sub', 'ch']);
     const matchClause = `${withClause} MATCH ${APPLICATION_MATCH}-[:contains]->${SUBSCRIPTION_MATCH}-[*1]->(ch:Channel)`;
-    const returnClause = 'RETURN app._uid, sub._uid, sub._gitbranch, sub._gitpath, sub._gitcommit, sub.package, sub.packageFilterVersion, ch._uid, ch.type, ch.pathname';
+    const returnClause = 'RETURN app._uid, sub._uid, sub.name, sub.namespace, sub._gitbranch, sub._gitpath, sub._gitcommit, sub.package, sub.packageFilterVersion, ch._uid, ch.type, ch.pathname';
     const query = `${matchClause} ${whereClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runAppHubChannelsQuery' });
-  }
-
-  /*
-   * Get Applications with the pods counter
-   * return the number of pods for this app as a string, grouped by their status
-  */
-  async runAppPodsCountQuery() {
-    const { withClause, whereClause } = await this.createWhereClause([], ['app', 'pod']);
-    const query = `${withClause} MATCH ${APPLICATION_MATCH}-->(:Subscription)<--(:Subscription)--(pod:Pod) ${whereClause} RETURN app._uid, pod._uid, pod.status`;
-    return this.executeQuery({ query, removePrefix: false, queryName: 'runAppPodsCountQuery' });
   }
 
   /*
