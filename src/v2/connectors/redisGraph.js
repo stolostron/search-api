@@ -576,7 +576,7 @@ export default class RedisGraphConnector {
       if (property === 'label') {
         const labels = [];
         valuesList.forEach((value) => {
-          value.split('; ').forEach((label) => {
+          value.forEach((label) => {
             // We don't want duplicates, so we check if it already exists.
             if (labels.indexOf(label) === -1) {
               labels.push(label);
@@ -589,7 +589,7 @@ export default class RedisGraphConnector {
       if (property === 'role') {
         const roles = [];
         valuesList.forEach((value) => {
-          value.split(', ').forEach((role) => {
+          value.forEach((role) => {
             // We don't want duplicates, so we check if it already exists.
             if (roles.indexOf(role) === -1) {
               roles.push(role);
