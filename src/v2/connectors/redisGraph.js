@@ -543,9 +543,7 @@ export default class RedisGraphConnector {
         }
       });
 
-      logger.info('valuelists', valuesList);
       const specialList = ['label', 'role', 'port', 'container'];
-
       if (specialList.includes(property)) {
         const data = [];
         valuesList.forEach((value) => {
@@ -558,7 +556,6 @@ export default class RedisGraphConnector {
             });
           }
         });
-
         return data;
       }
 
