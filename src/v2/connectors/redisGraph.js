@@ -518,6 +518,10 @@ export default class RedisGraphConnector {
     return values;
   }
 
+  // async getPropertiesWithList() {
+  //   return ['label', 'role', 'port', 'container'];
+  // }
+
   async getAllValues(property, filters = [], limit = config.get('defaultQueryLimit')) {
     // logger.info('Getting all values for property:', property, filters);
 
@@ -548,12 +552,7 @@ export default class RedisGraphConnector {
         const data = [];
         valuesList.forEach((value) => {
           if (Array.isArray(value)) {
-            value.forEach((val) => {
-              // We don't want duplicates, so we check if it already exists.
-              if (data.indexOf(val) === -1) {
-                data.push(val);
-              }
-            });
+            data.push(value.toString());
           }
         });
         return data;
