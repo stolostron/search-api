@@ -518,9 +518,16 @@ export default class RedisGraphConnector {
     return values;
   }
 
-  // async getPropertiesWithList() {
-  //   return ['label', 'role', 'port', 'container'];
-  // }
+  async getPropertiesWithList() {
+    const values = ['label', 'role', 'port', 'container'];
+
+    if (this.rbac.length > 0) {
+      const startTime = Date.now();
+      logger.perfLog(startTime, 150, 'getPropertiesWithList');
+    }
+
+    return values;
+  }
 
   async getAllValues(property, filters = [], limit = config.get('defaultQueryLimit')) {
     // logger.info('Getting all values for property:', property, filters);
@@ -547,8 +554,7 @@ export default class RedisGraphConnector {
         }
       });
 
-      const specialList = ['label', 'role', 'port', 'container'];
-      if (specialList.includes(property)) {
+      if ((await this.getPropertiesWithList()).includes(property)) {
         const data = [];
         valuesList.forEach((value) => {
           if (Array.isArray(value)) {
