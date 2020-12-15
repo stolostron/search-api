@@ -98,6 +98,9 @@ export default class QueryModel {
     const response = await this.getUserPreferences(args);
     const queries = _.get(response, 'spec.savedSearches', []);
     const removeIdx = queries.findIndex((object) => object.name === resource.name);
+    if (removeIdx < 0) {
+      throw new Error(`ERROR - No saved searches found that match ${resource.name}`);
+    }
     const json = [
       {
         op: 'remove',
