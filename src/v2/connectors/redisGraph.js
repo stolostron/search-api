@@ -558,7 +558,13 @@ export default class RedisGraphConnector {
         const data = [];
         valuesList.forEach((value) => {
           if (Array.isArray(value)) {
-            data.push(value.toString());
+            value.forEach((val) => {
+              if (data.indexOf(val) === -1) {
+                data.push(val);
+              }
+            });
+          } else {
+            data.push(value);
           }
         });
         return data;
