@@ -21,6 +21,10 @@ import logger from '../lib/logger';
 import { isRequired } from '../lib/utils';
 import pollRbacCache, { getUserRbacFilter } from '../lib/rbacCaching';
 
+export function getPropertiesWithList() {
+  return ['label', 'role', 'port', 'container'];
+}
+
 // Is there a more efficient way?
 function formatResult(results, removePrefix = true) {
   const startTime = Date.now();
@@ -33,12 +37,18 @@ function formatResult(results, removePrefix = true) {
         if (removePrefix) {
           if (record.get(key).properties !== null && record.get(key).properties !== undefined) {
             resultItem = record.get(key).properties;
-          } else {
-            resultItem[key.substring(key.indexOf('.') + 1)] = record.get(key);
+
+            getPropertiesWithList().forEach((val) => {
+              if (_.get(resultItem, val) && Array.isArray(_.get(resultItem, val))) {
+                resultItem[val] = resultItem[val].join('; ');
+              }
+            });
           }
         } else {
-          resultItem[key] = record.get(key);
+          resultItem[key.substring(key.indexOf('.') + 1)] = record.get(key);
         }
+      } else {
+        resultItem[key] = record.get(key);
       }
     });
     resultList.push(resultItem);
@@ -98,6 +108,9 @@ export function getFilterString(filters) {
         return `n.${filter.property} ${getOperator(value)} ${operatorRemoved}`;
       } if (isDateFilter(value)) {
         return `n.${filter.property} ${getDateFilter(value)}`;
+      }
+      if (getPropertiesWithList().includes(filter.property)) {
+        return `any(x IN n.${filter.property} WHERE x ${getOperator(value)} '${operatorRemoved}')`;
       }
       return `n.${filter.property} ${getOperator(value)} '${operatorRemoved}'`;
     }).join(' OR ')})`);
@@ -474,6 +487,7 @@ export default class RedisGraphConnector {
       }
       const { withClause, whereClause } = await this.createWhereClause(filters, ['n']);
       const query = `${withClause} MATCH (n) ${whereClause} RETURN n ${limitClause}`;
+      logger.info(query);
       const result = await this.g.query(query);
       logger.perfLog(startTime, 150, 'SearchQuery');
       return formatResult(result);
@@ -518,17 +532,6 @@ export default class RedisGraphConnector {
     return values;
   }
 
-  async getPropertiesWithList() {
-    const values = ['label', 'role', 'port', 'container'];
-
-    if (this.rbac.length > 0) {
-      const startTime = Date.now();
-      logger.perfLog(startTime, 150, 'getPropertiesWithList');
-    }
-
-    return values;
-  }
-
   async getAllValues(property, filters = [], limit = config.get('defaultQueryLimit')) {
     // logger.info('Getting all values for property:', property, filters);
 
@@ -554,7 +557,7 @@ export default class RedisGraphConnector {
         }
       });
 
-      if ((await this.getPropertiesWithList()).includes(property)) {
+      if ((getPropertiesWithList()).includes(property)) {
         const data = [];
         valuesList.forEach((value) => {
           if (Array.isArray(value)) {
