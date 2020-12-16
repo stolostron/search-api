@@ -110,7 +110,7 @@ export function getFilterString(filters) {
         return `n.${filter.property} ${getDateFilter(value)}`;
       }
       if (getPropertiesWithList().includes(filter.property)) {
-        return `any(x IN n.${filter.property} WHERE x ${getOperator(value)} '${operatorRemoved}')`;
+        return `('${operatorRemoved}' IN n.${filter.property})`;
       }
       return `n.${filter.property} ${getOperator(value)} '${operatorRemoved}'`;
     }).join(' OR ')})`);
