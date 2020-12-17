@@ -8,7 +8,9 @@
  ****************************************************************************** */
 
 // import mockRedis from 'redis-mock';
-import /* RedisGraphConnector, */ { getOperator, getDateFilter, getFilterString } from './redisGraph';
+import /* RedisGraphConnector, */ {
+  getOperator, getDateFilter, getFilterString, isDate,
+} from './redisGraph';
 
 describe('redisGraph', () => {
   describe('Class Functions', () => {
@@ -22,6 +24,7 @@ describe('redisGraph', () => {
     });
     test('getFilterString', async () => {
       expect(getFilterString([{ property: 'kind', values: ['cluster'] }])).toEqual('(n.kind = \'cluster\')');
+      expect(getFilterString([{ property: 'role', values: ['master'] }])).toEqual('((\'master\' IN n.role))');
       expect(getFilterString([{ property: 'cpu', values: ['<16'] }])).toEqual('(n.cpu < 16)');
     });
     test('getDateFilter', async () => {
@@ -31,6 +34,10 @@ describe('redisGraph', () => {
       expect(getDateFilter('week')).toEqual('> \'2019-01-14T13:18:28.000Z\'');
       expect(getDateFilter('month')).toEqual('> \'2018-12-22T02:49:25.000Z\'');
       expect(getDateFilter('year')).toEqual('> \'2018-01-21T07:29:42.000Z\'');
+      expect(getDateFilter('default')).toEqual('> \'2018-12-22T02:49:25.000Z\'');
+    });
+    test('isDate', async () => {
+      expect(isDate('2016-06-23T09:07:21-07:00')).toEqual(true);
     });
   });
 

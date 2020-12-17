@@ -63,8 +63,8 @@ const isNumber = (value) => !Number.isNaN(value * 1);
 //   }
 //   return false;
 // };
-const isDate = (value) => !isNumber(value) && moment(value, 'YYYY-MM-DDTHH:mm:ssZ', true).isValid();
-const isDateFilter = (value) => ['hour', 'day', 'week', 'month', 'year'].indexOf(value) > -1;
+export const isDate = (value) => !isNumber(value) && moment(value, 'YYYY-MM-DDTHH:mm:ssZ', true).isValid();
+export const isDateFilter = (value) => ['hour', 'day', 'week', 'month', 'year'].indexOf(value) > -1;
 // const isVersion = property.toLowerCase().includes('version');
 
 export function getOperator(value) {
@@ -103,9 +103,11 @@ export function getFilterString(filters) {
       const operatorRemoved = value.replace(/^<=|^>=|^!=|^!|^<|^>|^=/, '');
       if (isNumber(operatorRemoved)) { //  || isNumWithChars(operatorRemoved)
         return `n.${filter.property} ${getOperator(value)} ${operatorRemoved}`;
-      } if (isDateFilter(value)) {
+      }
+      if (isDateFilter(value)) {
         return `n.${filter.property} ${getDateFilter(value)}`;
-      } if (getPropertiesWithList().includes(filter.property)) {
+      }
+      if (getPropertiesWithList().includes(filter.property)) {
         return `('${operatorRemoved}' IN n.${filter.property})`;
       }
       return `n.${filter.property} ${getOperator(value)} '${operatorRemoved}'`;
@@ -470,6 +472,8 @@ export default class RedisGraphConnector {
 
   async runSearchQuery(filters, limit = config.get('defaultQueryLimit'), querySkipIdx = 0) {
     // logger.info('runSearchQuery()', filters);
+
+    logger.info(isDate(1548076708000));
 
     const startTime = Date.now();
     if (this.rbac.length > 0) {
