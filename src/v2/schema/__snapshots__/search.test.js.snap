@@ -122,39 +122,6 @@ Object {
 }
 `;
 
-exports[`Search Resolver Correctly Resolves Performant Search Query 2`] = `
-Object {
-  "data": Object {
-    "searchResult": Array [
-      Object {
-        "count": 0,
-        "items": Array [],
-        "related": Array [
-          Object {
-            "count": 1,
-            "items": Array [
-              Object {
-                "count": 1,
-                "items": Array [
-                  Object {
-                    "_uid": "123",
-                    "kind": "cluster",
-                    "name": "mockCluster",
-                    "namespace": "mockCluster-ns",
-                  },
-                ],
-                "kind": "cluster",
-              },
-            ],
-            "kind": "cluster",
-          },
-        ],
-      },
-    ],
-  },
-}
-`;
-
 exports[`Search Resolver Correctly Resolves Search Keyword Query 1`] = `
 Object {
   "data": Object {
@@ -321,22 +288,6 @@ Object {
       "deployable",
       "compliance",
     ],
-  },
-}
-`;
-
-exports[`Search Resolver Correctly Resolves SearchComplete Query 2`] = `
-Object {
-  "data": Object {
-    "searchSchema": Object {
-      "allProperties": Array [
-        "kind",
-        "name",
-        "namespace",
-        "cpu",
-        "created",
-      ],
-    },
   },
 }
 `;
