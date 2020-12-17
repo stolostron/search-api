@@ -23,9 +23,11 @@ describe('redisGraph', () => {
       expect(getOperator('!=')).toEqual('<>');
     });
     test('getFilterString', async () => {
+      Date.now = jest.fn(() => 1548076708000);
       expect(getFilterString([{ property: 'kind', values: ['cluster'] }])).toEqual('(n.kind = \'cluster\')');
       expect(getFilterString([{ property: 'role', values: ['master'] }])).toEqual('((\'master\' IN n.role))');
       expect(getFilterString([{ property: 'cpu', values: ['<16'] }])).toEqual('(n.cpu < 16)');
+      expect(getFilterString([{ property: 'created', values: ['month'] }])).toEqual('(n.created > \'2018-12-22T02:49:25.000Z\')');
     });
     test('getDateFilter', async () => {
       Date.now = jest.fn(() => 1548076708000); // 21-01-2019T13:18:28Z

@@ -472,14 +472,10 @@ export default class RedisGraphConnector {
 
   async runSearchQuery(filters, limit = config.get('defaultQueryLimit'), querySkipIdx = 0) {
     // logger.info('runSearchQuery()', filters);
-
-    logger.info(isDate(1548076708000));
-
     const startTime = Date.now();
     if (this.rbac.length > 0) {
       // RedisGraph 2.0 does support an array as value. Therefore, we don't need to
       // encode labels in a single string
-      logger.perfLog(startTime, 150, 'FilterSearchQuery');
       let limitClause = '';
       if (limit > 0) {
         limitClause = querySkipIdx > -1
