@@ -5,132 +5,93 @@ Object {
   "data": Object {
     "applications": Array [
       Object {
-        "_uid": null,
+        "_uid": "local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99",
         "clusterCount": Object {
           "localCount": 1,
           "remoteCount": 2,
         },
-        "created": null,
-        "dashboard": null,
+        "created": "2020-01-23T13:56:32Z",
+        "dashboard": "localhost/grafana/dashboard/db/app01-dashboard-via-federated-prometheus?namespace=sample",
         "hubChannels": Array [
           Object {
-            "_gitbranch": "master",
-            "_gitcommit": "d67d8e10dcfa41dddcac14952e9872e1dfece06f",
-            "_gitpath": "helloworld",
-            "_uid": "local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728",
-            "name": "sub1",
-            "namespace": "default",
-            "pathname": "https://github.com/fxiang1/app-samples.git",
-            "type": "Git",
+            "app._uid": "local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99",
+            "ch._uid": "local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728",
+            "ch.pathname": "https://github.com/fxiang1/app-samples.git",
+            "ch.type": "Git",
+            "sub._gitbranch": "master",
+            "sub._gitcommit": "d67d8e10dcfa41dddcac14952e9872e1dfece06f",
+            "sub._gitpath": "helloworld",
+            "sub._uid": "local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99",
+            "sub.name": "sub1",
+            "sub.namespace": "default",
           },
           Object {
-            "_uid": "local-cluster/6c8dcb97-5e6e-4606-9b55-ae3eb05fcfb5",
-            "name": "sub2",
-            "namespace": "default",
-            "pathname": "sample-ns",
-            "type": "Namespace",
-          },
-          Object {
-            "_uid": "local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728",
-            "name": "sub3",
-            "namespace": "default",
-            "package": "application-chart",
-            "packageFilterVersion": "2.2.0",
-            "pathname": "http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts",
-            "type": "HelmRepo",
+            "app._uid": "local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99",
+            "ch._uid": "local-cluster/6c8dcb97-5e6e-4606-9b55-ae3eb05fcfb5",
+            "ch.pathname": "sample-ns",
+            "ch.type": "Namespace",
+            "sub._uid": "local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99",
+            "sub.name": "sub2",
+            "sub.namespace": "default",
           },
         ],
         "hubSubscriptions": Array [
           Object {
-            "_uid": null,
-            "channel": null,
-            "localPlacement": false,
+            "_uid": "local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99",
+            "channel": "dev1/dev1",
+            "localPlacement": true,
             "status": null,
             "timeWindow": null,
           },
           Object {
-            "_uid": null,
-            "channel": null,
+            "_uid": "local-cluster/b218636d-3d5e-11ea-8ed1-00000a100f99",
+            "channel": "default/mortgage-channel",
             "localPlacement": false,
-            "status": null,
-            "timeWindow": null,
+            "status": "Propagated",
+            "timeWindow": "blocked",
           },
           Object {
-            "_uid": null,
-            "channel": null,
+            "_uid": "local-cluster/66426f24-3bd3-11ea-a488-00000a100f99",
+            "channel": "dev1/dev1",
             "localPlacement": false,
-            "status": null,
-            "timeWindow": null,
+            "status": "Propagated",
+            "timeWindow": "active",
           },
         ],
-        "labels": Array [],
-        "name": null,
-        "namespace": null,
-        "selfLink": null,
+        "labels": Array [
+          "label1=value1",
+          "label2=value2",
+        ],
+        "name": "app01",
+        "namespace": "sample",
+        "selfLink": "/apis/app.k8s.io/v1beta1/namespaces/sample/applications/app01",
       },
       Object {
-        "_uid": null,
+        "_uid": "local-cluster/app-02-uid",
         "clusterCount": Object {
-          "localCount": 1,
-          "remoteCount": 2,
+          "localCount": 0,
+          "remoteCount": 0,
         },
-        "created": null,
-        "dashboard": null,
+        "created": "2020-01-23T13:56:32Z",
+        "dashboard": "localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test",
         "hubChannels": Array [
           Object {
-            "_gitbranch": "master",
-            "_gitcommit": "d67d8e10dcfa41dddcac14952e9872e1dfece06f",
-            "_gitpath": "helloworld",
-            "_uid": "local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728",
-            "name": "sub1",
-            "namespace": "default",
-            "pathname": "https://github.com/fxiang1/app-samples.git",
-            "type": "Git",
-          },
-          Object {
-            "_uid": "local-cluster/6c8dcb97-5e6e-4606-9b55-ae3eb05fcfb5",
-            "name": "sub2",
-            "namespace": "default",
-            "pathname": "sample-ns",
-            "type": "Namespace",
-          },
-          Object {
-            "_uid": "local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728",
-            "name": "sub3",
-            "namespace": "default",
-            "package": "application-chart",
-            "packageFilterVersion": "2.2.0",
-            "pathname": "http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts",
-            "type": "HelmRepo",
+            "app._uid": "local-cluster/app-02-uid",
+            "ch._uid": "local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728",
+            "ch.pathname": "http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts",
+            "ch.type": "HelmRepo",
+            "sub._uid": "local-cluster/66426f24-3bd3-11ea-a488-00000a100f99",
+            "sub.name": "sub3",
+            "sub.namespace": "default",
+            "sub.package": "application-chart",
+            "sub.packageFilterVersion": "2.2.0",
           },
         ],
-        "hubSubscriptions": Array [
-          Object {
-            "_uid": null,
-            "channel": null,
-            "localPlacement": false,
-            "status": null,
-            "timeWindow": null,
-          },
-          Object {
-            "_uid": null,
-            "channel": null,
-            "localPlacement": false,
-            "status": null,
-            "timeWindow": null,
-          },
-          Object {
-            "_uid": null,
-            "channel": null,
-            "localPlacement": false,
-            "status": null,
-            "timeWindow": null,
-          },
-        ],
+        "hubSubscriptions": Array [],
         "labels": Array [],
-        "name": null,
-        "namespace": null,
-        "selfLink": null,
+        "name": "app02",
+        "namespace": "test",
+        "selfLink": "/apis/app.k8s.io/v1beta1/namespaces/test/applications/app02",
       },
     ],
   },
@@ -140,7 +101,22 @@ Object {
 exports[`Application Resolver Correctly Resolves Single Application 1`] = `
 Object {
   "data": Object {
-    "applications": Array [],
+    "applications": Array [
+      Object {
+        "_uid": "local-cluster/app-02-uid",
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
+        "created": "2020-01-23T13:56:32Z",
+        "dashboard": "localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test",
+        "hubSubscriptions": Array [],
+        "labels": Array [],
+        "name": "app02",
+        "namespace": "test",
+        "selfLink": "/apis/app.k8s.io/v1beta1/namespaces/test/applications/app02",
+      },
+    ],
   },
 }
 `;
@@ -150,12 +126,12 @@ Object {
   "data": Object {
     "applications": Array [
       Object {
-        "_uid": null,
-        "name": null,
+        "_uid": "local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99",
+        "name": "app01",
       },
       Object {
-        "_uid": null,
-        "name": null,
+        "_uid": "local-cluster/app-02-uid",
+        "name": "app02",
       },
     ],
   },
@@ -167,34 +143,34 @@ Object {
   "data": Object {
     "channels": Array [
       Object {
-        "_uid": null,
+        "_uid": "local-cluster/ch-01-uid",
         "clusterCount": Object {
           "localCount": 1,
           "remoteCount": 2,
         },
-        "created": null,
+        "created": "2020-08-20T14:16:05Z",
         "localPlacement": true,
-        "name": null,
-        "namespace": null,
-        "pathname": null,
-        "selfLink": null,
+        "name": "ch01",
+        "namespace": "applications",
+        "pathname": "http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts",
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/applications/channels/ch01",
         "subscriptionCount": 0,
-        "type": null,
+        "type": "HelmRepo",
       },
       Object {
-        "_uid": null,
+        "_uid": "local-cluster/ch-02-uid",
         "clusterCount": Object {
-          "localCount": 1,
+          "localCount": 0,
           "remoteCount": 2,
         },
-        "created": null,
-        "localPlacement": true,
-        "name": null,
-        "namespace": null,
-        "pathname": null,
-        "selfLink": null,
-        "subscriptionCount": 0,
-        "type": null,
+        "created": "2020-08-20T14:17:05Z",
+        "localPlacement": false,
+        "name": "ch02",
+        "namespace": "test",
+        "pathname": "https://github.com/fxiang1/app-samples.git",
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/test/channels/ch02",
+        "subscriptionCount": 3,
+        "type": "Git",
       },
     ],
   },
@@ -204,7 +180,23 @@ Object {
 exports[`Channel Resolver Correctly Resolves Single Channel 1`] = `
 Object {
   "data": Object {
-    "channels": Array [],
+    "channels": Array [
+      Object {
+        "_uid": "local-cluster/ch-02-uid",
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 2,
+        },
+        "created": "2020-08-20T14:17:05Z",
+        "localPlacement": false,
+        "name": "ch02",
+        "namespace": "test",
+        "pathname": "https://github.com/fxiang1/app-samples.git",
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/test/channels/ch02",
+        "subscriptionCount": 3,
+        "type": "Git",
+      },
+    ],
   },
 }
 `;
@@ -214,12 +206,12 @@ Object {
   "data": Object {
     "channels": Array [
       Object {
-        "_uid": null,
-        "name": null,
+        "_uid": "local-cluster/ch-01-uid",
+        "name": "ch01",
       },
       Object {
-        "_uid": null,
-        "name": null,
+        "_uid": "local-cluster/ch-02-uid",
+        "name": "ch02",
       },
     ],
   },
@@ -231,28 +223,28 @@ Object {
   "data": Object {
     "placementRules": Array [
       Object {
-        "_uid": null,
+        "_uid": "local-cluster/pr-01-uid",
         "clusterCount": Object {
-          "localCount": 1,
-          "remoteCount": 2,
+          "localCount": 0,
+          "remoteCount": 0,
         },
-        "created": null,
-        "name": null,
-        "namespace": null,
-        "replicas": null,
-        "selfLink": null,
+        "created": "2020-08-20T14:16:05Z",
+        "name": "pr01",
+        "namespace": "applications",
+        "replicas": 3,
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/placementrules/pr01",
       },
       Object {
-        "_uid": null,
+        "_uid": "local-cluster/pr-02-uid",
         "clusterCount": Object {
-          "localCount": 1,
-          "remoteCount": 2,
+          "localCount": 0,
+          "remoteCount": 0,
         },
-        "created": null,
-        "name": null,
-        "namespace": null,
+        "created": "2020-08-20T14:17:05Z",
+        "name": "pr02",
+        "namespace": "test",
         "replicas": null,
-        "selfLink": null,
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/test/pr02",
       },
     ],
   },
@@ -262,7 +254,20 @@ Object {
 exports[`Placement Rule Resolver Correctly Resolves Single Placement Rule 1`] = `
 Object {
   "data": Object {
-    "placementRules": Array [],
+    "placementRules": Array [
+      Object {
+        "_uid": "local-cluster/pr-01-uid",
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 0,
+        },
+        "created": "2020-08-20T14:16:05Z",
+        "name": "pr01",
+        "namespace": "applications",
+        "replicas": 3,
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/placementrules/pr01",
+      },
+    ],
   },
 }
 `;
@@ -272,12 +277,12 @@ Object {
   "data": Object {
     "placementRules": Array [
       Object {
-        "_uid": null,
-        "name": null,
+        "_uid": "local-cluster/pr-01-uid",
+        "name": "pr01",
       },
       Object {
-        "_uid": null,
-        "name": null,
+        "_uid": "local-cluster/pr-02-uid",
+        "name": "pr02",
       },
     ],
   },
@@ -287,7 +292,24 @@ Object {
 exports[`Subscription Resolver Correctly Resolves Single Subscription 1`] = `
 Object {
   "data": Object {
-    "subscriptions": Array [],
+    "subscriptions": Array [
+      Object {
+        "_uid": "local-cluster/sub-02-uid",
+        "appCount": 2,
+        "channel": "object-ch-ns/object-ch",
+        "clusterCount": Object {
+          "localCount": 0,
+          "remoteCount": 2,
+        },
+        "created": "2020-08-20T14:17:05Z",
+        "localPlacement": false,
+        "name": "sub02",
+        "namespace": "test",
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/test/sub02",
+        "status": "PropagationFailed",
+        "timeWindow": null,
+      },
+    ],
   },
 }
 `;
@@ -297,35 +319,35 @@ Object {
   "data": Object {
     "subscriptions": Array [
       Object {
-        "_uid": null,
+        "_uid": "local-cluster/sub-01-uid",
         "appCount": 1,
-        "channel": null,
+        "channel": "git-ch-ns/git-ch",
         "clusterCount": Object {
           "localCount": 1,
           "remoteCount": 2,
         },
-        "created": null,
-        "localPlacement": false,
-        "name": null,
-        "namespace": null,
-        "selfLink": null,
-        "status": null,
-        "timeWindow": null,
+        "created": "2020-08-20T14:16:05Z",
+        "localPlacement": true,
+        "name": "sub01",
+        "namespace": "applications",
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/applications/sub01",
+        "status": "Propagated",
+        "timeWindow": "blocked",
       },
       Object {
-        "_uid": null,
-        "appCount": 1,
-        "channel": null,
+        "_uid": "local-cluster/sub-02-uid",
+        "appCount": 2,
+        "channel": "object-ch-ns/object-ch",
         "clusterCount": Object {
-          "localCount": 1,
+          "localCount": 0,
           "remoteCount": 2,
         },
-        "created": null,
+        "created": "2020-08-20T14:17:05Z",
         "localPlacement": false,
-        "name": null,
-        "namespace": null,
-        "selfLink": null,
-        "status": null,
+        "name": "sub02",
+        "namespace": "test",
+        "selfLink": "/apis/apps.open-cluster-management.io/v1/namespaces/test/sub02",
+        "status": "PropagationFailed",
         "timeWindow": null,
       },
     ],
@@ -338,12 +360,12 @@ Object {
   "data": Object {
     "subscriptions": Array [
       Object {
-        "_uid": null,
-        "name": null,
+        "_uid": "local-cluster/sub-01-uid",
+        "name": "sub01",
       },
       Object {
-        "_uid": null,
-        "name": null,
+        "_uid": "local-cluster/sub-02-uid",
+        "name": "sub02",
       },
     ],
   },

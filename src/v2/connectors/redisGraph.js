@@ -37,18 +37,15 @@ function formatResult(results, removePrefix = true) {
         if (removePrefix) {
           if (record.get(key).properties !== null && record.get(key).properties !== undefined) {
             resultItem = record.get(key).properties;
-
-            getPropertiesWithList().forEach((val) => {
-              if (_.get(resultItem, val) && Array.isArray(_.get(resultItem, val))) {
-                resultItem[val] = resultItem[val].join('; ');
-              }
-            });
+            if (getPropertiesWithList().includes(key) && Array.isArray(record.get(key))) {
+              resultItem[key] = resultItem[key].join('; ');
+            }
+          } else {
+            resultItem[key.substring(key.indexOf('.') + 1)] = record.get(key);
           }
         } else {
-          resultItem[key.substring(key.indexOf('.') + 1)] = record.get(key);
+          resultItem[key] = record.get(key);
         }
-      } else {
-        resultItem[key] = record.get(key);
       }
     });
     resultList.push(resultItem);
@@ -108,8 +105,7 @@ export function getFilterString(filters) {
         return `n.${filter.property} ${getOperator(value)} ${operatorRemoved}`;
       } if (isDateFilter(value)) {
         return `n.${filter.property} ${getDateFilter(value)}`;
-      }
-      if (getPropertiesWithList().includes(filter.property)) {
+      } if (getPropertiesWithList().includes(filter.property)) {
         return `('${operatorRemoved}' IN n.${filter.property})`;
       }
       return `n.${filter.property} ${getOperator(value)} '${operatorRemoved}'`;
@@ -474,6 +470,7 @@ export default class RedisGraphConnector {
 
   async runSearchQuery(filters, limit = config.get('defaultQueryLimit'), querySkipIdx = 0) {
     // logger.info('runSearchQuery()', filters);
+
     const startTime = Date.now();
     if (this.rbac.length > 0) {
       // RedisGraph 2.0 does support an array as value. Therefore, we don't need to
@@ -487,7 +484,6 @@ export default class RedisGraphConnector {
       }
       const { withClause, whereClause } = await this.createWhereClause(filters, ['n']);
       const query = `${withClause} MATCH (n) ${whereClause} RETURN n ${limitClause}`;
-      logger.info(query);
       const result = await this.g.query(query);
       logger.perfLog(startTime, 150, 'SearchQuery');
       return formatResult(result);
