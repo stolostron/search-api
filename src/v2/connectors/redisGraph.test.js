@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /** *****************************************************************************
  * Licensed Materials - Property of IBM
  * (c) Copyright IBM Corporation 2019. All Rights Reserved.
@@ -8,8 +9,10 @@
  ****************************************************************************** */
 
 // import mockRedis from 'redis-mock';
+import ResultSet from 'redisgraph.js/src/resultSet';
+import { mockSearchResult } from '../mocks/search';
 import /* RedisGraphConnector, */ {
-  getOperator, getDateFilter, getFilterString, isDate,
+  formatResult, getOperator, getDateFilter, getFilterString, isDate,
 } from './redisGraph';
 
 describe('redisGraph', () => {
@@ -40,6 +43,13 @@ describe('redisGraph', () => {
     });
     test('isDate', async () => {
       expect(isDate('2016-06-23T09:07:21-07:00')).toEqual(true);
+    });
+    test('formatResult', async () => {
+      const results = new ResultSet();
+      results._results = mockSearchResult.mock({ pod: 5 });
+      // We need to be able to format the results while using the mock search results.
+      // results._resultsCount = results._results.length;
+      expect(formatResult(results)).toEqual([]);
     });
   });
 

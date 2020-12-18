@@ -26,7 +26,7 @@ export function getPropertiesWithList() {
 }
 
 // Is there a more efficient way?
-function formatResult(results, removePrefix = true) {
+export function formatResult(results, removePrefix = true) {
   const startTime = Date.now();
   const resultList = [];
   while (results.hasNext()) {
