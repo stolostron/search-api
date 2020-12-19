@@ -26,7 +26,7 @@ const resourceTemplate = {
     kind: 'node',
     name: `mock-1.1.1.${id}`,
     cpus: 10,
-    role: 'master',
+    role: ['master'],
   }),
   pod: (id) => ({
     kind: 'pod',

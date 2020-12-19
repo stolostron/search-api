@@ -9,6 +9,7 @@
  ****************************************************************************** */
 
 // import mockRedis from 'redis-mock';
+import { Record } from 'redisgraph.js';
 import ResultSet from 'redisgraph.js/src/resultSet';
 import { mockSearchResult } from '../mocks/search';
 import RedisGraphConnector, {
@@ -46,10 +47,22 @@ describe('redisGraph', () => {
     });
     test('formatResult', async () => {
       const results = new ResultSet();
-      results._results = mockSearchResult.mock({ pod: 5 });
-      // We need to be able to format the results while using the mock search results.
-      // results._resultsCount = results._results.length;
-      expect(formatResult(results)).toEqual([]);
+
+      results._results = [new Record([' n '], [mockSearchResult.mock({ node: 5 })])];
+      results._resultsCount = results._results.length;
+
+      results.next().get(' n ').properties = [{
+        kind: 'node',
+        role: ['master'],
+        name: 'mock-1.1.1.0',
+        cpus: 10,
+      }];
+
+      results._position = 0;
+      expect(formatResult(results, true)).toMatchSnapshot();
+
+      results._position = 0;
+      expect(formatResult(results, false)).toMatchSnapshot();
     });
   });
 
