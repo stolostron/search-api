@@ -11,7 +11,7 @@
 // import mockRedis from 'redis-mock';
 import ResultSet from 'redisgraph.js/src/resultSet';
 import { mockSearchResult } from '../mocks/search';
-import /* RedisGraphConnector, */ {
+import RedisGraphConnector, {
   formatResult, getOperator, getDateFilter, getFilterString, isDate,
 } from './redisGraph';
 
@@ -68,19 +68,25 @@ describe('redisGraph', () => {
    */
 
   // eslint-ignore jest/no-commented-out-tests
-  // describe('Testing Connector Functions', () => {
-  //   const searchConnector = new RedisGraphConnector({ rbac: ['kube-system', 'default'],
-  //      req: { user: { name: 'TestUserName' }, kubeToken: 'Bearer localdev' } });
-  //   searchConnector.getRedisClient = jest.fn(() => mockRedis.createClient());
+  describe('Testing Connector Functions', () => {
+    const searchConnector = new RedisGraphConnector({ rbac: ['kube-system', 'default'], req: { user: { name: 'TestUserName' }, kubeToken: 'Bearer localdev' } });
+    const _ = new Promise((resolve) => resolve({}));
 
-  //   test('Check If Redis Is Available', async () => {
-  //     expect(await searchConnector.isServiceAvailable()).toBe(true);
-  //   });
+    test('getAllValues', async () => {
+      expect(searchConnector.getAllValues('', [])).toEqual(_);
+      // We need to find a proper way of testing the getAllValues.
+      // With mock data, we won't be able to test it without the proper (withclause and whereclause)
+      expect(searchConnector.getAllValues('role', [{ property: 'role', values: ['master'] }])).toEqual(_);
+    });
+
+    // test('Check If Redis Is Available', async () => {
+    //   expect(await searchConnector.isServiceAvailable()).toBe(true);
+    // });
 
   //   test('Create the RBAC String for Redis Queries', async () => {
   //     const RBACString =
   //        await searchConnector.createWhereClause([{ property: 'pods', values: ['testPod'] }]);
   //     console.log(RBACString);
   //   });
-  // });
+  });
 });
