@@ -138,29 +138,6 @@ Object {
 }
 `;
 
-exports[`Application Resolver Ignores filters when only name or namespace is passed. 2`] = `
-Object {
-  "data": Object {
-    "applications": Array [
-      Object {
-        "_uid": "local-cluster/app-02-uid",
-        "clusterCount": Object {
-          "localCount": 0,
-          "remoteCount": 0,
-        },
-        "created": "2020-01-23T13:56:32Z",
-        "dashboard": "localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test",
-        "hubSubscriptions": Array [],
-        "labels": Array [],
-        "name": "app02",
-        "namespace": "test",
-        "selfLink": "/apis/app.k8s.io/v1beta1/namespaces/test/applications/app02",
-      },
-    ],
-  },
-}
-`;
-
 exports[`Channel Resolver Correctly Resolves Channels Query 1`] = `
 Object {
   "data": Object {
