@@ -85,9 +85,18 @@ describe('redisGraph', () => {
     const searchConnector = new RedisGraphConnector({ rbac: ['kube-system', 'default'], req: { user: { name: 'TestUserName' }, kubeToken: 'Bearer localdev' } });
     const _ = new Promise((resolve) => resolve({}));
 
+    test('isServiceAvailable', () => searchConnector.isServiceAvailable().then((res) => expect(res).toBe(true)));
+    test('getAllProperties', async () => {
+      const values = ['cluster', 'kind', 'label', 'name', 'namespace', 'status'];
+      const properties = await searchConnector.getAllProperties();
+
+      values.forEach((val) => {
+        expect(properties.includes(val)).toBe(true);
+      });
+    });
+
     test('getAllValues', async () => {
       expect(searchConnector.getAllValues('', [])).toEqual(_);
-      // We need to find a proper way of testing the getAllValues.
       // With mock data, we won't be able to test it without the proper (withclause and whereclause)
       expect(searchConnector.getAllValues('role', [{ property: 'role', values: ['master'] }])).toEqual(_);
     });
