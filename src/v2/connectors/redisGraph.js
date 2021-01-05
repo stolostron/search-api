@@ -117,6 +117,22 @@ export function getFilterString(filters) {
   return resultString;
 }
 
+export function getDataFromValueList(valuesList) {
+  const data = [];
+  valuesList.forEach((value) => {
+    if (Array.isArray(value)) {
+      value.forEach((val) => {
+        if (data.indexOf(val) === -1) {
+          data.push(val);
+        }
+      });
+    } else {
+      data.push(value);
+    }
+  });
+  return data;
+}
+
 function getIPvFamily(redisHost) {
   return new Promise((resolve) => {
     dns.lookup(redisHost, (err, address, family) => {
@@ -554,19 +570,7 @@ export default class RedisGraphConnector {
       });
 
       if ((getPropertiesWithList()).includes(property)) {
-        const data = [];
-        valuesList.forEach((value) => {
-          if (Array.isArray(value)) {
-            value.forEach((val) => {
-              if (data.indexOf(val) === -1) {
-                data.push(val);
-              }
-            });
-          } else {
-            data.push(value);
-          }
-        });
-        return data;
+        getDataFromValueList(valuesList);
       }
 
       if (isDate(valuesList[0])) {

@@ -13,7 +13,7 @@ import { Record } from 'redisgraph.js';
 import ResultSet from 'redisgraph.js/src/resultSet';
 import { mockSearchResult } from '../mocks/search';
 import RedisGraphConnector, {
-  formatResult, getOperator, getDateFilter, getFilterString, isDate,
+  formatResult, getOperator, getDateFilter, getFilterString, isDate, getDataFromValueList,
 } from './redisGraph';
 
 describe('redisGraph', () => {
@@ -99,6 +99,11 @@ describe('redisGraph', () => {
       expect(searchConnector.getAllValues('', [])).toEqual(_);
       // With mock data, we won't be able to test it without the proper (withclause and whereclause)
       expect(searchConnector.getAllValues('role', [{ property: 'role', values: ['master'] }])).toEqual(_);
+    });
+
+    test('getDataFromValueList', async () => {
+      const valueList = ['master', ['master', 'proxy', 'worker']];
+      expect(getDataFromValueList(valueList)).toEqual(['master', 'proxy', 'worker']);
     });
 
     // test('Check If Redis Is Available', async () => {
