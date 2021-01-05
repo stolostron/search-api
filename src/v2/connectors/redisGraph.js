@@ -37,9 +37,12 @@ export function formatResult(results, removePrefix = true) {
         if (removePrefix) {
           if (record.get(key).properties !== null && record.get(key).properties !== undefined) {
             resultItem = record.get(key).properties;
-            if (getPropertiesWithList().includes(key) && Array.isArray(record.get(key))) {
-              resultItem[key] = resultItem[key].join('; ');
-            }
+            // We need to check each value within the properties list, and then parse them correctly.
+            getPropertiesWithList().forEach((val) => {
+              if (_.get(resultItem, val) && Array.isArray(_.get(resultItem, val))) {
+                resultItem[val] = resultItem[val].join('; ');
+              }
+            });
           } else {
             resultItem[key.substring(key.indexOf('.') + 1)] = record.get(key);
           }
