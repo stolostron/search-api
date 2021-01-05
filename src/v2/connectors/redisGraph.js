@@ -570,7 +570,7 @@ export default class RedisGraphConnector {
       });
 
       if ((getPropertiesWithList()).includes(property)) {
-        getDataFromValueList(valuesList);
+        return getDataFromValueList(valuesList);
       }
 
       if (isDate(valuesList[0])) {
