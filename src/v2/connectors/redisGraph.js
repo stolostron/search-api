@@ -21,8 +21,12 @@ import logger from '../lib/logger';
 import { isRequired } from '../lib/utils';
 import pollRbacCache, { getUserRbacFilter } from '../lib/rbacCaching';
 
+export function getPropertiesWithList() {
+  return ['label', 'role', 'port', 'container'];
+}
+
 // Is there a more efficient way?
-function formatResult(results, removePrefix = true) {
+export function formatResult(results, removePrefix = true) {
   const startTime = Date.now();
   const resultList = [];
   while (results.hasNext()) {
@@ -33,6 +37,12 @@ function formatResult(results, removePrefix = true) {
         if (removePrefix) {
           if (record.get(key).properties !== null && record.get(key).properties !== undefined) {
             resultItem = record.get(key).properties;
+            // We need to check each value within the properties list, and then parse them correctly.
+            getPropertiesWithList().forEach((val) => {
+              if (_.get(resultItem, val) && Array.isArray(_.get(resultItem, val))) {
+                resultItem[val] = resultItem[val].join('; ');
+              }
+            });
           } else {
             resultItem[key.substring(key.indexOf('.') + 1)] = record.get(key);
           }
@@ -56,8 +66,8 @@ const isNumber = (value) => !Number.isNaN(value * 1);
 //   }
 //   return false;
 // };
-const isDate = (value) => !isNumber(value) && moment(value, 'YYYY-MM-DDTHH:mm:ssZ', true).isValid();
-const isDateFilter = (value) => ['hour', 'day', 'week', 'month', 'year'].indexOf(value) > -1;
+export const isDate = (value) => !isNumber(value) && moment(value, 'YYYY-MM-DDTHH:mm:ssZ', true).isValid();
+export const isDateFilter = (value) => ['hour', 'day', 'week', 'month', 'year'].indexOf(value) > -1;
 // const isVersion = property.toLowerCase().includes('version');
 
 export function getOperator(value) {
@@ -96,14 +106,34 @@ export function getFilterString(filters) {
       const operatorRemoved = value.replace(/^<=|^>=|^!=|^!|^<|^>|^=/, '');
       if (isNumber(operatorRemoved)) { //  || isNumWithChars(operatorRemoved)
         return `n.${filter.property} ${getOperator(value)} ${operatorRemoved}`;
-      } if (isDateFilter(value)) {
+      }
+      if (isDateFilter(value)) {
         return `n.${filter.property} ${getDateFilter(value)}`;
+      }
+      if (getPropertiesWithList().includes(filter.property)) {
+        return `('${operatorRemoved}' IN n.${filter.property})`;
       }
       return `n.${filter.property} ${getOperator(value)} '${operatorRemoved}'`;
     }).join(' OR ')})`);
   });
   const resultString = filterStrings.join(' AND ');
   return resultString;
+}
+
+export function getDataFromValueList(valuesList) {
+  const data = [];
+  valuesList.forEach((value) => {
+    if (Array.isArray(value)) {
+      value.forEach((val) => {
+        if (data.indexOf(val) === -1) {
+          data.push(val);
+        }
+      });
+    } else {
+      data.push(value);
+    }
+  });
+  return data;
 }
 
 function getIPvFamily(redisHost) {
@@ -463,31 +493,8 @@ export default class RedisGraphConnector {
     // logger.info('runSearchQuery()', filters);
     const startTime = Date.now();
     if (this.rbac.length > 0) {
-      // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
-      // encode labels in a single string. As a result we can't use an openCypher query to search
-      // for labels so we need to filter here, which btw is inefficient.
-      const specialFilters = filters.filter((f) => (f.property === 'label' || f.property === 'role'));
-      if (specialFilters.length > 0) {
-        const { withClause, whereClause } = await this.createWhereClause(filters.filter((f) => f.property !== 'role' && f.property !== 'label'), ['n']);
-        const q = `${withClause} MATCH (n) ${whereClause} RETURN n`;
-        const res = await this.g.query(q);
-        logger.perfLog(startTime, 150, 'SpecialFilterSearchQuery');
-        return formatResult(res).filter((item) => {
-          if (item.role && specialFilters.findIndex((filter) => filter.property === 'role') >= 0) {
-            const roleIdx = specialFilters.findIndex((filter) => filter.property === 'role');
-            return specialFilters[roleIdx].values.find((value) => {
-              const values = value.replace(' ', '').split(',');
-              return values.every((v) => item.role.includes(v));
-            });
-          }
-          if (item.label && specialFilters.findIndex((filter) => filter.property === 'label') >= 0) {
-            const labelIdx = specialFilters.findIndex((filter) => filter.property === 'label');
-            return item.label && specialFilters[labelIdx].values.find((value) => item.label.indexOf(value) > -1);
-          }
-          return item;
-        });
-      }
-
+      // RedisGraph 2.0 does support an array as value. Therefore, we don't need to
+      // encode labels in a single string
       let limitClause = '';
       if (limit > 0) {
         limitClause = querySkipIdx > -1
@@ -507,13 +514,8 @@ export default class RedisGraphConnector {
     // logger.info('runSearchQueryCountOnly()', filters);
 
     if (this.rbac.length > 0) {
-      // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
-      // encode labels in a single string. As a result we can't use an openCypher query to search
-      // for labels so we need to filter here, which btw is inefficient.
-      const labelFilter = filters.find((f) => (f.property === 'label' || f.property === 'role'));
-      if (labelFilter) {
-        return this.runSearchQuery(filters, -1, -1).then((r) => r.length);
-      }
+      // RedisGraph 2.0 does support an array as value. Therefore, we don't need to
+      // encode labels in a single string
       const { withClause, whereClause } = await this.createWhereClause(filters, ['n']);
       const startTime = Date.now();
       const result = await this.g.query(`${withClause} MATCH (n) ${whereClause} RETURN count(n)`);
@@ -560,8 +562,7 @@ export default class RedisGraphConnector {
         ? ''
         : `LIMIT ${limit}`;
       let f = filters.length > 0 ? filters : [];
-      // Workaround for node resource queries - this will need to be removed when redis 2.0 features are used
-      f = filters.filter((filter) => filter.property !== 'role' && filter.property !== 'label');
+      f = filters.filter((filter) => filter.property);
       const { withClause, whereClause } = await this.createWhereClause(f, ['n']);
       const result = await this.g.query(`${withClause} MATCH (n) ${whereClause} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`);
       logger.perfLog(startTime, 500, 'getAllValues()');
@@ -571,32 +572,8 @@ export default class RedisGraphConnector {
         }
       });
 
-      // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
-      // encode labels in a single string. Here we need to decode the string to get all labels.
-      if (property === 'label') {
-        const labels = [];
-        valuesList.forEach((value) => {
-          value.split('; ').forEach((label) => {
-            // We don't want duplicates, so we check if it already exists.
-            if (labels.indexOf(label) === -1) {
-              labels.push(label);
-            }
-          });
-        });
-        return labels;
-      }
-      // Same workaround as above, but for roles.
-      if (property === 'role') {
-        const roles = [];
-        valuesList.forEach((value) => {
-          value.split(', ').forEach((role) => {
-            // We don't want duplicates, so we check if it already exists.
-            if (roles.indexOf(role) === -1) {
-              roles.push(role);
-            }
-          });
-        });
-        return roles;
+      if ((getPropertiesWithList()).includes(property)) {
+        return getDataFromValueList(valuesList);
       }
 
       if (isDate(valuesList[0])) {

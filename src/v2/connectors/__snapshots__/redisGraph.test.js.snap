@@ -1,0 +1,65 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`redisGraph Class Functions formatResult 1`] = `
+Array [
+  Array [
+    Object {
+      "cpus": 10,
+      "kind": "node",
+      "name": "mock-1.1.1.0",
+      "role": Array [
+        "master",
+      ],
+    },
+  ],
+]
+`;
+
+exports[`redisGraph Class Functions formatResult 2`] = `
+Array [
+  Object {
+    " n ": Array [
+      Object {
+        "cpus": 10,
+        "kind": "node",
+        "name": "mock-1.1.1.0",
+        "role": Array [
+          "master",
+        ],
+      },
+      Object {
+        "cpus": 10,
+        "kind": "node",
+        "name": "mock-1.1.1.1",
+        "role": Array [
+          "master",
+        ],
+      },
+      Object {
+        "cpus": 10,
+        "kind": "node",
+        "name": "mock-1.1.1.2",
+        "role": Array [
+          "master",
+        ],
+      },
+      Object {
+        "cpus": 10,
+        "kind": "node",
+        "name": "mock-1.1.1.3",
+        "role": Array [
+          "master",
+        ],
+      },
+      Object {
+        "cpus": 10,
+        "kind": "node",
+        "name": "mock-1.1.1.4",
+        "role": Array [
+          "master",
+        ],
+      },
+    ],
+  },
+]
+`;
