@@ -11,6 +11,7 @@ import _ from 'lodash';
 import config from '../../../config';
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
+import { getPropertiesWithList } from '../connectors/redisGraph';
 
 // Remove single and double quotes because these can be used to inject malicious
 // code in the RedisGraph query. (SQL injection).
@@ -126,6 +127,10 @@ export default class SearchModel {
     const relationships = await this.searchConnector.findRelationships({ filters, countOnly, relatedKinds });
 
     const result = {};
+    if (filters.find((data) => getPropertiesWithList().includes(data.property))) {
+      return [];
+    }
+
     relationships.forEach((r) => {
       if (!result[r.kind]) {
         result[r.kind] = [];
