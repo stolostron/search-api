@@ -54,7 +54,7 @@ export function formatResult(results, removePrefix = true) {
     resultList.push(resultItem);
   }
   logger.perfLog(startTime, 100, 'formatResult()', `Result set size: ${resultList.length}`);
-  return resultList;
+  return _.uniqBy(resultList, (item) => item._uid);
 }
 
 const isNumber = (value) => !Number.isNaN(value * 1);
