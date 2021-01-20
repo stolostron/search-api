@@ -124,12 +124,13 @@ export default class SearchModel {
   async resolveRelated(input, countOnly) {
     const { filters, relatedKinds } = sanitizeInputs(input);
     await this.checkSearchServiceAvailable();
-    const relationships = await this.searchConnector.findRelationships({ filters, countOnly, relatedKinds });
 
-    const result = {};
     if (filters.find((data) => getPropertiesWithList().includes(data.property))) {
       return [];
     }
+
+    const relationships = await this.searchConnector.findRelationships({ filters, countOnly, relatedKinds });
+    const result = {};
 
     relationships.forEach((r) => {
       if (!result[r.kind]) {
