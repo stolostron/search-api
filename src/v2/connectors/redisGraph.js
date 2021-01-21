@@ -53,8 +53,12 @@ export function formatResult(results, removePrefix = true) {
     });
     resultList.push(resultItem);
   }
+
   logger.perfLog(startTime, 100, 'formatResult()', `Result set size: ${resultList.length}`);
-  return _.uniqBy(resultList, (item) => item._uid);
+  if (removePrefix) {
+    return _.uniqBy(resultList, (item) => item._uid);
+  }
+  return resultList;
 }
 
 const isNumber = (value) => !Number.isNaN(value * 1);
