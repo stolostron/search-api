@@ -24,8 +24,9 @@ import { getServiceAccountToken } from './lib/utils';
 import RedisGraphConnector from './connectors/redisGraph';
 
 import AppModel from './models/application';
-import SearchModel from './models/search';
+import OverviewModel from './models/overview';
 import QueryModel from './models/userSearch';
+import SearchModel from './models/search';
 
 import MockSearchConnector from './mocks/search';
 import schema from './schema';
@@ -72,8 +73,9 @@ const apolloServer = new ApolloServer({
     return {
       req,
       appModel: new AppModel({ searchConnector }),
-      searchModel: new SearchModel({ searchConnector }),
+      overviewModel: new OverviewModel({ searchConnector }),
       queryModel: new QueryModel({ kubeConnector }),
+      searchModel: new SearchModel({ searchConnector }),
     };
   },
 });

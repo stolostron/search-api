@@ -19,6 +19,9 @@ type Query {
   placementRules(name:String namespace: String): [PlacementRule]
   channels(name: String namespace: String): [Channel]
 
+  # Special query for Overview page.
+  overview(cloud: String): Overview
+
   # Search for resources.
   search(input: [SearchInput]): [SearchResult]
 
