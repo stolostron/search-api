@@ -20,8 +20,8 @@ export default class OverviewModel {
     return this.searchConnector.runOverviewClustersQuery();
   }
 
-  async resolveNonCompliantClusters() {
+  async resolveNonCompliantClusterCount() {
     await this.checkSearchServiceAvailable();
-    return this.searchConnector.runOverviewNonCompliantClusters();
+    return this.searchConnector.resolveNonCompliantClusterCount();
   }
 }
