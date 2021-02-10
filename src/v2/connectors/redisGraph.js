@@ -493,13 +493,21 @@ export default class RedisGraphConnector {
   async runOverviewClustersQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['c']);
     const query = `${withClause} MATCH (c:Cluster) ${whereClause} RETURN DISTINCT count(c)`;
-    return this.executeQuery({ query, removePrefix: false });
+    const result = this.executeQuery({ query, removePrefix: false });
+    if (result.hasNext() === true) {
+      return result.next().get('count(n)');
+    }
+    return 0;
   }
 
-  async resolveNonCompliantClusters() {
+  async resolveNonCompliantClusterCount() {
     const { withClause, whereClause } = await this.createWhereClause([], ['p']);
     const query = `${withClause} MATCH (p:Policy {compliant:'NonCompliant}) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=false RETURN DISTINCT count(c.cluster)`;
-    return this.executeQuery({ query, removePrefix: false });
+    const result = this.executeQuery({ query, removePrefix: false });
+    if (result.hasNext() === true) {
+      return result.next().get('count(n)');
+    }
+    return 0;
   }
 
   /**
