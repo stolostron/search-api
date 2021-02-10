@@ -6,10 +6,10 @@ export const typeDef = gql`
   # Special query for the Overview page.
   type Overview {
     # Total Clusters  
-    clusters: Int
+    clusterTotal: Int
     
     # Total number of clusters with at least 1 Policy with compliant:NotCompliant
-    nonCompliantClusters: Int
+    nonCompliantClusterTotal: Int
   }
 `;
 
