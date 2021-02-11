@@ -499,9 +499,10 @@ export default class RedisGraphConnector {
   }
 
   async resolveNonCompliantClusterCount() {
-    const { withClause, whereClause } = await this.createWhereClause([], ['p', 'c']);
-    // const query = `${withClause} MATCH (p:Policy {compliant:'NonCompliant}) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(p._hubClusterResource)=false RETURN count(c.cluster)`;
-    const query = `${withClause} MATCH (p:Policy {compliant:'NonCompliant})-[]-(c:Cluster) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(p._hubClusterResource)=false RETURN DISTINCT count(c)`;
+    // const { withClause, whereClause } = await this.createWhereClause([], ['p', 'c']);
+    // eslint-disable-next-line
+    // const query = `${withClause} MATCH (p:Policy {compliant:'NonCompliant})-[]-(c:Cluster) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(p._hubClusterResource)=false RETURN DISTINCT count(c)`;
+    const query = `MATCH (p:Policy {compliant:'NonCompliant})-[]->(c:Cluster) RETURN DISTINCT count(c)`; // eslint-disable-line
     const result = await this.executeQuery({ query, removePrefix: false });
     console.log('resolveNonCompliantClusterCount - result:', result); // eslint-ignore-line no-console
     return (result && result['count(n)']) || 0;
