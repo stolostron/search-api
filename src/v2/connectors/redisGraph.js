@@ -494,22 +494,20 @@ export default class RedisGraphConnector {
     const { withClause, whereClause } = await this.createWhereClause([], ['c']);
     const query = `${withClause} MATCH (c:Cluster) ${whereClause} RETURN DISTINCT count(c)`;
     const result = await this.executeQuery({ query, removePrefix: false });
-    console.log('runOverviewClustersQuery result', result); // eslint-ignore-line no-console
-    if (result.hasNext && result.hasNext() === true) {
-      return result.next().get('count(n)');
-    }
-    return 0;
+    console.log('runOverviewClustersQuery - result:', result); // eslint-ignore-line no-console
+    return (result && result['count(n)']) || 0;
   }
 
   async resolveNonCompliantClusterCount() {
     const { withClause, whereClause } = await this.createWhereClause([], ['p']);
     const query = `${withClause} MATCH (p:Policy {compliant:'NonCompliant}) ${whereClause === '' ? 'WHERE' : `${whereClause} AND`} exists(sub._hubClusterResource)=false RETURN count(c.cluster)`;
     const result = await this.executeQuery({ query, removePrefix: false });
-    console.log('resolveNonCompliantClusterCount result', result); // eslint-ignore-line no-console
-    if (result.hasNext && result.hasNext() === true) {
-      return result.next().get('count(n)');
-    }
-    return 0;
+    console.log('resolveNonCompliantClusterCount - result:', result); // eslint-ignore-line no-console
+    return (result && result['count(n)']) || 0;
+    // if (result.hasNext && result.hasNext() === true) {
+    //   return result.next().get('count(n)');
+    // }
+    // return 0;
   }
 
   /**
