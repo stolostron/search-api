@@ -1,3 +1,4 @@
+// Copyright Contributors to the Open Cluster Management project
 /** *****************************************************************************
  * Licensed Materials - Property of Red Hat, Inc.
  * Copyright (c) 2020 Red Hat, Inc.

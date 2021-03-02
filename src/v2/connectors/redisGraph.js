@@ -8,6 +8,7 @@
  *
  * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
+// Copyright Contributors to the Open Cluster Management project
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
 import _ from 'lodash';

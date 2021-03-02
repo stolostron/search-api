@@ -7,6 +7,7 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 // Copyright (c) 2020 Red Hat, Inc.
+// Copyright Contributors to the Open Cluster Management project
 
 /**
  * NOTE: For brevity the response objects for user access infomation have been GREATLY reduced.

@@ -6,6 +6,7 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// Copyright Contributors to the Open Cluster Management project
 const nconf = require('nconf');
 const log4js = require('log4js');
 const path = require('path');

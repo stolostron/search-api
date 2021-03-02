@@ -6,6 +6,7 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// Copyright Contributors to the Open Cluster Management project
 
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
