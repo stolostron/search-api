@@ -40,6 +40,3 @@ unit-test:
 		mkdir test-output; \
 	fi
 	npm test
-
-copyright-check:
-	./build/copyright-check.sh
