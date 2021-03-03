@@ -1,3 +1,5 @@
+# Copyright (c) 2021 Red Hat, Inc.
+# Copyright Contributors to the Open Cluster Management project
 ifdef GIT
 VCS_URL ?=$(shell git config --get remote.origin.url)
 IMAGE_VERSION :=$(shell git rev-parse --short HEAD)
