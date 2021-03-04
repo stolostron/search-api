@@ -6,6 +6,8 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// Copyright (c) 2021 Red Hat, Inc.
+// Copyright Contributors to the Open Cluster Management project
 // eslint-disable-next-line max-classes-per-file
 import _ from 'lodash';
 import RedisGraphConnector from '../connectors/redisGraph';

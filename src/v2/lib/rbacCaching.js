@@ -8,6 +8,7 @@
  *
  * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
+// Copyright Contributors to the Open Cluster Management project
 
 import _ from 'lodash';
 import LRU from 'lru-cache';
