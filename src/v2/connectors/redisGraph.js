@@ -176,7 +176,12 @@ function getRedisClient() {
       const redisInfo = redisUrl.split(':');
       const redisHost = redisInfo[0];
       const redisPort = redisInfo[1];
-      const redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
+      let redisCert = '';
+      try {
+        redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
+      } catch (e) {
+        logger.warn('Using insecure redis connection. Cert not mounted at ./rediscert/redis.crt', e.Message);
+      }
       const ipFamily = await getIPvFamily(redisHost);
       redisClient = redis.createClient(
         redisPort,
