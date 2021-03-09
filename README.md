@@ -16,13 +16,16 @@ https://github.com/open-cluster-management/search/wiki/Using-the-Search-API
     redisEndpoint     | //localhost:6379               | RedisGraph server. Use only whith RedisGraph on local machine.
     redisSSLEndpoint  | redisgraph-route:443           | RedisGraph server with SSL. 
     redisPassword     | ""                             | RedisGraph password. `oc get secret redisgraph-user-secret -o json | jq -r '.data.redispwd' | base64 -D`
-
-2. Start the dev server
+2. Generate self-signed certificates for development.
+  ```
+  ./setup.sh
+  ```
+3. Start the dev server
 ```
 npm i
 npm start
 ```
-3. Start the production server
+4. Start the production server
 ```
 npm i
 npm run build
@@ -54,7 +57,11 @@ RBAC_INACTIVITY_TIMEOUT | 600000  | Stop revalidating RBAC cache after user is i
     ```
     oc get secret redisgraph-user-secret -o json | jq -r '.data.redispwd' | base64 -D | pbcopy
     ```
-4. Allow unsecured TLS connection.
+4. Copy the redis certificate to the local machine.
+    ```
+    oc get secrets search-redisgraph-secrets -n open-cluster-management -o json |jq -r '.data["ca.crt"]' | base64 -d > ./rediscert/redis.crt
+    ```
+5. Allow unsecured TLS connection.
     ```
     export NODE_TLS_REJECT_UNAUTHORIZED=0
     -- OR --
