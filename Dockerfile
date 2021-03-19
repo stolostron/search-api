@@ -17,9 +17,9 @@ COPY --from=builder /usr/bin/node /usr/bin/node
 
 RUN mkdir -p /app
 WORKDIR /app
-ENV NODE_ENV production
+COPY --from=builder ./config ./config
 COPY --from=builder ./node_modules ./node_modules
-COPY --from=builder ./output ./
+COPY --from=builder ./output ./output
 
 
 ARG VCS_REF
@@ -62,4 +62,4 @@ ENV BABEL_DISABLE_CACHE=1 \
 EXPOSE 4010
 
 USER ${USER_UID}
-CMD ["node", "index.js"]
+CMD ["node", "./output/index.js"]
