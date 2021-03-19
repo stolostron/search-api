@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/nodejs-12:1
+FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux-amd64
 USER root
 RUN yum -y remove nodejs-nodemon
 RUN yum -y update

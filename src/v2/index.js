@@ -11,7 +11,7 @@
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import { isInstance as isApolloErrorInstance, formatError as formatApolloError } from 'apollo-errors';
-import inspect from 'security-middleware';
+import inspect from '@open-cluster-management/security-middleware';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import noCache from 'nocache';
