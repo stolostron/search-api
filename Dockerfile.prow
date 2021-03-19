@@ -10,8 +10,9 @@ RUN npm run build:production
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 COPY --from=builder /usr/bin/node /usr/bin/node
 
-RUN mkdir -p /app
-WORKDIR /app
+RUN mkdir -p /opt/app-root/search-api
+WORKDIR /opt/app-root/search-api
+
 COPY --from=builder ./config ./config
 COPY --from=builder ./node_modules ./node_modules
 COPY --from=builder ./output ./output
