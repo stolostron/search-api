@@ -9,9 +9,5 @@
       }
     ]
   ],
-  "plugins": [],
-  "ignore": [
-    "**/mocks/**",
-    "**/*.test.js"
-  ]
+  "plugins": []
 }
