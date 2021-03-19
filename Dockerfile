@@ -2,16 +2,11 @@
 
 FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux-amd64 as builder
 USER root
-
 COPY . .
 RUN npm ci
 RUN npm run build:production
-RUN npm prune --production
-# RUN rm -rf ./node_modules
-# RUN npm ci --only=production --no-optional
 
 
-# FROM registry.access.redhat.com/ubi8/nodejs-14
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 COPY --from=builder /usr/bin/node /usr/bin/node
 
@@ -20,7 +15,6 @@ WORKDIR /app
 COPY --from=builder ./config ./config
 COPY --from=builder ./node_modules ./node_modules
 COPY --from=builder ./output ./output
-
 
 ARG VCS_REF
 ARG VCS_URL
@@ -57,7 +51,6 @@ ENV BABEL_DISABLE_CACHE=1 \
     NODE_ENV=production \
     USER_UID=1001 \
     VCS_REF="$VCS_REF"
-
 
 EXPOSE 4010
 
