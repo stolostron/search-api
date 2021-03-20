@@ -8,7 +8,7 @@
     "start:production": "cross-env NODE_ENV=production node ./output/index.js",
     "start:test": "cross-env NODE_ENV=test MOCK=true node ./output/index.js",
     "start:development": "cross-env NODE_ENV=development node ./output/index.js",
-    "build-server": "babel -d ./output ./src -s --ignore **/*.test.js,**/mocks/**",
+    "build-server": "babel -d ./output ./src -s --ignore **/*.test.js",
     "build": "npm run clean && npm run build-server",
     "build:production": "npm run build && npm prune --production",
     "clean": "rm -rf output && mkdir output",
