@@ -7,6 +7,7 @@
 #  IBM Corporation - initial API and implementation
 ###############################################################################
 # Copyright (c) 2020 Red Hat, Inc.
+# Copyright Contributors to the Open Cluster Management project
 
 
 include build/Configfile
@@ -40,3 +41,6 @@ unit-test:
 		mkdir test-output; \
 	fi
 	npm test
+
+docker-build:
+	docker build . -t search-api

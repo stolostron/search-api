@@ -1,0 +1,10 @@
+# Copyright Contributors to the Open Cluster Management project
+
+-include /opt/build-harness/Makefile.prow
+
+.PHONY: unit-test
+unit-test:
+	if [ ! -d "test-output" ]; then \
+		mkdir test-output; \
+	fi
+	npm test
