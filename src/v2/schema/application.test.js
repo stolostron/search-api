@@ -27,7 +27,6 @@ describe('Application Resolver', () => {
             labels
             name
             namespace
-            selfLink
             hubSubscriptions {
               _uid
               timeWindow
@@ -60,7 +59,6 @@ describe('Application Resolver', () => {
             labels
             name
             namespace
-            selfLink
             hubSubscriptions {
               _uid
               status

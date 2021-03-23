@@ -23,7 +23,6 @@ export const typeDef = gql`
 
     name: String
     namespace: String
-    selfLink: String
 
     # Number of application deployments on local and remote clusters.
     clusterCount: JSON
@@ -41,7 +40,6 @@ export const typeDef = gql`
     name: String
     namespace: String
     created: String
-    selfLink: String
     channel: String
     appCount: Int
     clusterCount: JSON
@@ -55,7 +53,6 @@ export const typeDef = gql`
     name: String
     namespace: String
     created: String
-    selfLink: String
     clusterCount: JSON
     replicas: Int
   }
@@ -65,7 +62,6 @@ export const typeDef = gql`
     name: String
     namespace: String
     created: String
-    selfLink: String
     type: String
     pathname: String
     localPlacement: Boolean
@@ -88,7 +84,6 @@ export const resolver = {
     labels: (parent) => (parent['app.label'] ? parent['app.label'].split(';').map((l) => l.trim()) : []),
     name: (parent) => parent['app.name'],
     namespace: (parent) => parent['app.namespace'],
-    selfLink: (parent) => parent['app.selfLink'],
     clusterCount: (parent, args, { appModel }) => appModel.resolveAppClustersCount(parent['app._uid']),
     hubChannels: (parent, args, { appModel }) => appModel.resolveAppHubChannels(parent['app._uid']),
     hubSubscriptions: (parent, args, { appModel }) => appModel.resolveAppHubSubscriptions(parent['app._uid']),
@@ -98,7 +93,6 @@ export const resolver = {
     name: (parent) => parent['sub.name'],
     namespace: (parent) => parent['sub.namespace'],
     created: (parent) => parent['sub.created'],
-    selfLink: (parent) => parent['sub.selfLink'],
     timeWindow: (parent) => parent['sub.timeWindow'],
     localPlacement: (parent) => parent['sub.localPlacement'] === 'true',
     status: (parent) => parent['sub.status'],
@@ -111,7 +105,6 @@ export const resolver = {
     name: (parent) => parent['pr.name'],
     namespace: (parent) => parent['pr.namespace'],
     created: (parent) => parent['pr.created'],
-    selfLink: (parent) => parent['pr.selfLink'],
     replicas: (parent) => parent['pr.replicas'],
     clusterCount: (parent, args, { appModel }) => appModel.resolvePRClustersCount(parent['pr._uid']),
   },
@@ -120,7 +113,6 @@ export const resolver = {
     name: (parent) => parent['ch.name'],
     namespace: (parent) => parent['ch.namespace'],
     created: (parent) => parent['ch.created'],
-    selfLink: (parent) => parent['ch.selfLink'],
     type: (parent) => parent['ch.type'],
     pathname: (parent) => parent['ch.pathname'],
     localPlacement: (parent, args, { appModel }) => appModel.resolveChannelLocalPlacement(parent['ch._uid']),
