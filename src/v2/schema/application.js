@@ -23,6 +23,7 @@ export const typeDef = gql`
 
     name: String
     namespace: String
+    selfLink: String
 
     # Number of application deployments on local and remote clusters.
     clusterCount: JSON
@@ -40,6 +41,7 @@ export const typeDef = gql`
     name: String
     namespace: String
     created: String
+    selfLink: String
     channel: String
     appCount: Int
     clusterCount: JSON
@@ -53,6 +55,7 @@ export const typeDef = gql`
     name: String
     namespace: String
     created: String
+    selfLink: String
     clusterCount: JSON
     replicas: Int
   }
@@ -62,6 +65,7 @@ export const typeDef = gql`
     name: String
     namespace: String
     created: String
+    selfLink: String
     type: String
     pathname: String
     localPlacement: Boolean
