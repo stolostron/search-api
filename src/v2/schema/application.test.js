@@ -106,7 +106,6 @@ describe('Placement Rule Resolver', () => {
             name
             namespace
             created
-            selfLink
             clusterCount
             replicas
           }
@@ -130,7 +129,6 @@ describe('Placement Rule Resolver', () => {
             name
             namespace
             created
-            selfLink
             clusterCount
             replicas
           }
@@ -175,7 +173,6 @@ describe('Subscription Resolver', () => {
             name
             namespace
             created
-            selfLink
             timeWindow
             localPlacement
             status
@@ -203,7 +200,6 @@ describe('Subscription Resolver', () => {
           name
           namespace
           created
-          selfLink
           timeWindow
           localPlacement
           status
@@ -252,7 +248,6 @@ describe('Channel Resolver', () => {
             name
             namespace
             created
-            selfLink
             type
             pathname
             localPlacement
@@ -279,7 +274,6 @@ describe('Channel Resolver', () => {
             name
             namespace
             created
-            selfLink
             type
             pathname
             localPlacement
