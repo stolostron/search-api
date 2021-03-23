@@ -64,6 +64,7 @@ Object {
         ],
         "name": "app01",
         "namespace": "sample",
+        "selfLink": "selfLink has been removed in K8s 1.20",
       },
       Object {
         "_uid": "local-cluster/app-02-uid",
@@ -90,6 +91,7 @@ Object {
         "labels": Array [],
         "name": "app02",
         "namespace": "test",
+        "selfLink": "selfLink has been removed in K8s 1.20",
       },
     ],
   },

@@ -12,6 +12,7 @@ Object {
         "creationTimestamp": "2020-02-09T06:16:23Z",
         "name": "admin-users",
         "resourceVersion": "58885",
+        "selfLink": "selfLink has been removed in K8s 1.20",
         "uid": "b1ecadaa-4b03-11ea-92a9-00000a1027bc",
       },
       "roleRef": Object {
@@ -43,6 +44,7 @@ Object {
         "name": "system:deployers",
         "namespace": "cert-manager",
         "resourceVersion": "59172",
+        "selfLink": "selfLink has been removed in K8s 1.20",
         "uid": "c532cf60-4b03-11ea-9c46-00000a10276e",
       },
       "roleRef": Object {
@@ -70,6 +72,7 @@ Object {
         "creationTimestamp": "2020-06-26T17:44:03Z",
         "name": "default",
         "resourceVersion": "8602",
+        "selfLink": "selfLink has been removed in K8s 1.20",
         "uid": "27238466-2f13-4d61-bd10-b02567d72096",
       },
       "spec": Object {
@@ -94,6 +97,7 @@ Object {
         },
         "name": "admin",
         "resourceVersion": "78126",
+        "selfLink": "selfLink has been removed in K8s 1.20",
         "uid": "ee11bac6-4af1-11ea-969d-00000a10275c",
       },
       "rules": Array [
@@ -121,6 +125,7 @@ Object {
         "name": "prometheus-k8s",
         "namespace": "default",
         "resourceVersion": "10954",
+        "selfLink": "selfLink has been removed in K8s 1.20",
         "uid": "10c4e691-4af3-11ea-b9dd-00000a102771",
       },
       "rules": Array [
