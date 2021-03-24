@@ -10,6 +10,8 @@
 // Copyright Contributors to the Open Cluster Management project
 import { gql } from 'apollo-server-express';
 
+var selfLinkNotice = "selfLink has been removed in K8s 1.20";
+
 export const typeDef = gql`
   type Application {
     _uid: String
@@ -88,7 +90,7 @@ export const resolver = {
     labels: (parent) => (parent['app.label'] ? parent['app.label'].split(';').map((l) => l.trim()) : []),
     name: (parent) => parent['app.name'],
     namespace: (parent) => parent['app.namespace'],
-    selfLink: () => 'selfLink has been removed in K8s 1.20',
+    selfLink: () => selfLinkNotice,
     clusterCount: (parent, args, { appModel }) => appModel.resolveAppClustersCount(parent['app._uid']),
     hubChannels: (parent, args, { appModel }) => appModel.resolveAppHubChannels(parent['app._uid']),
     hubSubscriptions: (parent, args, { appModel }) => appModel.resolveAppHubSubscriptions(parent['app._uid']),
@@ -98,7 +100,7 @@ export const resolver = {
     name: (parent) => parent['sub.name'],
     namespace: (parent) => parent['sub.namespace'],
     created: (parent) => parent['sub.created'],
-    selfLink: () => 'selfLink has been removed in K8s 1.20',
+    selfLink: () => selfLinkNotice,
     timeWindow: (parent) => parent['sub.timeWindow'],
     localPlacement: (parent) => parent['sub.localPlacement'] === 'true',
     status: (parent) => parent['sub.status'],
@@ -111,7 +113,7 @@ export const resolver = {
     name: (parent) => parent['pr.name'],
     namespace: (parent) => parent['pr.namespace'],
     created: (parent) => parent['pr.created'],
-    selfLink: () => 'selfLink has been removed in K8s 1.20',
+    selfLink: () => selfLinkNotice,
     replicas: (parent) => parent['pr.replicas'],
     clusterCount: (parent, args, { appModel }) => appModel.resolvePRClustersCount(parent['pr._uid']),
   },
@@ -120,7 +122,7 @@ export const resolver = {
     name: (parent) => parent['ch.name'],
     namespace: (parent) => parent['ch.namespace'],
     created: (parent) => parent['ch.created'],
-    selfLink: () => 'selfLink has been removed in K8s 1.20',
+    selfLink: () => selfLinkNotice,
     type: (parent) => parent['ch.type'],
     pathname: (parent) => parent['ch.pathname'],
     localPlacement: (parent, args, { appModel }) => appModel.resolveChannelLocalPlacement(parent['ch._uid']),

@@ -15,12 +15,11 @@ export default function createMockHttp() {
     namespaces: {
       kind: 'ProjectList',
       apiVersion: 'project.openshift.io/v1',
-      metadata: { selfLink: 'selfLink has been removed in K8s 1.20' },
+      metadata: {},
       items: [
         {
           metadata: {
             name: 'default',
-            selfLink: 'selfLink has been removed in K8s 1.20',
             uid: 'd039f9ea-152f-11ea-920f-00000a1012a4',
             resourceVersion: '21120909',
             creationTimestamp: '2019-12-02T18:16:08Z',
@@ -31,7 +30,6 @@ export default function createMockHttp() {
         {
           metadata: {
             name: 'kube-system',
-            selfLink: 'selfLink has been removed in K8s 1.20',
             uid: 'ce32a2c7-152f-11ea-920f-00000a1012a4',
             resourceVersion: '21133087',
             creationTimestamp: '2019-12-02T18:16:05Z',

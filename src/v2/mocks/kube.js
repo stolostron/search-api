@@ -20,11 +20,10 @@ export default class MockKubeConnector {
       return {
         kind: 'NamespaceList',
         apiVersion: 'v1',
-        metadata: { selfLink: 'selfLink has been removed in K8s 1.20' },
+        metadata: {},
         items: [{
           metadata: {
             name: 'default',
-            selfLink: 'selfLink has been removed in K8s 1.20',
             uid: '27238466-2f13-4d61-bd10-b02567d72096',
             resourceVersion: '8602',
             creationTimestamp: '2020-06-26T17:44:03Z',
@@ -86,15 +85,11 @@ export default class MockKubeConnector {
       return {
         kind: 'RoleList',
         apiVersion: 'rbac.authorization.k8s.io/v1',
-        metadata: {
-          selfLink: 'selfLink has been removed in K8s 1.20',
-        },
+        metadata: {},
         items: [{
           metadata: {
             name: 'prometheus-k8s',
-            namespace: 'default',
-            selfLink:
-             'selfLink has been removed in K8s 1.20',
+            namespace: 'default',           
             uid: '10c4e691-4af3-11ea-b9dd-00000a102771',
             resourceVersion: '10954',
             creationTimestamp: '2020-02-09T04:17:20Z',
@@ -110,15 +105,11 @@ export default class MockKubeConnector {
       return {
         kind: 'RoleBindingList',
         apiVersion: 'rbac.authorization.k8s.io/v1',
-        metadata: {
-          selfLink: 'selfLink has been removed in K8s 1.20',
-        },
+        metadata: {},
         items: [{
           metadata: {
             name: 'system:deployers',
             namespace: 'cert-manager',
-            selfLink:
-             'selfLink has been removed in K8s 1.20',
             uid: 'c532cf60-4b03-11ea-9c46-00000a10276e',
             resourceVersion: '59172',
             creationTimestamp: '2020-02-09T06:16:55Z',
@@ -143,13 +134,10 @@ export default class MockKubeConnector {
       return {
         kind: 'ClusterRoleList',
         apiVersion: 'rbac.authorization.k8s.io/v1',
-        metadata: {
-          selfLink: 'selfLink has been removed in K8s 1.20',
-        },
+        metadata: {},
         items: [{
           metadata: {
             name: 'admin',
-            selfLink: 'selfLink has been removed in K8s 1.20',
             uid: 'ee11bac6-4af1-11ea-969d-00000a10275c',
             resourceVersion: '78126',
             creationTimestamp: '2020-02-09T04:09:12Z',
@@ -167,14 +155,10 @@ export default class MockKubeConnector {
       return {
         kind: 'ClusterRoleBindingList',
         apiVersion: 'rbac.authorization.k8s.io/v1',
-        metadata: {
-          selfLink: 'selfLink has been removed in K8s 1.20',
-        },
+        metadata: {},
         items: [{
           metadata: {
             name: 'admin-users',
-            selfLink:
-             'selfLink has been removed in K8s 1.20',
             uid: 'b1ecadaa-4b03-11ea-92a9-00000a1027bc',
             resourceVersion: '58885',
             creationTimestamp: '2020-02-09T06:16:23Z',
@@ -207,11 +191,10 @@ export default class MockKubeConnector {
       return {
         kind: 'ProjectList',
         apiVersion: 'project.openshift.io/v1',
-        metadata: { selfLink: 'selfLink has been removed in K8s 1.20' },
+        metadata: {},
         items: [{
           metadata: {
             name: 'default',
-            selfLink: 'selfLink has been removed in K8s 1.20',
             uid: 'ef8d61de-4af1-11ea-969d-00000a10275c',
             resourceVersion: '69436',
             creationTimestamp: '2020-02-09T04:09:15Z',
