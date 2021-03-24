@@ -10,7 +10,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { gql } from 'apollo-server-express';
 
-var selfLinkNotice = "selfLink has been removed in K8s 1.20";
+const selfLinkNotice = 'selfLink has been removed in K8s 1.20';
 
 export const typeDef = gql`
   type Application {

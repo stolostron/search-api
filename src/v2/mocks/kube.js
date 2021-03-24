@@ -89,7 +89,7 @@ export default class MockKubeConnector {
         items: [{
           metadata: {
             name: 'prometheus-k8s',
-            namespace: 'default',           
+            namespace: 'default',
             uid: '10c4e691-4af3-11ea-b9dd-00000a102771',
             resourceVersion: '10954',
             creationTimestamp: '2020-02-09T04:17:20Z',
