@@ -82,6 +82,7 @@ const MOCK_QUERIES = {
       'app.label': 'label1=value1; label2=value2',
       'app.name': 'app01',
       'app.namespace': 'sample',
+      'app.selfLink': 'selfLink has been removed in K8s 1.20',
     },
     {
       'app._uid': 'local-cluster/app-02-uid',
@@ -90,6 +91,7 @@ const MOCK_QUERIES = {
         'localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test',
       'app.name': 'app02',
       'app.namespace': 'test',
+      'app.selfLink': 'selfLink has been removed in K8s 1.20',
     },
   ],
 
