@@ -10,6 +10,8 @@
 // Copyright Contributors to the Open Cluster Management project
 import { gql } from 'apollo-server-express';
 
+const selfLinkNotice = 'selfLink has been removed in K8s 1.20';
+
 export const typeDef = gql`
   type Application {
     _uid: String
@@ -23,6 +25,7 @@ export const typeDef = gql`
 
     name: String
     namespace: String
+    # DEPRECATED: selfLink has been removed in K8s 1.20
     selfLink: String
 
     # Number of application deployments on local and remote clusters.
@@ -41,6 +44,7 @@ export const typeDef = gql`
     name: String
     namespace: String
     created: String
+    # DEPRECATED: selfLink has been removed in K8s 1.20
     selfLink: String
     channel: String
     appCount: Int
@@ -55,6 +59,7 @@ export const typeDef = gql`
     name: String
     namespace: String
     created: String
+    # DEPRECATED: selfLink has been removed in K8s 1.20
     selfLink: String
     clusterCount: JSON
     replicas: Int
@@ -65,6 +70,7 @@ export const typeDef = gql`
     name: String
     namespace: String
     created: String
+    # DEPRECATED: selfLink has been removed in K8s 1.20
     selfLink: String
     type: String
     pathname: String
@@ -88,7 +94,7 @@ export const resolver = {
     labels: (parent) => (parent['app.label'] ? parent['app.label'].split(';').map((l) => l.trim()) : []),
     name: (parent) => parent['app.name'],
     namespace: (parent) => parent['app.namespace'],
-    selfLink: (parent) => parent['app.selfLink'],
+    selfLink: () => selfLinkNotice,
     clusterCount: (parent, args, { appModel }) => appModel.resolveAppClustersCount(parent['app._uid']),
     hubChannels: (parent, args, { appModel }) => appModel.resolveAppHubChannels(parent['app._uid']),
     hubSubscriptions: (parent, args, { appModel }) => appModel.resolveAppHubSubscriptions(parent['app._uid']),
@@ -98,7 +104,7 @@ export const resolver = {
     name: (parent) => parent['sub.name'],
     namespace: (parent) => parent['sub.namespace'],
     created: (parent) => parent['sub.created'],
-    selfLink: (parent) => parent['sub.selfLink'],
+    selfLink: () => selfLinkNotice,
     timeWindow: (parent) => parent['sub.timeWindow'],
     localPlacement: (parent) => parent['sub.localPlacement'] === 'true',
     status: (parent) => parent['sub.status'],
@@ -111,7 +117,7 @@ export const resolver = {
     name: (parent) => parent['pr.name'],
     namespace: (parent) => parent['pr.namespace'],
     created: (parent) => parent['pr.created'],
-    selfLink: (parent) => parent['pr.selfLink'],
+    selfLink: () => selfLinkNotice,
     replicas: (parent) => parent['pr.replicas'],
     clusterCount: (parent, args, { appModel }) => appModel.resolvePRClustersCount(parent['pr._uid']),
   },
@@ -120,7 +126,7 @@ export const resolver = {
     name: (parent) => parent['ch.name'],
     namespace: (parent) => parent['ch.namespace'],
     created: (parent) => parent['ch.created'],
-    selfLink: (parent) => parent['ch.selfLink'],
+    selfLink: () => selfLinkNotice,
     type: (parent) => parent['ch.type'],
     pathname: (parent) => parent['ch.pathname'],
     localPlacement: (parent, args, { appModel }) => appModel.resolveChannelLocalPlacement(parent['ch._uid']),

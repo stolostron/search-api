@@ -82,8 +82,6 @@ const MOCK_QUERIES = {
       'app.label': 'label1=value1; label2=value2',
       'app.name': 'app01',
       'app.namespace': 'sample',
-      'app.selfLink':
-        '/apis/app.k8s.io/v1beta1/namespaces/sample/applications/app01',
     },
     {
       'app._uid': 'local-cluster/app-02-uid',
@@ -92,8 +90,6 @@ const MOCK_QUERIES = {
         'localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test',
       'app.name': 'app02',
       'app.namespace': 'test',
-      'app.selfLink':
-        '/apis/app.k8s.io/v1beta1/namespaces/test/applications/app02',
     },
   ],
 
@@ -184,7 +180,6 @@ const MOCK_QUERIES = {
       'sub.name': 'sub01',
       'sub.namespace': 'applications',
       'sub.created': '2020-08-20T14:16:05Z',
-      'sub.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/applications/sub01',
       'sub.status': 'Propagated',
       'sub.channel': 'git-ch-ns/git-ch',
       'sub.timeWindow': 'blocked',
@@ -195,7 +190,6 @@ const MOCK_QUERIES = {
       'sub.name': 'sub02',
       'sub.namespace': 'test',
       'sub.created': '2020-08-20T14:17:05Z',
-      'sub.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/test/sub02',
       'sub.status': 'PropagationFailed',
       'sub.channel': 'object-ch-ns/object-ch',
       'sub.localPlacement': 'false',
@@ -240,7 +234,6 @@ const MOCK_QUERIES = {
       'pr.name': 'pr01',
       'pr.namespace': 'applications',
       'pr.created': '2020-08-20T14:16:05Z',
-      'pr.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/placementrules/pr01',
       'pr.replicas': 3,
     },
     {
@@ -248,7 +241,6 @@ const MOCK_QUERIES = {
       'pr.name': 'pr02',
       'pr.namespace': 'test',
       'pr.created': '2020-08-20T14:17:05Z',
-      'pr.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/test/pr02',
     },
   ],
 
@@ -279,7 +271,6 @@ const MOCK_QUERIES = {
       'ch.name': 'ch01',
       'ch.namespace': 'applications',
       'ch.created': '2020-08-20T14:16:05Z',
-      'ch.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/applications/channels/ch01',
       'ch.type': 'HelmRepo',
       'ch.pathname': 'http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts',
     },
@@ -288,7 +279,6 @@ const MOCK_QUERIES = {
       'ch.name': 'ch02',
       'ch.namespace': 'test',
       'ch.created': '2020-08-20T14:17:05Z',
-      'ch.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/test/channels/ch02',
       'ch.type': 'Git',
       'ch.pathname': 'https://github.com/fxiang1/app-samples.git',
     },
