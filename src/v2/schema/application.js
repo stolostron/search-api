@@ -25,6 +25,7 @@ export const typeDef = gql`
 
     name: String
     namespace: String
+    # DEPRECATED: selfLink has been removed in K8s 1.20
     selfLink: String
 
     # Number of application deployments on local and remote clusters.
@@ -43,6 +44,7 @@ export const typeDef = gql`
     name: String
     namespace: String
     created: String
+    # DEPRECATED: selfLink has been removed in K8s 1.20
     selfLink: String
     channel: String
     appCount: Int
@@ -57,6 +59,7 @@ export const typeDef = gql`
     name: String
     namespace: String
     created: String
+    # DEPRECATED: selfLink has been removed in K8s 1.20
     selfLink: String
     clusterCount: JSON
     replicas: Int
@@ -67,6 +70,7 @@ export const typeDef = gql`
     name: String
     namespace: String
     created: String
+    # DEPRECATED: selfLink has been removed in K8s 1.20
     selfLink: String
     type: String
     pathname: String
