@@ -9,6 +9,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
+import _ from 'lodash';
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
 
@@ -91,7 +92,11 @@ export default class AppModel {
   async resolveApplications({ name, namespace }) {
     this.checkSearchServiceAvailable();
 
-    const apps = await this.searchConnector.runApplicationsQuery();
+    const apps = _.sortBy(
+      _.flatten(await Promise.all([this.searchConnector.runApplicationsQuery(), this.searchConnector.runArgoApplicationsQuery()])),
+      ['app.name', 'app.namespace', 'app.cluster'],
+    );
+    _.flatten();
     if (name != null && namespace != null) {
       const resolvedApps = await apps;
       return resolvedApps.filter((app) => (app['app.name'] === name && app['app.namespace'] === namespace));
@@ -105,6 +110,27 @@ export default class AppModel {
   async resolveAppClustersCount(appUid) {
     const clusters = await this.runQueryOnlyOnce('runAppClustersQuery');
     return getLocalRemoteClusterCounts(appUid, 'app', clusters);
+  }
+
+  /*
+   * For a given application, return the destination cluster
+   */
+  async resolveAppDestinationCluster(app) {
+    if (app['app.apigroup'] === 'argoproj.io') {
+      if (app['app.destinationServer'] === 'https://kubernetes.default.svc' || app['app.destinationName'] === 'in-cluster') {
+        return app['app.cluster'];
+      }
+      const clusterSecrets = await this.runQueryOnlyOnce('runArgoClusterSecretsQuery');
+      const secret = clusterSecrets
+        .filter((s) => s['s.cluster'] === app['app.cluster'])
+        .find((s) => s['s.label'].includes(`open-cluster-management.io/cluster-name=${app['app.destinationName']}`)
+          || s['s.label'].includes(`open-cluster-management.io/cluster-api=${app['app.destinationServer']}`));
+      const label = secret['s.label'].find((l) => l.startsWith('open-cluster-management.io/cluster-name='));
+      if (label) {
+        return label.split('=')[1];
+      }
+    }
+    return null;
   }
 
   /*

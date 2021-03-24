@@ -232,6 +232,7 @@ if (process.env.NODE_ENV !== 'test') {
 
 // Applications queries are only interested in resources on the local cluster, in the appropriate API group
 const APPLICATION_MATCH = "(app:Application {cluster: 'local-cluster', apigroup: 'app.k8s.io'})";
+const ARGO_APPLICATION_MATCH = "(app:Application {apigroup: 'argoproj.io'})";
 const SUBSCRIPTION_MATCH = "(sub:Subscription {cluster: 'local-cluster', apigroup: 'apps.open-cluster-management.io'})";
 const PLACEMENTRULE_MATCH = "(pr:PlacementRule {cluster: 'local-cluster', apigroup: 'apps.open-cluster-management.io'})";
 const CHANNEL_MATCH = "(ch:Channel {cluster: 'local-cluster', apigroup: 'apps.open-cluster-management.io'})";
@@ -304,9 +305,33 @@ export default class RedisGraphConnector {
   async runApplicationsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app']);
     const matchClause = `MATCH ${APPLICATION_MATCH} ${whereClause}`;
-    const returnClause = 'RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard, app.selfLink, app.label ORDER BY app.name, app.namespace ASC';
+    const returnClause = 'RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.apigroup, app.apiversion, app.dashboard, app.selfLink, app.label, app.cluster ORDER BY app.name, app.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runApplicationsQuery' });
+  }
+
+  /*
+   * Get Argo Applications.
+   */
+  async runArgoApplicationsQuery() {
+    const { withClause, whereClause } = await this.createWhereClause([], ['app']);
+    const matchClause = `MATCH ${ARGO_APPLICATION_MATCH} ${whereClause}`;
+    const returnClause1 = 'RETURN DISTINCT app._uid, app.name, app.namespace, app.cluster, app.created, app.apigroup, app.apiversion, app.label,';
+    const returnClause2 = 'app.destinationName, app.destinationServer, app.destinationNamespace, app.repoURL, app.path, app.chart, app.targetRevision';
+    const orderBy = 'ORDER BY app.name, app.namespace, app.cluster ASC';
+    const query = `${withClause} ${matchClause} ${returnClause1} ${returnClause2} ${orderBy}`;
+    return this.executeQuery({ query, removePrefix: false, queryName: 'runArgoApplicationsQuery' });
+  }
+
+  /*
+   * Get Argo cluster secrets.
+   */
+  async runArgoClusterSecretsQuery() {
+    const { withClause, whereClause } = await this.createWhereClause([], ['s']);
+    const matchClause = `MATCH (s:Secret) ${whereClause} AND 'argocd.argoproj.io/secret-type=cluster' IN s.label`;
+    const returnClause = 'RETURN DISTINCT s._uid, s.label, s.cluster';
+    const query = `${withClause} ${matchClause} ${returnClause}`;
+    return this.executeQuery({ query, removePrefix: false, queryName: 'runArgoClusterSecretsQuery' });
   }
 
   /*

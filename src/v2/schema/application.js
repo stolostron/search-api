@@ -15,6 +15,7 @@ const selfLinkNotice = 'selfLink has been removed in K8s 1.20';
 export const typeDef = gql`
   type Application {
     _uid: String
+    apiVersion: String
     created: String
 
     # Grafana dashboard for this application.
@@ -28,6 +29,9 @@ export const typeDef = gql`
     # DEPRECATED: selfLink has been removed in K8s 1.20
     selfLink: String
 
+    # Name of ManagedCluster where Application resource resides
+    cluster: String
+
     # Number of application deployments on local and remote clusters.
     clusterCount: JSON
 
@@ -37,6 +41,18 @@ export const typeDef = gql`
     # Hub subscriptions associated with this application.
     # Hub subscriptions are those contained by an application AND with _hubClusterResource=true
     hubSubscriptions: [Subscription]
+
+    # ArgoCD destination properties
+    destinationName: String
+    destinationServer: String
+    destinationCluster: String
+    destinationNamespace: String
+
+    # ArgoCD source properties
+    repoURL: String
+    path: String
+    chart: String
+    targetRevision: String
   }
 
   type Subscription {
@@ -89,15 +105,26 @@ export const resolver = {
   },
   Application: {
     _uid: (parent) => parent['app._uid'],
+    apiVersion: (parent) => `${parent['app.apigroup']}/${parent['app.apiversion']}`,
     created: (parent) => parent['app.created'],
     dashboard: (parent) => parent['app.dashboard'],
     labels: (parent) => (parent['app.label'] ? parent['app.label'].split(';').map((l) => l.trim()) : []),
     name: (parent) => parent['app.name'],
     namespace: (parent) => parent['app.namespace'],
     selfLink: () => selfLinkNotice,
+    cluster: (parent) => parent['app.cluster'],
     clusterCount: (parent, args, { appModel }) => appModel.resolveAppClustersCount(parent['app._uid']),
     hubChannels: (parent, args, { appModel }) => appModel.resolveAppHubChannels(parent['app._uid']),
     hubSubscriptions: (parent, args, { appModel }) => appModel.resolveAppHubSubscriptions(parent['app._uid']),
+    destinationName: (parent) => parent['app.destinationName'],
+    destinationServer: (parent) => parent['app.destinationServer'],
+    destinationCluster: (parent, args, { appModel }) => appModel.resolveAppDestinationCluster(parent),
+    destinationNamespace: (parent) => parent['app.destinationNamespace'],
+    repoURL: (parent) => parent['app.repoURL'],
+    path: (parent) => parent['app.path'],
+    chart: (parent) => parent['app.chart'],
+    targetRevision: (parent) => parent['app.targetRevision'],
+
   },
   Subscription: {
     _uid: (parent) => parent['sub._uid'],
