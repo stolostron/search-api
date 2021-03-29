@@ -305,7 +305,7 @@ export default class RedisGraphConnector {
   async runApplicationsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app']);
     const matchClause = `MATCH ${APPLICATION_MATCH} ${whereClause}`;
-    const returnClause = 'RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.apigroup, app.apiversion, app.dashboard, app.selfLink, app.label, app.cluster ORDER BY app.name, app.namespace ASC';
+    const returnClause = 'RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.apigroup, app.apiversion, app.dashboard, app.label, app.cluster ORDER BY app.name, app.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runApplicationsQuery' });
   }
@@ -383,7 +383,7 @@ export default class RedisGraphConnector {
   async runSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['sub']);
     const matchClause = `MATCH ${SUBSCRIPTION_MATCH} ${whereClause}`;
-    const returnClause = 'RETURN DISTINCT sub._uid, sub.name, sub.namespace, sub.created, sub.selfLink, sub.status, sub.channel, sub.timeWindow, sub.localPlacement';
+    const returnClause = 'RETURN DISTINCT sub._uid, sub.name, sub.namespace, sub.created, sub.status, sub.channel, sub.timeWindow, sub.localPlacement';
     const orderClause = 'ORDER BY sub.name, sub.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause} ${orderClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runSubscriptionsQuery' });
@@ -434,7 +434,7 @@ export default class RedisGraphConnector {
   async runPlacementRulesQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['pr']);
     const matchClause = `MATCH ${PLACEMENTRULE_MATCH} ${whereClause}`;
-    const returnClause = 'RETURN DISTINCT pr._uid, pr.name, pr.namespace, pr.created, pr.selfLink, pr.replicas';
+    const returnClause = 'RETURN DISTINCT pr._uid, pr.name, pr.namespace, pr.created, pr.replicas';
     const orderClause = 'ORDER BY pr.name, pr.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause} ${orderClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runPlacementRulesQuery' });
@@ -470,7 +470,7 @@ export default class RedisGraphConnector {
   async runChannelsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['ch']);
     const matchClause = `MATCH ${CHANNEL_MATCH} ${whereClause}`;
-    const returnClause = 'RETURN DISTINCT ch._uid, ch.name, ch.namespace, ch.created, ch.selfLink, ch.type, ch.pathname';
+    const returnClause = 'RETURN DISTINCT ch._uid, ch.name, ch.namespace, ch.created, ch.type, ch.pathname';
     const orderClause = 'ORDER BY ch.name, ch.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause} ${orderClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runChannelsQuery' });
