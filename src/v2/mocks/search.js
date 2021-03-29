@@ -93,6 +93,47 @@ const MOCK_QUERIES = {
     },
   ],
 
+  runArgoApplicationsQuery: [
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'app.apigroup': 'argoproj.io',
+      'app.created': '2020-01-23T13:56:32Z',
+      'app.cluster': 'local-cluster',
+      'app.label': 'label1=value1; label2=value2',
+      'app.name': 'argo-app01',
+      'app.namespace': 'argocd',
+      'app.destinationNamespace': 'sample',
+      'app.destinationServer': 'https://kube.net:6443',
+      'app.repoURL': 'https://github.com/fxiang1/app-samples.git',
+      'app.path': 'helloworld',
+    },
+    {
+      'app._uid': 'remote-cluster/argo-app-02-uid',
+      'app.apigroup': 'argoproj.io',
+      'app.created': '2020-01-23T13:56:32Z',
+      'app.cluster': 'remote-cluster',
+      'app.name': 'argo-app02',
+      'app.namespace': 'openshift-gitops',
+      'app.destinationNamespace': 'test',
+      'app.destinationName': 'in-cluster',
+      'app.repoURL': 'http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts',
+      'app.chart': 'apps',
+      'app.targetRevision': '1.2',
+    },
+  ],
+
+  runArgoClusterSecretsQuery: [
+    {
+      's._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      's.label': [
+        'argocd.argoproj.io/secret-type=cluster',
+        'open-cluster-management.io/cluster-api=https://kube.net:6443',
+        'open-cluster-management.io/cluster-name=remote-cluster',
+      ],
+      's.cluster': 'local-cluster',
+    },
+  ],
+
   runAppClustersQuery: [
     {
       'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
