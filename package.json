@@ -35,7 +35,7 @@
     "@open-cluster-management/security-middleware": "^1.0.2",
     "agentkeepalive": "^4.1.4",
     "apollo-errors": "^1.9.0",
-    "apollo-server-express": "^2.21.2",
+    "apollo-server-express": "^2.22.2",
     "async-polling": "^0.2.1",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
@@ -58,11 +58,11 @@
     "requestretry": "^4.1.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.13.10",
-    "@babel/core": "^7.13.10",
+    "@babel/cli": "^7.13.14",
+    "@babel/core": "^7.13.14",
     "@babel/node": "^7.13.12",
     "@babel/preset-env": "^7.13.12",
-    "eslint": "^7.22.0",
+    "eslint": "^7.23.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jest": "^23.20.0",
