@@ -52,6 +52,10 @@ function filterLocalSubscriptions(subs) {
   });
 }
 
+function labelValue(label) {
+  return label.split('=')[1];
+}
+
 export default class AppModel {
   constructor({ searchConnector = isRequired('searchConnector') }) {
     this.searchConnector = searchConnector;
@@ -123,11 +127,13 @@ export default class AppModel {
       const clusterSecrets = await this.runQueryOnlyOnce('runArgoClusterSecretsQuery');
       const secret = clusterSecrets
         .filter((s) => s['s.cluster'] === app['app.cluster'])
-        .find((s) => s['s.label'].includes(`open-cluster-management.io/cluster-name=${app['app.destinationName']}`)
-          || s['s.label'].includes(`open-cluster-management.io/cluster-api=${app['app.destinationServer']}`));
+        .find((s) => (app['app.destinationName'] && s['s.label'].includes(`open-cluster-management.io/cluster-name=${app['app.destinationName']}`))
+          // open-cluster-management.io/cluster-server label will only contain hostname, limited to 63 chars
+          || (app['app.destinationServer'] && s['s.label'].find((l) => l.startsWith('open-cluster-management.io/cluster-server=')
+                && app['app.destinationServer'].includes(labelValue(l)))));
       const label = secret['s.label'].find((l) => l.startsWith('open-cluster-management.io/cluster-name='));
       if (label) {
-        return label.split('=')[1];
+        return labelValue(label);
       }
     }
     return null;
