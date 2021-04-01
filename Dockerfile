@@ -47,6 +47,10 @@ LABEL org.label-schema.vendor="Red Hat" \
       io.k8s.description="$IMAGE_DESCRIPTION" \
       io.openshift.tags="$IMAGE_OPENSHIFT_TAGS"
 
+RUN microdnf update &&\
+    microdnf install ca-certificates vi --nodocs &&\
+    microdnf clean all
+
 ENV BABEL_DISABLE_CACHE=1 \
     NODE_ENV=production \
     USER_UID=1001 \
