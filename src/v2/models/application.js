@@ -131,7 +131,7 @@ export default class AppModel {
           // open-cluster-management.io/cluster-server label will only contain hostname, limited to 63 chars
           || (app['app.destinationServer'] && s['s.label'].find((l) => l.startsWith('open-cluster-management.io/cluster-server=')
                 && app['app.destinationServer'].includes(labelValue(l)))));
-      const label = secret['s.label'].find((l) => l.startsWith('open-cluster-management.io/cluster-name='));
+      const label = secret && secret['s.label'].find((l) => l.startsWith('open-cluster-management.io/cluster-name='));
       if (label) {
         return labelValue(label);
       }
