@@ -127,8 +127,8 @@ const MOCK_QUERIES = {
       's._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
       's.label': [
         'argocd.argoproj.io/secret-type=cluster',
-        'open-cluster-management.io/cluster-server=kube.net',
-        'open-cluster-management.io/cluster-name=remote-cluster',
+        'apps.open-cluster-management.io/cluster-server=kube.net',
+        'apps.open-cluster-management.io/cluster-name=remote-cluster',
       ],
       's.cluster': 'local-cluster',
     },
