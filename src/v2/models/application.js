@@ -34,6 +34,8 @@ function getLocalRemoteClusterCounts(resourceUid, resourceType, data) {
 const SUB_NAME = 'sub.name';
 const SUB_NAMESPACE = 'sub.namespace';
 
+const ARGO_LABEL_PREFIX = 'apps.open-cluster-management.io/';
+
 function filterLocalSubscriptions(subs) {
   const localSuffix = '-local';
 
@@ -127,11 +129,11 @@ export default class AppModel {
       const clusterSecrets = await this.runQueryOnlyOnce('runArgoClusterSecretsQuery');
       const secret = clusterSecrets
         .filter((s) => s['s.cluster'] === app['app.cluster'])
-        .find((s) => (app['app.destinationName'] && s['s.label'].includes(`open-cluster-management.io/cluster-name=${app['app.destinationName']}`))
-          // open-cluster-management.io/cluster-server label will only contain hostname, limited to 63 chars
-          || (app['app.destinationServer'] && s['s.label'].find((l) => l.startsWith('open-cluster-management.io/cluster-server=')
+        .find((s) => (app['app.destinationName'] && s['s.label'].includes(`${ARGO_LABEL_PREFIX}cluster-name=${app['app.destinationName']}`))
+          // cluster-server label will only contain hostname, limited to 63 chars
+          || (app['app.destinationServer'] && s['s.label'].find((l) => l.startsWith(`${ARGO_LABEL_PREFIX}cluster-server=`)
                 && app['app.destinationServer'].includes(labelValue(l)))));
-      const label = secret && secret['s.label'].find((l) => l.startsWith('open-cluster-management.io/cluster-name='));
+      const label = secret && secret['s.label'].find((l) => l.startsWith(`${ARGO_LABEL_PREFIX}cluster-name=`));
       if (label) {
         return labelValue(label);
       }
