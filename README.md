@@ -15,7 +15,7 @@ https://github.com/open-cluster-management/search/wiki/Using-the-Search-API
     SERVICEACCT_TOKEN | ""                             | Get this token with `oc whoami -t`
     redisEndpoint     | //localhost:6379               | RedisGraph server. Use only whith RedisGraph on local machine.
     redisSSLEndpoint  | redisgraph-route:443           | RedisGraph server with SSL. 
-    redisPassword     | ""                             | RedisGraph password. `oc get secret redisgraph-user-secret -o json | jq -r '.data.redispwd' | base64 -D`
+    redisPassword     | ""                             | RedisGraph password. `oc get secret redisgraph-user-secret -o json \| jq -r '.data.redispwd' \| base64 -D`
 2. Generate self-signed certificates for development.
   ```
   ./setup.sh

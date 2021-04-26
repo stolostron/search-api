@@ -59,8 +59,9 @@ export default class SearchModel {
     this.searchConnector = searchConnector;
   }
 
-  checkSearchServiceAvailable() {
-    if (!this.searchConnector.isServiceAvailable()) {
+  async checkSearchServiceAvailable() {
+    const isServiceAvailable = await this.searchConnector.isServiceAvailable();
+    if (!isServiceAvailable) {
       logger.error('Unable to resolve search request because Redis is unavailable.');
       throw Error('Search service is unavailable');
     }
