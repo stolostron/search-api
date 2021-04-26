@@ -13,3 +13,4 @@ test-report.xml
 sslcert/searchapi.crt
 sslcert/searchapi.csr
 sslcert/searchapi.key
+rediscert/redis.crt

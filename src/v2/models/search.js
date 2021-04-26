@@ -55,15 +55,23 @@ function filterByKeywords(resultSet, keywords) {
 }
 
 export default class SearchModel {
-  constructor({ searchConnector = isRequired('searchConnector') }) {
+  constructor({ searchConnector = isRequired('searchConnector'), kubeConnector = isRequired('kubeConnector') }) {
     this.searchConnector = searchConnector;
+    this.kubeConnector = kubeConnector;
   }
 
   async checkSearchServiceAvailable() {
     const isServiceAvailable = await this.searchConnector.isServiceAvailable();
     if (!isServiceAvailable) {
-      logger.error('Unable to resolve search request because Redis is unavailable.');
-      throw Error('Search service is unavailable');
+      const so = await this.kubeConnector.get('/apis/search.open-cluster-management.io/v1alpha1/namespaces/open-cluster-management/searchoperators/searchoperator');
+      const deployRedisgraph = so && so.status && so.status.deployredisgraph;
+      if (!deployRedisgraph) {
+        logger.warn('Redisgraph not deployed.');
+        throw Error('The search service is not available with the current configuration.');
+      } else {
+        logger.error('Unable to resolve search request because Redis is unavailable.');
+        throw Error('Search service is unavailable.');
+      }
     }
   }
 

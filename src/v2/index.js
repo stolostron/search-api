@@ -73,7 +73,7 @@ const apolloServer = new ApolloServer({
     return {
       req,
       appModel: new AppModel({ searchConnector }),
-      searchModel: new SearchModel({ searchConnector }),
+      searchModel: new SearchModel({ searchConnector, kubeConnector }),
       queryModel: new QueryModel({ kubeConnector }),
     };
   },
