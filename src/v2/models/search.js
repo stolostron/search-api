@@ -12,8 +12,7 @@
 import _ from 'lodash';
 import config from '../../../config';
 import { isRequired } from '../lib/utils';
-import logger from '../lib/logger';
-import getOperatorStatus from './operatorStatus';
+import { checkSearchServiceStatus } from './searchServiceStatus';
 
 // Remove single and double quotes because these can be used to inject malicious
 // code in the RedisGraph query. (SQL injection).
@@ -62,17 +61,7 @@ export default class SearchModel {
   }
 
   async checkSearchServiceAvailable() {
-    const isServiceAvailable = await this.searchConnector.isServiceAvailable();
-    if (!isServiceAvailable) {
-      const deployRedisgraph = await getOperatorStatus(this.kubeConnector);
-      if (!deployRedisgraph) {
-        logger.warn('The search service is not enabled in the current configuration.');
-        throw Error('The search service is not enabled in the current configuration.');
-      } else {
-        logger.error('Unable to resolve search request because RedisGraph is unavailable.');
-        throw Error('Search service is unavailable.');
-      }
-    }
+    await checkSearchServiceStatus(this.searchConnector, this.kubeConnector);
   }
 
   async searchQueryLimiter(keywords, filters, limit) {

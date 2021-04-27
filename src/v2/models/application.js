@@ -12,7 +12,7 @@
 import _ from 'lodash';
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
-import getOperatorStatus from './operatorStatus';
+import { checkSearchServiceStatus } from './searchServiceStatus';
 
 // Returns the local and remote cluster counts for a specific resource
 function getLocalRemoteClusterCounts(resourceUid, resourceType, data) {
@@ -66,17 +66,7 @@ export default class AppModel {
   }
 
   async checkSearchServiceAvailable() {
-    const isServiceAvailable = await this.searchConnector.isServiceAvailable();
-    if (!isServiceAvailable) {
-      const deployRedisgraph = await getOperatorStatus(this.kubeConnector);
-      if (!deployRedisgraph) {
-        logger.warn('The search service is not enabled in the current configuration.');
-        throw Error('The search service is not enabled in the current configuration.');
-      } else {
-        logger.error('Unable to resolve search request because RedisGraph is unavailable.');
-        throw Error('Search service is unavailable.');
-      }
-    }
+    await checkSearchServiceStatus(this.searchConnector, this.kubeConnector);
   }
 
   /*
@@ -86,7 +76,7 @@ export default class AppModel {
    * for all applications, then use the same result for each app resolver.
    */
   async runQueryOnlyOnce(searchConnectorQueryName) {
-    this.checkSearchServiceAvailable();
+    await this.checkSearchServiceAvailable();
     const queryFn = this.searchConnector[searchConnectorQueryName];
     if (queryFn && typeof queryFn === 'function') {
       if (!this[`${searchConnectorQueryName}Promise`]) {
@@ -105,7 +95,7 @@ export default class AppModel {
    * This is more efficient than searching for `kind:application`
    */
   async resolveApplications({ name, namespace }) {
-    this.checkSearchServiceAvailable();
+    await this.checkSearchServiceAvailable();
 
     const apps = _.sortBy(
       _.flatten(await Promise.all([this.searchConnector.runApplicationsQuery(), this.searchConnector.runArgoApplicationsQuery()])),
@@ -174,7 +164,7 @@ export default class AppModel {
    * Resolve Suscriptions.
    */
   async resolveSubscriptions({ name, namespace }) {
-    this.checkSearchServiceAvailable();
+    await this.checkSearchServiceAvailable();
 
     const subs = await this.searchConnector.runSubscriptionsQuery();
     const resolvedSubs = filterLocalSubscriptions(await subs);
@@ -206,7 +196,7 @@ export default class AppModel {
    * Resolve PlacementRules.
    */
   async resolvePlacementRules({ name, namespace }) {
-    this.checkSearchServiceAvailable();
+    await this.checkSearchServiceAvailable();
 
     const prs = await this.searchConnector.runPlacementRulesQuery();
     if (name != null && namespace != null) {
@@ -228,7 +218,7 @@ export default class AppModel {
    * Resolve Channels.
    */
   async resolveChannels({ name, namespace }) {
-    this.checkSearchServiceAvailable();
+    await this.checkSearchServiceAvailable();
 
     const chs = await this.searchConnector.runChannelsQuery();
     if (name != null && namespace != null) {

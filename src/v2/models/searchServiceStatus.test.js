@@ -1,12 +1,12 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import getOperatorStatus from './operatorStatus';
+import { getOperatorStatus } from './searchServiceStatus';
 import MockKubeConnector from '../mocks/kube';
 
-describe('operatorStatus', () => {
+describe('Test searchServiceStatus', () => {
   const mockKubeConnector = new MockKubeConnector();
 
-  test('Test operatorStatus is true', async () => {
+  test('getOperatorStatus should return true', async () => {
     expect(await getOperatorStatus(mockKubeConnector)).toEqual(true);
   });
 });
