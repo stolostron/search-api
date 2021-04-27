@@ -6,8 +6,10 @@ import KubeConnector from '../connectors/kube';
 const kubeConnector = new KubeConnector({ token: getServiceAccountToken() });
 
 export default async function getOperatorStatus() {
-  const so = await kubeConnector.get('/apis/search.open-cluster-management.io/v1alpha1/namespaces/open-cluster-management/searchoperators/searchoperator');
-  const deployRedisgraph = so && so.status && so.status.deployredisgraph;
+  const namespace = process.env.POD_NAMESPACE || 'open-cluster-management';
+  console.log('>>>> NAMESPACE: ', namespace);
+  const operator = await kubeConnector.get(`/apis/search.open-cluster-management.io/v1alpha1/namespaces/${namespace}/searchoperators/searchoperator`);
+  const deployRedisgraph = operator && operator.status && operator.status.deployredisgraph;
 
   return deployRedisgraph;
 }
