@@ -8,6 +8,8 @@ https://github.com/open-cluster-management/search/wiki/Using-the-Search-API
 
 ## Setup for development
 
+TL;TR: Run `source ./setup.sh`
+
 1. Configure the folloing environment variables.
     Name              | Default                        | Description
     ---               | ---                            | ---
@@ -18,7 +20,7 @@ https://github.com/open-cluster-management/search/wiki/Using-the-Search-API
     redisPassword     | ""                             | RedisGraph password. `oc get secret redisgraph-user-secret -o json \| jq -r '.data.redispwd' \| base64 -D`
 2. Generate self-signed certificates for development.
   ```
-  ./setup.sh
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout searchapi.key -out searchapi.crt -config req.conf -extensions 'v3_req'
   ```
 3. Start the dev server
 ```
