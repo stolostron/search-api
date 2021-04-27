@@ -12,6 +12,7 @@
 import _ from 'lodash';
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
+import getOperatorStatus from '../lib/operatorStatus';
 
 // Returns the local and remote cluster counts for a specific resource
 function getLocalRemoteClusterCounts(resourceUid, resourceType, data) {
@@ -63,10 +64,17 @@ export default class AppModel {
     this.searchConnector = searchConnector;
   }
 
-  checkSearchServiceAvailable() {
-    if (!this.searchConnector.isServiceAvailable()) {
-      logger.error('Unable to resolve search request because Redis is unavailable.');
-      throw Error('Search service is unavailable');
+  async checkSearchServiceAvailable() {
+    const isServiceAvailable = await this.searchConnector.isServiceAvailable();
+    if (!isServiceAvailable) {
+      const deployRedisgraph = await getOperatorStatus();
+      if (!deployRedisgraph) {
+        logger.warn('The search service is not enabled in the current configuration.');
+        throw Error('The search service is not enabled in the current configuration.');
+      } else {
+        logger.error('Unable to resolve search request because RedisGraph is unavailable.');
+        throw Error('Search service is unavailable.');
+      }
     }
   }
 
