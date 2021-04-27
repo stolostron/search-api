@@ -13,6 +13,7 @@ import _ from 'lodash';
 import config from '../../../config';
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
+import getOperatorStatus from '../lib/operatorStatus';
 
 // Remove single and double quotes because these can be used to inject malicious
 // code in the RedisGraph query. (SQL injection).
@@ -55,19 +56,17 @@ function filterByKeywords(resultSet, keywords) {
 }
 
 export default class SearchModel {
-  constructor({ searchConnector = isRequired('searchConnector'), kubeConnector = isRequired('kubeConnector') }) {
+  constructor({ searchConnector = isRequired('searchConnector') }) {
     this.searchConnector = searchConnector;
-    this.kubeConnector = kubeConnector;
   }
 
   async checkSearchServiceAvailable() {
     const isServiceAvailable = await this.searchConnector.isServiceAvailable();
     if (!isServiceAvailable) {
-      const so = await this.kubeConnector.get('/apis/search.open-cluster-management.io/v1alpha1/namespaces/open-cluster-management/searchoperators/searchoperator');
-      const deployRedisgraph = so && so.status && so.status.deployredisgraph;
+      const deployRedisgraph = await getOperatorStatus();
       if (!deployRedisgraph) {
-        logger.warn('Redisgraph not deployed.');
-        throw Error('The search service is not available with the current configuration.');
+        logger.warn('The search service is not enabled with the current configuration.');
+        throw Error('The search service is not enabled with the current configuration.');
       } else {
         logger.error('Unable to resolve search request because Redis is unavailable.');
         throw Error('Search service is unavailable.');
