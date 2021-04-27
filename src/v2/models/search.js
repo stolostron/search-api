@@ -65,8 +65,8 @@ export default class SearchModel {
     if (!isServiceAvailable) {
       const deployRedisgraph = await getOperatorStatus();
       if (!deployRedisgraph) {
-        logger.warn('The search service is not enabled with the current configuration.');
-        throw Error('The search service is not enabled with the current configuration.');
+        logger.warn('The search service is not enabled in the current configuration.');
+        throw Error('The search service is not enabled in the current configuration.');
       } else {
         logger.error('Unable to resolve search request because Redis is unavailable.');
         throw Error('Search service is unavailable.');
