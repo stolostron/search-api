@@ -12,7 +12,7 @@
 import _ from 'lodash';
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
-import getOperatorStatus from '../lib/operatorStatus';
+import getOperatorStatus from './operatorStatus';
 
 // Returns the local and remote cluster counts for a specific resource
 function getLocalRemoteClusterCounts(resourceUid, resourceType, data) {
@@ -60,14 +60,15 @@ function labelValue(label) {
 }
 
 export default class AppModel {
-  constructor({ searchConnector = isRequired('searchConnector') }) {
+  constructor({ searchConnector = isRequired('searchConnector'), kubeConnector = isRequired('kubeConnector') }) {
+    this.kubeConnector = kubeConnector;
     this.searchConnector = searchConnector;
   }
 
   async checkSearchServiceAvailable() {
     const isServiceAvailable = await this.searchConnector.isServiceAvailable();
     if (!isServiceAvailable) {
-      const deployRedisgraph = await getOperatorStatus();
+      const deployRedisgraph = await getOperatorStatus(this.kubeConnector);
       if (!deployRedisgraph) {
         logger.warn('The search service is not enabled in the current configuration.');
         throw Error('The search service is not enabled in the current configuration.');
