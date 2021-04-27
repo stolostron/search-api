@@ -68,7 +68,7 @@ export default class SearchModel {
         logger.warn('The search service is not enabled in the current configuration.');
         throw Error('The search service is not enabled in the current configuration.');
       } else {
-        logger.error('Unable to resolve search request because Redis is unavailable.');
+        logger.error('Unable to resolve search request because RedisGraph is unavailable.');
         throw Error('Search service is unavailable.');
       }
     }
