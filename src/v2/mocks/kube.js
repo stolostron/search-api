@@ -16,16 +16,6 @@
 /* eslint-disable class-methods-use-this */
 export default class MockKubeConnector {
   async get(url) {
-    if (url.includes('/searchoperators/searchoperator')) {
-      return {
-        apiVersion: 'search.open-cluster-management.io/v1alpha1',
-        kind: 'SearchOperator',
-        status: {
-          deployredisgraph: true,
-          persistence: 'Redisgraph is using PersistenceVolumeClaim',
-        },
-      };
-    }
     if (url.includes('/v1/namespaces')) {
       return {
         kind: 'NamespaceList',
