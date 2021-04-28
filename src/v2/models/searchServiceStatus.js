@@ -14,10 +14,10 @@ export async function checkSearchServiceStatus(searchConnector, kubeConnector) {
     const deployRedisgraph = await getOperatorStatus(kubeConnector);
     if (!deployRedisgraph) {
       logger.warn('The search service is not enabled in the current configuration.');
-      throw Error('The search service is not enabled in the current configuration.');
+      throw new Error('The search service is not enabled in the current configuration.');
     } else {
       logger.error('Unable to resolve search request because RedisGraph is unavailable.');
-      throw Error('Search service is unavailable.');
+      throw new Error('Search service is unavailable.');
     }
   }
 }
