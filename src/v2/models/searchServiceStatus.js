@@ -6,7 +6,6 @@ export async function getOperatorStatus(kubeConnector) {
   const namespace = process.env.POD_NAMESPACE || 'open-cluster-management';
   const so = await kubeConnector.get(`/apis/search.open-cluster-management.io/v1alpha1/namespaces/${namespace}/searchoperators/searchoperator`);
   const { status: { deployredisgraph } } = so;
-
   return !!deployredisgraph;
 }
 
