@@ -213,9 +213,9 @@ function getRedisClient() {
     });
 
     // Log redis connection events.
-    redisClient.on('error', (error) => {
-      logger.info('Error with Redis connection: ', error);
-    });
+    // redisClient.on('error', (error) => {
+    //   logger.info('Error with Redis connection: ', error);
+    // });
     redisClient.on('end', (msg) => {
       logger.info('The Redis connection has ended.', msg);
     });

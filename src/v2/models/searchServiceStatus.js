@@ -5,13 +5,12 @@ import logger from '../lib/logger';
 export async function getOperatorStatus(kubeConnector) {
   const namespace = process.env.POD_NAMESPACE || 'open-cluster-management';
   const so = await kubeConnector.get(`/apis/search.open-cluster-management.io/v1alpha1/namespaces/${namespace}/searchoperators/searchoperator`);
-  // const { status: { deployredisgraph }} = await kubeConnector.get(`/apis/search.open-cluster-management.io/v1alpha1/namespaces/${namespace}/searchoperators/searchoperator`);
-  logger.info('so:  ', so);
-  const { status } = so;
-  logger.info('status: ', status);
-  const { deployredisgraph } = status;
-  logger.info('deployredisgraph: ', deployredisgraph);
-  return deployredisgraph;
+  const { status: { deployredisgraph } } = so;
+  if (so.status === 'Failure') {
+    logger.error('Unable to read the search operator status.', so);
+  }
+  logger.info('!!deployredisgraph: ', !!deployredisgraph);
+  return !!deployredisgraph;
   // return operator && operator.status && operator.status.deployredisgraph;
 }
 
