@@ -35,6 +35,7 @@ describe('Application Resolver', () => {
               channel
             }
             hubChannels
+            applicationSet
             destinationName
             destinationServer
             destinationCluster

@@ -101,7 +101,6 @@ export default class AppModel {
       _.flatten(await Promise.all([this.searchConnector.runApplicationsQuery(), this.searchConnector.runArgoApplicationsQuery()])),
       ['app.name', 'app.namespace', 'app.cluster'],
     );
-    _.flatten();
     if (name != null && namespace != null) {
       const resolvedApps = await apps;
       return resolvedApps.filter((app) => (app['app.name'] === name && app['app.namespace'] === namespace));

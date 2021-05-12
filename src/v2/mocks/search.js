@@ -102,6 +102,7 @@ const MOCK_QUERIES = {
       'app.label': 'label1=value1; label2=value2',
       'app.name': 'argo-app01',
       'app.namespace': 'argocd',
+      'app.applicationSet': 'argo-set',
       'app.destinationNamespace': 'sample',
       'app.destinationServer': 'https://kube.net:6443',
       'app.repoURL': 'https://github.com/fxiang1/app-samples.git',
