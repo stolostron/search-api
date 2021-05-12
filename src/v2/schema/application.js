@@ -38,6 +38,9 @@ export const typeDef = gql`
     # Hub subscriptions are those contained by an application AND with _hubClusterResource=true
     hubSubscriptions: [Subscription]
 
+    # ArgoCD ApplicationSet
+    applicationSet: String
+
     # ArgoCD destination properties
     destinationName: String
     destinationServer: String
@@ -105,6 +108,7 @@ export const resolver = {
     clusterCount: (parent, args, { appModel }) => appModel.resolveAppClustersCount(parent['app._uid']),
     hubChannels: (parent, args, { appModel }) => appModel.resolveAppHubChannels(parent['app._uid']),
     hubSubscriptions: (parent, args, { appModel }) => appModel.resolveAppHubSubscriptions(parent['app._uid']),
+    applicationSet: (parent) => parent['app.applicationSet'],
     destinationName: (parent) => parent['app.destinationName'],
     destinationServer: (parent) => parent['app.destinationServer'],
     destinationCluster: (parent, args, { appModel }) => appModel.resolveAppDestinationCluster(parent),

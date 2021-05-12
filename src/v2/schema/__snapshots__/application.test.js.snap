@@ -6,6 +6,7 @@ Object {
     "applications": Array [
       Object {
         "_uid": "local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99",
+        "applicationSet": null,
         "chart": null,
         "clusterCount": Object {
           "localCount": 1,
@@ -75,6 +76,7 @@ Object {
       },
       Object {
         "_uid": "local-cluster/app-02-uid",
+        "applicationSet": null,
         "chart": null,
         "clusterCount": Object {
           "localCount": 0,
@@ -109,6 +111,7 @@ Object {
       },
       Object {
         "_uid": "local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99",
+        "applicationSet": "argo-set",
         "chart": null,
         "clusterCount": Object {
           "localCount": 1,
@@ -178,6 +181,7 @@ Object {
       },
       Object {
         "_uid": "remote-cluster/argo-app-02-uid",
+        "applicationSet": null,
         "chart": "apps",
         "clusterCount": Object {
           "localCount": 0,

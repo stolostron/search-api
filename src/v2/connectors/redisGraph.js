@@ -317,7 +317,7 @@ export default class RedisGraphConnector {
     const { withClause, whereClause } = await this.createWhereClause([], ['app']);
     const matchClause = `MATCH ${ARGO_APPLICATION_MATCH} ${whereClause}`;
     const returnClause1 = 'RETURN DISTINCT app._uid, app.name, app.namespace, app.cluster, app.created, app.apigroup, app.apiversion, app.label,';
-    const returnClause2 = 'app.destinationName, app.destinationServer, app.destinationNamespace, app.repoURL, app.path, app.chart, app.targetRevision';
+    const returnClause2 = 'app.applicationSet, app.destinationName, app.destinationServer, app.destinationNamespace, app.repoURL, app.path, app.chart, app.targetRevision';
     const orderBy = 'ORDER BY app.name, app.namespace, app.cluster ASC';
     const query = `${withClause} ${matchClause} ${returnClause1} ${returnClause2} ${orderBy}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runArgoApplicationsQuery' });
