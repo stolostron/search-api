@@ -99,7 +99,12 @@ export default class AppModel {
 
     const apps = _.sortBy(
       _.flatten(await Promise.all([this.searchConnector.runApplicationsQuery(), this.searchConnector.runArgoApplicationsQuery()])),
-      ['app.name', 'app.namespace', 'app.cluster'],
+      [
+        // Account for applicationSet being used as name in default sort
+        (o) => (o['app.applicationSet'] ? `${o['app.applicationSet']}/${o['app.name']}` : o['app.name']),
+        'app.namespace',
+        'app.cluster',
+      ],
     );
     if (name != null && namespace != null) {
       const resolvedApps = await apps;
