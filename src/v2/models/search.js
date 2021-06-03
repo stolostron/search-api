@@ -6,11 +6,13 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// Copyright (c) 2021 Red Hat, Inc.
+// Copyright Contributors to the Open Cluster Management project
 
 import _ from 'lodash';
 import config from '../../../config';
 import { isRequired } from '../lib/utils';
-import logger from '../lib/logger';
+import { checkSearchServiceStatus } from './searchServiceStatus';
 
 // Remove single and double quotes because these can be used to inject malicious
 // code in the RedisGraph query. (SQL injection).
@@ -53,15 +55,13 @@ function filterByKeywords(resultSet, keywords) {
 }
 
 export default class SearchModel {
-  constructor({ searchConnector = isRequired('searchConnector') }) {
+  constructor({ searchConnector = isRequired('searchConnector'), kubeConnector = isRequired('kubeConnector') }) {
+    this.kubeConnector = kubeConnector;
     this.searchConnector = searchConnector;
   }
 
-  checkSearchServiceAvailable() {
-    if (!this.searchConnector.isServiceAvailable()) {
-      logger.error('Unable to resolve search request because Redis is unavailable.');
-      throw Error('Search service is unavailable');
-    }
+  async checkSearchServiceAvailable() {
+    await checkSearchServiceStatus(this.searchConnector, this.kubeConnector);
   }
 
   async searchQueryLimiter(keywords, filters, limit) {

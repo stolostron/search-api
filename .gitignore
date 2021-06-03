@@ -10,3 +10,7 @@ test-report.xml
 !vbh/.build-harness-bootstrap
 !vbh/build-harness
 !vbh/build-harness-extensions
+sslcert/searchapi.crt
+sslcert/searchapi.csr
+sslcert/searchapi.key
+rediscert/redis.crt

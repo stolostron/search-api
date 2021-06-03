@@ -7,7 +7,7 @@ os:
 
 branches:
   only:
-    - master
+    - main
     - /^release-[0-9]+\..*$/
 
 services:
@@ -48,7 +48,6 @@ jobs:
       name: "Build the test image and push it"
       script:
         - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
-        - make copyright-check
         - make component/build
         - make component/push
     - stage: unit-test
@@ -74,7 +73,7 @@ jobs:
 
     - stage: release-ff
       name: "Push commits to current release branch"
-      if: type = push AND branch =~ /^master$/
+      if: type = push AND branch =~ /^main$/
       script:
         - make
         - make release-ff

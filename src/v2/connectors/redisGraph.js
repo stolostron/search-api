@@ -8,6 +8,7 @@
  *
  * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
+// Copyright Contributors to the Open Cluster Management project
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
 import _ from 'lodash';
@@ -21,8 +22,12 @@ import logger from '../lib/logger';
 import { isRequired } from '../lib/utils';
 import pollRbacCache, { getUserRbacFilter } from '../lib/rbacCaching';
 
+export function getPropertiesWithList() {
+  return ['label', 'role', 'port', 'container', 'category', 'insightPolicies', 'addon'];
+}
+
 // Is there a more efficient way?
-function formatResult(results, removePrefix = true) {
+export function formatResult(results, removePrefix = true) {
   const startTime = Date.now();
   const resultList = [];
   while (results.hasNext()) {
@@ -33,6 +38,12 @@ function formatResult(results, removePrefix = true) {
         if (removePrefix) {
           if (record.get(key).properties !== null && record.get(key).properties !== undefined) {
             resultItem = record.get(key).properties;
+            // We need to check each value within the properties list, and then parse them correctly.
+            getPropertiesWithList().forEach((val) => {
+              if (_.get(resultItem, val) && Array.isArray(_.get(resultItem, val))) {
+                resultItem[val] = resultItem[val].join('; ');
+              }
+            });
           } else {
             resultItem[key.substring(key.indexOf('.') + 1)] = record.get(key);
           }
@@ -43,7 +54,11 @@ function formatResult(results, removePrefix = true) {
     });
     resultList.push(resultItem);
   }
+
   logger.perfLog(startTime, 100, 'formatResult()', `Result set size: ${resultList.length}`);
+  if (removePrefix) {
+    return _.uniqBy(resultList, (item) => item._uid);
+  }
   return resultList;
 }
 
@@ -56,8 +71,8 @@ const isNumber = (value) => !Number.isNaN(value * 1);
 //   }
 //   return false;
 // };
-const isDate = (value) => !isNumber(value) && moment(value, 'YYYY-MM-DDTHH:mm:ssZ', true).isValid();
-const isDateFilter = (value) => ['hour', 'day', 'week', 'month', 'year'].indexOf(value) > -1;
+export const isDate = (value) => !isNumber(value) && moment(value, 'YYYY-MM-DDTHH:mm:ssZ', true).isValid();
+export const isDateFilter = (value) => ['hour', 'day', 'week', 'month', 'year'].indexOf(value) > -1;
 // const isVersion = property.toLowerCase().includes('version');
 
 export function getOperator(value) {
@@ -96,14 +111,34 @@ export function getFilterString(filters) {
       const operatorRemoved = value.replace(/^<=|^>=|^!=|^!|^<|^>|^=/, '');
       if (isNumber(operatorRemoved)) { //  || isNumWithChars(operatorRemoved)
         return `n.${filter.property} ${getOperator(value)} ${operatorRemoved}`;
-      } if (isDateFilter(value)) {
+      }
+      if (isDateFilter(value)) {
         return `n.${filter.property} ${getDateFilter(value)}`;
+      }
+      if (getPropertiesWithList().includes(filter.property)) {
+        return `('${operatorRemoved}' IN n.${filter.property})`;
       }
       return `n.${filter.property} ${getOperator(value)} '${operatorRemoved}'`;
     }).join(' OR ')})`);
   });
   const resultString = filterStrings.join(' AND ');
   return resultString;
+}
+
+export function getDataFromValueList(valuesList) {
+  const data = [];
+  valuesList.forEach((value) => {
+    if (Array.isArray(value)) {
+      value.forEach((val) => {
+        if (data.indexOf(val) === -1) {
+          data.push(val);
+        }
+      });
+    } else {
+      data.push(value);
+    }
+  });
+  return data;
 }
 
 function getIPvFamily(redisHost) {
@@ -141,7 +176,12 @@ function getRedisClient() {
       const redisInfo = redisUrl.split(':');
       const redisHost = redisInfo[0];
       const redisPort = redisInfo[1];
-      const redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
+      let redisCert = '';
+      try {
+        redisCert = fs.readFileSync(process.env.redisCert || './rediscert/redis.crt', 'utf8');
+      } catch (e) {
+        logger.warn('Using insecure redis connection. Cert not mounted at ./rediscert/redis.crt', e.Message);
+      }
       const ipFamily = await getIPvFamily(redisHost);
       redisClient = redis.createClient(
         redisPort,
@@ -173,11 +213,11 @@ function getRedisClient() {
     });
 
     // Log redis connection events.
-    redisClient.on('error', (error) => {
-      logger.info('Error with Redis connection: ', error);
+    redisClient.on('error', () => {
+      logger.info('Error with Redis connection.');
     });
-    redisClient.on('end', (msg) => {
-      logger.info('The Redis connection has ended.', msg);
+    redisClient.on('end', () => {
+      logger.info('The Redis connection has ended.');
     });
   });
 }
@@ -192,6 +232,7 @@ if (process.env.NODE_ENV !== 'test') {
 
 // Applications queries are only interested in resources on the local cluster, in the appropriate API group
 const APPLICATION_MATCH = "(app:Application {cluster: 'local-cluster', apigroup: 'app.k8s.io'})";
+const ARGO_APPLICATION_MATCH = "(app:Application {apigroup: 'argoproj.io'})";
 const SUBSCRIPTION_MATCH = "(sub:Subscription {cluster: 'local-cluster', apigroup: 'apps.open-cluster-management.io'})";
 const PLACEMENTRULE_MATCH = "(pr:PlacementRule {cluster: 'local-cluster', apigroup: 'apps.open-cluster-management.io'})";
 const CHANNEL_MATCH = "(ch:Channel {cluster: 'local-cluster', apigroup: 'apps.open-cluster-management.io'})";
@@ -264,9 +305,33 @@ export default class RedisGraphConnector {
   async runApplicationsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['app']);
     const matchClause = `MATCH ${APPLICATION_MATCH} ${whereClause}`;
-    const returnClause = 'RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.dashboard, app.selfLink, app.label ORDER BY app.name, app.namespace ASC';
+    const returnClause = 'RETURN DISTINCT app._uid, app.name, app.namespace, app.created, app.apigroup, app.apiversion, app.dashboard, app.label, app.cluster ORDER BY app.name, app.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runApplicationsQuery' });
+  }
+
+  /*
+   * Get Argo Applications.
+   */
+  async runArgoApplicationsQuery() {
+    const { withClause, whereClause } = await this.createWhereClause([], ['app']);
+    const matchClause = `MATCH ${ARGO_APPLICATION_MATCH} ${whereClause}`;
+    const returnClause1 = 'RETURN DISTINCT app._uid, app.name, app.namespace, app.cluster, app.created, app.apigroup, app.apiversion, app.label,';
+    const returnClause2 = 'app.applicationSet, app.destinationName, app.destinationServer, app.destinationNamespace, app.repoURL, app.path, app.chart, app.targetRevision';
+    const orderBy = 'ORDER BY app.name, app.namespace, app.cluster ASC';
+    const query = `${withClause} ${matchClause} ${returnClause1} ${returnClause2} ${orderBy}`;
+    return this.executeQuery({ query, removePrefix: false, queryName: 'runArgoApplicationsQuery' });
+  }
+
+  /*
+   * Get Argo cluster secrets.
+   */
+  async runArgoClusterSecretsQuery() {
+    const { withClause, whereClause } = await this.createWhereClause([], ['s']);
+    const matchClause = `MATCH (s:Secret) ${whereClause} AND 'argocd.argoproj.io/secret-type=cluster' IN s.label`;
+    const returnClause = 'RETURN DISTINCT s._uid, s.label, s.cluster';
+    const query = `${withClause} ${matchClause} ${returnClause}`;
+    return this.executeQuery({ query, removePrefix: false, queryName: 'runArgoClusterSecretsQuery' });
   }
 
   /*
@@ -318,7 +383,7 @@ export default class RedisGraphConnector {
   async runSubscriptionsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['sub']);
     const matchClause = `MATCH ${SUBSCRIPTION_MATCH} ${whereClause}`;
-    const returnClause = 'RETURN DISTINCT sub._uid, sub.name, sub.namespace, sub.created, sub.selfLink, sub.status, sub.channel, sub.timeWindow, sub.localPlacement';
+    const returnClause = 'RETURN DISTINCT sub._uid, sub.name, sub.namespace, sub.created, sub.status, sub.channel, sub.timeWindow, sub.localPlacement';
     const orderClause = 'ORDER BY sub.name, sub.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause} ${orderClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runSubscriptionsQuery' });
@@ -369,7 +434,7 @@ export default class RedisGraphConnector {
   async runPlacementRulesQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['pr']);
     const matchClause = `MATCH ${PLACEMENTRULE_MATCH} ${whereClause}`;
-    const returnClause = 'RETURN DISTINCT pr._uid, pr.name, pr.namespace, pr.created, pr.selfLink, pr.replicas';
+    const returnClause = 'RETURN DISTINCT pr._uid, pr.name, pr.namespace, pr.created, pr.replicas';
     const orderClause = 'ORDER BY pr.name, pr.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause} ${orderClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runPlacementRulesQuery' });
@@ -405,7 +470,7 @@ export default class RedisGraphConnector {
   async runChannelsQuery() {
     const { withClause, whereClause } = await this.createWhereClause([], ['ch']);
     const matchClause = `MATCH ${CHANNEL_MATCH} ${whereClause}`;
-    const returnClause = 'RETURN DISTINCT ch._uid, ch.name, ch.namespace, ch.created, ch.selfLink, ch.type, ch.pathname';
+    const returnClause = 'RETURN DISTINCT ch._uid, ch.name, ch.namespace, ch.created, ch.type, ch.pathname';
     const orderClause = 'ORDER BY ch.name, ch.namespace ASC';
     const query = `${withClause} ${matchClause} ${returnClause} ${orderClause}`;
     return this.executeQuery({ query, removePrefix: false, queryName: 'runChannelsQuery' });
@@ -463,31 +528,8 @@ export default class RedisGraphConnector {
     // logger.info('runSearchQuery()', filters);
     const startTime = Date.now();
     if (this.rbac.length > 0) {
-      // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
-      // encode labels in a single string. As a result we can't use an openCypher query to search
-      // for labels so we need to filter here, which btw is inefficient.
-      const specialFilters = filters.filter((f) => (f.property === 'label' || f.property === 'role'));
-      if (specialFilters.length > 0) {
-        const { withClause, whereClause } = await this.createWhereClause(filters.filter((f) => f.property !== 'role' && f.property !== 'label'), ['n']);
-        const q = `${withClause} MATCH (n) ${whereClause} RETURN n`;
-        const res = await this.g.query(q);
-        logger.perfLog(startTime, 150, 'SpecialFilterSearchQuery');
-        return formatResult(res).filter((item) => {
-          if (item.role && specialFilters.findIndex((filter) => filter.property === 'role') >= 0) {
-            const roleIdx = specialFilters.findIndex((filter) => filter.property === 'role');
-            return specialFilters[roleIdx].values.find((value) => {
-              const values = value.replace(' ', '').split(',');
-              return values.every((v) => item.role.includes(v));
-            });
-          }
-          if (item.label && specialFilters.findIndex((filter) => filter.property === 'label') >= 0) {
-            const labelIdx = specialFilters.findIndex((filter) => filter.property === 'label');
-            return item.label && specialFilters[labelIdx].values.find((value) => item.label.indexOf(value) > -1);
-          }
-          return item;
-        });
-      }
-
+      // RedisGraph 2.0 does support an array as value. Therefore, we don't need to
+      // encode labels in a single string
       let limitClause = '';
       if (limit > 0) {
         limitClause = querySkipIdx > -1
@@ -507,13 +549,8 @@ export default class RedisGraphConnector {
     // logger.info('runSearchQueryCountOnly()', filters);
 
     if (this.rbac.length > 0) {
-      // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
-      // encode labels in a single string. As a result we can't use an openCypher query to search
-      // for labels so we need to filter here, which btw is inefficient.
-      const labelFilter = filters.find((f) => (f.property === 'label' || f.property === 'role'));
-      if (labelFilter) {
-        return this.runSearchQuery(filters, -1, -1).then((r) => r.length);
-      }
+      // RedisGraph 2.0 does support an array as value. Therefore, we don't need to
+      // encode labels in a single string
       const { withClause, whereClause } = await this.createWhereClause(filters, ['n']);
       const startTime = Date.now();
       const result = await this.g.query(`${withClause} MATCH (n) ${whereClause} RETURN count(n)`);
@@ -560,8 +597,7 @@ export default class RedisGraphConnector {
         ? ''
         : `LIMIT ${limit}`;
       let f = filters.length > 0 ? filters : [];
-      // Workaround for node resource queries - this will need to be removed when redis 2.0 features are used
-      f = filters.filter((filter) => filter.property !== 'role' && filter.property !== 'label');
+      f = filters.filter((filter) => filter.property);
       const { withClause, whereClause } = await this.createWhereClause(f, ['n']);
       const result = await this.g.query(`${withClause} MATCH (n) ${whereClause} RETURN DISTINCT n.${property} ORDER BY n.${property} ASC ${limitClause}`);
       logger.perfLog(startTime, 500, 'getAllValues()');
@@ -571,32 +607,8 @@ export default class RedisGraphConnector {
         }
       });
 
-      // RedisGraph 1.0.15 doesn't support an array as value. To work around this limitation we
-      // encode labels in a single string. Here we need to decode the string to get all labels.
-      if (property === 'label') {
-        const labels = [];
-        valuesList.forEach((value) => {
-          value.split('; ').forEach((label) => {
-            // We don't want duplicates, so we check if it already exists.
-            if (labels.indexOf(label) === -1) {
-              labels.push(label);
-            }
-          });
-        });
-        return labels;
-      }
-      // Same workaround as above, but for roles.
-      if (property === 'role') {
-        const roles = [];
-        valuesList.forEach((value) => {
-          value.split(', ').forEach((role) => {
-            // We don't want duplicates, so we check if it already exists.
-            if (roles.indexOf(role) === -1) {
-              roles.push(role);
-            }
-          });
-        });
-        return roles;
+      if ((getPropertiesWithList()).includes(property)) {
+        return getDataFromValueList(valuesList);
       }
 
       if (isDate(valuesList[0])) {

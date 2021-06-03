@@ -6,6 +6,8 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// Copyright (c) 2021 Red Hat, Inc.
+// Copyright Contributors to the Open Cluster Management project
 
 import supertest from 'supertest';
 import server, { GRAPHQL_PATH } from '../index';
@@ -25,7 +27,6 @@ describe('Application Resolver', () => {
             labels
             name
             namespace
-            selfLink
             hubSubscriptions {
               _uid
               timeWindow
@@ -34,6 +35,15 @@ describe('Application Resolver', () => {
               channel
             }
             hubChannels
+            applicationSet
+            destinationName
+            destinationServer
+            destinationCluster
+            destinationNamespace
+            repoURL
+            path
+            chart
+            targetRevision
           }
         }
       `,
@@ -58,7 +68,6 @@ describe('Application Resolver', () => {
             labels
             name
             namespace
-            selfLink
             hubSubscriptions {
               _uid
               status
@@ -106,7 +115,6 @@ describe('Placement Rule Resolver', () => {
             name
             namespace
             created
-            selfLink
             clusterCount
             replicas
           }
@@ -130,7 +138,6 @@ describe('Placement Rule Resolver', () => {
             name
             namespace
             created
-            selfLink
             clusterCount
             replicas
           }
@@ -175,7 +182,6 @@ describe('Subscription Resolver', () => {
             name
             namespace
             created
-            selfLink
             timeWindow
             localPlacement
             status
@@ -203,7 +209,6 @@ describe('Subscription Resolver', () => {
           name
           namespace
           created
-          selfLink
           timeWindow
           localPlacement
           status
@@ -252,7 +257,6 @@ describe('Channel Resolver', () => {
             name
             namespace
             created
-            selfLink
             type
             pathname
             localPlacement
@@ -279,7 +283,6 @@ describe('Channel Resolver', () => {
             name
             namespace
             created
-            selfLink
             type
             pathname
             localPlacement

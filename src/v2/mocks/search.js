@@ -6,6 +6,8 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// Copyright (c) 2021 Red Hat, Inc.
+// Copyright Contributors to the Open Cluster Management project
 // eslint-disable-next-line max-classes-per-file
 import _ from 'lodash';
 import RedisGraphConnector from '../connectors/redisGraph';
@@ -26,7 +28,7 @@ const resourceTemplate = {
     kind: 'node',
     name: `mock-1.1.1.${id}`,
     cpus: 10,
-    role: 'master',
+    role: ['master'],
   }),
   pod: (id) => ({
     kind: 'pod',
@@ -80,8 +82,6 @@ const MOCK_QUERIES = {
       'app.label': 'label1=value1; label2=value2',
       'app.name': 'app01',
       'app.namespace': 'sample',
-      'app.selfLink':
-        '/apis/app.k8s.io/v1beta1/namespaces/sample/applications/app01',
     },
     {
       'app._uid': 'local-cluster/app-02-uid',
@@ -90,8 +90,48 @@ const MOCK_QUERIES = {
         'localhost/grafana/dashboard/db/app02-dashboard-via-federated-prometheus?namespace=test',
       'app.name': 'app02',
       'app.namespace': 'test',
-      'app.selfLink':
-        '/apis/app.k8s.io/v1beta1/namespaces/test/applications/app02',
+    },
+  ],
+
+  runArgoApplicationsQuery: [
+    {
+      'app._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      'app.apigroup': 'argoproj.io',
+      'app.created': '2020-01-23T13:56:32Z',
+      'app.cluster': 'local-cluster',
+      'app.label': 'label1=value1; label2=value2',
+      'app.name': 'argo-app01',
+      'app.namespace': 'argocd',
+      'app.applicationSet': 'argo-set',
+      'app.destinationNamespace': 'sample',
+      'app.destinationServer': 'https://kube.net:6443',
+      'app.repoURL': 'https://github.com/fxiang1/app-samples.git',
+      'app.path': 'helloworld',
+    },
+    {
+      'app._uid': 'remote-cluster/argo-app-02-uid',
+      'app.apigroup': 'argoproj.io',
+      'app.created': '2020-01-23T13:56:32Z',
+      'app.cluster': 'remote-cluster',
+      'app.name': 'argo-app02',
+      'app.namespace': 'openshift-gitops',
+      'app.destinationNamespace': 'test',
+      'app.destinationName': 'in-cluster',
+      'app.repoURL': 'http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts',
+      'app.chart': 'apps',
+      'app.targetRevision': '1.2',
+    },
+  ],
+
+  runArgoClusterSecretsQuery: [
+    {
+      's._uid': 'local-cluster/29a848d6-3de8-11ea-9f0f-00000a100f99',
+      's.label': [
+        'argocd.argoproj.io/secret-type=cluster',
+        'apps.open-cluster-management.io/cluster-server=kube.net',
+        'apps.open-cluster-management.io/cluster-name=remote-cluster',
+      ],
+      's.cluster': 'local-cluster',
     },
   ],
 
@@ -182,7 +222,6 @@ const MOCK_QUERIES = {
       'sub.name': 'sub01',
       'sub.namespace': 'applications',
       'sub.created': '2020-08-20T14:16:05Z',
-      'sub.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/applications/sub01',
       'sub.status': 'Propagated',
       'sub.channel': 'git-ch-ns/git-ch',
       'sub.timeWindow': 'blocked',
@@ -193,7 +232,6 @@ const MOCK_QUERIES = {
       'sub.name': 'sub02',
       'sub.namespace': 'test',
       'sub.created': '2020-08-20T14:17:05Z',
-      'sub.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/test/sub02',
       'sub.status': 'PropagationFailed',
       'sub.channel': 'object-ch-ns/object-ch',
       'sub.localPlacement': 'false',
@@ -238,7 +276,6 @@ const MOCK_QUERIES = {
       'pr.name': 'pr01',
       'pr.namespace': 'applications',
       'pr.created': '2020-08-20T14:16:05Z',
-      'pr.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/placementrules/pr01',
       'pr.replicas': 3,
     },
     {
@@ -246,7 +283,6 @@ const MOCK_QUERIES = {
       'pr.name': 'pr02',
       'pr.namespace': 'test',
       'pr.created': '2020-08-20T14:17:05Z',
-      'pr.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/test/pr02',
     },
   ],
 
@@ -277,7 +313,6 @@ const MOCK_QUERIES = {
       'ch.name': 'ch01',
       'ch.namespace': 'applications',
       'ch.created': '2020-08-20T14:16:05Z',
-      'ch.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/applications/channels/ch01',
       'ch.type': 'HelmRepo',
       'ch.pathname': 'http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts',
     },
@@ -286,7 +321,6 @@ const MOCK_QUERIES = {
       'ch.name': 'ch02',
       'ch.namespace': 'test',
       'ch.created': '2020-08-20T14:17:05Z',
-      'ch.selfLink': '/apis/apps.open-cluster-management.io/v1/namespaces/test/channels/ch02',
       'ch.type': 'Git',
       'ch.pathname': 'https://github.com/fxiang1/app-samples.git',
     },

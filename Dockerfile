@@ -1,12 +1,20 @@
-FROM registry.access.redhat.com/ubi8/nodejs-12:1
-USER root
-RUN yum -y remove nodejs-nodemon
-RUN yum -y update
-USER default
+# Copyright Contributors to the Open Cluster Management project
 
-# Root needed for yum update, gets reset to 1001 below.
-USER root
-RUN yum -y update
+FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as builder
+COPY . .
+RUN npm ci
+RUN npm run build:production
+
+
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+COPY --from=builder /usr/bin/node /usr/bin/node
+
+RUN mkdir -p /opt/app-root/search-api
+WORKDIR /opt/app-root/search-api
+
+COPY --from=builder ./config ./config
+COPY --from=builder ./node_modules ./node_modules
+COPY --from=builder ./output ./output
 
 ARG VCS_REF
 ARG VCS_URL
@@ -39,14 +47,14 @@ LABEL org.label-schema.vendor="Red Hat" \
       io.k8s.description="$IMAGE_DESCRIPTION" \
       io.openshift.tags="$IMAGE_OPENSHIFT_TAGS"
 
+RUN microdnf update &&\
+    microdnf install ca-certificates vi --nodocs &&\
+    microdnf clean all
+
 ENV BABEL_DISABLE_CACHE=1 \
     NODE_ENV=production \
     USER_UID=1001 \
     VCS_REF="$VCS_REF"
-
-RUN mkdir -p /opt/app-root/search-api
-WORKDIR /opt/app-root/search-api
-COPY . /opt/app-root/search-api
 
 EXPOSE 4010
 

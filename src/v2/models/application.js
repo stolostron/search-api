@@ -6,9 +6,13 @@
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
  ****************************************************************************** */
+// Copyright (c) 2021 Red Hat, Inc.
+// Copyright Contributors to the Open Cluster Management project
 
+import _ from 'lodash';
 import { isRequired } from '../lib/utils';
 import logger from '../lib/logger';
+import { checkSearchServiceStatus } from './searchServiceStatus';
 
 // Returns the local and remote cluster counts for a specific resource
 function getLocalRemoteClusterCounts(resourceUid, resourceType, data) {
@@ -31,6 +35,8 @@ function getLocalRemoteClusterCounts(resourceUid, resourceType, data) {
 const SUB_NAME = 'sub.name';
 const SUB_NAMESPACE = 'sub.namespace';
 
+const ARGO_LABEL_PREFIX = 'apps.open-cluster-management.io/';
+
 function filterLocalSubscriptions(subs) {
   const localSuffix = '-local';
 
@@ -49,16 +55,18 @@ function filterLocalSubscriptions(subs) {
   });
 }
 
+function labelValue(label) {
+  return label.split('=')[1];
+}
+
 export default class AppModel {
-  constructor({ searchConnector = isRequired('searchConnector') }) {
+  constructor({ searchConnector = isRequired('searchConnector'), kubeConnector = isRequired('kubeConnector') }) {
+    this.kubeConnector = kubeConnector;
     this.searchConnector = searchConnector;
   }
 
-  checkSearchServiceAvailable() {
-    if (!this.searchConnector.isServiceAvailable()) {
-      logger.error('Unable to resolve search request because Redis is unavailable.');
-      throw Error('Search service is unavailable');
-    }
+  async checkSearchServiceAvailable() {
+    await checkSearchServiceStatus(this.searchConnector, this.kubeConnector);
   }
 
   /*
@@ -68,7 +76,7 @@ export default class AppModel {
    * for all applications, then use the same result for each app resolver.
    */
   async runQueryOnlyOnce(searchConnectorQueryName) {
-    this.checkSearchServiceAvailable();
+    await this.checkSearchServiceAvailable();
     const queryFn = this.searchConnector[searchConnectorQueryName];
     if (queryFn && typeof queryFn === 'function') {
       if (!this[`${searchConnectorQueryName}Promise`]) {
@@ -87,9 +95,17 @@ export default class AppModel {
    * This is more efficient than searching for `kind:application`
    */
   async resolveApplications({ name, namespace }) {
-    this.checkSearchServiceAvailable();
+    await this.checkSearchServiceAvailable();
 
-    const apps = await this.searchConnector.runApplicationsQuery();
+    const apps = _.sortBy(
+      _.flatten(await Promise.all([this.searchConnector.runApplicationsQuery(), this.searchConnector.runArgoApplicationsQuery()])),
+      [
+        // Account for applicationSet being used as name in default sort
+        (o) => (o['app.applicationSet'] ? `${o['app.applicationSet']}/${o['app.name']}` : o['app.name']),
+        'app.namespace',
+        'app.cluster',
+      ],
+    );
     if (name != null && namespace != null) {
       const resolvedApps = await apps;
       return resolvedApps.filter((app) => (app['app.name'] === name && app['app.namespace'] === namespace));
@@ -103,6 +119,29 @@ export default class AppModel {
   async resolveAppClustersCount(appUid) {
     const clusters = await this.runQueryOnlyOnce('runAppClustersQuery');
     return getLocalRemoteClusterCounts(appUid, 'app', clusters);
+  }
+
+  /*
+   * For a given application, return the destination cluster
+   */
+  async resolveAppDestinationCluster(app) {
+    if (app['app.apigroup'] === 'argoproj.io') {
+      if (app['app.destinationServer'] === 'https://kubernetes.default.svc' || app['app.destinationName'] === 'in-cluster') {
+        return app['app.cluster'];
+      }
+      const clusterSecrets = await this.runQueryOnlyOnce('runArgoClusterSecretsQuery');
+      const secret = clusterSecrets
+        .filter((s) => s['s.cluster'] === app['app.cluster'])
+        .find((s) => (app['app.destinationName'] && s['s.label'].includes(`${ARGO_LABEL_PREFIX}cluster-name=${app['app.destinationName']}`))
+          // cluster-server label will only contain hostname, limited to 63 chars
+          || (app['app.destinationServer'] && s['s.label'].find((l) => l.startsWith(`${ARGO_LABEL_PREFIX}cluster-server=`)
+                && app['app.destinationServer'].includes(labelValue(l)))));
+      const label = secret && secret['s.label'].find((l) => l.startsWith(`${ARGO_LABEL_PREFIX}cluster-name=`));
+      if (label) {
+        return labelValue(label);
+      }
+    }
+    return null;
   }
 
   /*
@@ -129,7 +168,7 @@ export default class AppModel {
    * Resolve Suscriptions.
    */
   async resolveSubscriptions({ name, namespace }) {
-    this.checkSearchServiceAvailable();
+    await this.checkSearchServiceAvailable();
 
     const subs = await this.searchConnector.runSubscriptionsQuery();
     const resolvedSubs = filterLocalSubscriptions(await subs);
@@ -161,7 +200,7 @@ export default class AppModel {
    * Resolve PlacementRules.
    */
   async resolvePlacementRules({ name, namespace }) {
-    this.checkSearchServiceAvailable();
+    await this.checkSearchServiceAvailable();
 
     const prs = await this.searchConnector.runPlacementRulesQuery();
     if (name != null && namespace != null) {
@@ -183,7 +222,7 @@ export default class AppModel {
    * Resolve Channels.
    */
   async resolveChannels({ name, namespace }) {
-    this.checkSearchServiceAvailable();
+    await this.checkSearchServiceAvailable();
 
     const chs = await this.searchConnector.runChannelsQuery();
     if (name != null && namespace != null) {

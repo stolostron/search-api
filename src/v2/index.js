@@ -7,11 +7,12 @@
  * Contract with IBM Corp.
  * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
+// Copyright Contributors to the Open Cluster Management project
 
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import { isInstance as isApolloErrorInstance, formatError as formatApolloError } from 'apollo-errors';
-import inspect from 'security-middleware';
+import inspect from '@open-cluster-management/security-middleware';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import noCache from 'nocache';
@@ -71,8 +72,8 @@ const apolloServer = new ApolloServer({
 
     return {
       req,
-      appModel: new AppModel({ searchConnector }),
-      searchModel: new SearchModel({ searchConnector }),
+      appModel: new AppModel({ searchConnector, kubeConnector }),
+      searchModel: new SearchModel({ searchConnector, kubeConnector }),
       queryModel: new QueryModel({ kubeConnector }),
     };
   },

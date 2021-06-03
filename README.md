@@ -8,6 +8,8 @@ https://github.com/open-cluster-management/search/wiki/Using-the-Search-API
 
 ## Setup for development
 
+TL;TR: Run `source ./setup.sh`
+
 1. Configure the folloing environment variables.
     Name              | Default                        | Description
     ---               | ---                            | ---
@@ -15,14 +17,17 @@ https://github.com/open-cluster-management/search/wiki/Using-the-Search-API
     SERVICEACCT_TOKEN | ""                             | Get this token with `oc whoami -t`
     redisEndpoint     | //localhost:6379               | RedisGraph server. Use only whith RedisGraph on local machine.
     redisSSLEndpoint  | redisgraph-route:443           | RedisGraph server with SSL. 
-    redisPassword     | ""                             | RedisGraph password. `oc get secret redisgraph-user-secret -o json | jq -r '.data.redispwd' | base64 -D`
-
-2. Start the dev server
+    redisPassword     | ""                             | RedisGraph password. `oc get secret redisgraph-user-secret -o json \| jq -r '.data.redispwd' \| base64 -D`
+2. Generate self-signed certificates for development.
+  ```
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout searchapi.key -out searchapi.crt -config req.conf -extensions 'v3_req'
+  ```
+3. Start the dev server
 ```
 npm i
 npm start
 ```
-3. Start the production server
+4. Start the production server
 ```
 npm i
 npm run build
@@ -54,7 +59,11 @@ RBAC_INACTIVITY_TIMEOUT | 600000  | Stop revalidating RBAC cache after user is i
     ```
     oc get secret redisgraph-user-secret -o json | jq -r '.data.redispwd' | base64 -D | pbcopy
     ```
-4. Allow unsecured TLS connection.
+4. Copy the redis certificate to the local machine.
+    ```
+    oc get secrets search-redisgraph-secrets -n open-cluster-management -o json |jq -r '.data["ca.crt"]' | base64 -d > ./rediscert/redis.crt
+    ```
+5. Allow unsecured TLS connection.
     ```
     export NODE_TLS_REJECT_UNAUTHORIZED=0
     -- OR --

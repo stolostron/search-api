@@ -32,19 +32,25 @@ Object {
             "cpus": 10,
             "kind": "node",
             "name": "mock-1.1.1.0",
-            "role": "master",
+            "role": Array [
+              "master",
+            ],
           },
           Object {
             "cpus": 10,
             "kind": "node",
             "name": "mock-1.1.1.1",
-            "role": "master",
+            "role": Array [
+              "master",
+            ],
           },
           Object {
             "cpus": 10,
             "kind": "node",
             "name": "mock-1.1.1.2",
-            "role": "master",
+            "role": Array [
+              "master",
+            ],
           },
           Object {
             "creationTimestamp": "2018-09-27 16:52:20 -0400 EDT",
@@ -188,19 +194,25 @@ Object {
             "cpus": 10,
             "kind": "node",
             "name": "mock-1.1.1.0",
-            "role": "master",
+            "role": Array [
+              "master",
+            ],
           },
           Object {
             "cpus": 10,
             "kind": "node",
             "name": "mock-1.1.1.1",
-            "role": "master",
+            "role": Array [
+              "master",
+            ],
           },
           Object {
             "cpus": 10,
             "kind": "node",
             "name": "mock-1.1.1.2",
-            "role": "master",
+            "role": Array [
+              "master",
+            ],
           },
           Object {
             "creationTimestamp": "2018-09-27 16:52:20 -0400 EDT",
