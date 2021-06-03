@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`RBAC Caching Test User Resources 1`] = `
+exports[`RBAC Caching User Resources 1`] = `
 Object {
   "clusterRoleBindings": Array [
     Object {
