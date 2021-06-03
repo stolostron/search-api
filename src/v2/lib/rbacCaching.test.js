@@ -18,18 +18,14 @@ describe('RBAC Caching', () => {
       user: {
         name: 'kube:admin',
         idToken: 'Bearer localdev',
-        namespaces: [
-          'default',
-          'kube-public',
-          'kube-system',
-        ],
+        namespaces: ['default', 'kube-public', 'kube-system'],
       },
     };
     const objAliases = ['n'];
     const rbacFilter = await getUserRbacFilter(req, objAliases);
     expect(rbacFilter).toMatchSnapshot();
   });
-  test('Test User Resources', async () => {
+  test('User Resources', async () => {
     const token = 'Bearer localdev';
     const userRes = await getClusterRbacConfig(token);
 

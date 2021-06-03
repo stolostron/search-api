@@ -12,7 +12,7 @@
 import { isRequired } from './utils';
 
 describe('Utils', () => {
-  test('Test Utils isRequired Returns Error', () => {
+  test('Utils isRequired Returns Error', () => {
     expect(() => isRequired('testParam')).toThrow(Error);
   });
 });

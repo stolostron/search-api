@@ -3,7 +3,7 @@
  ****************************************************************************** */
 // Copyright Contributors to the Open Cluster Management project
 
-describe('Search API: ', () => {
+describe('Search API:', () => {
   beforeEach(() => {
     // eslint-disable-next-line no-console
     console.log('This is the before.');
