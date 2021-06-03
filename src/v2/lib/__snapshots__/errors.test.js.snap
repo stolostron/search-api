@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Errors Test Authentication Error 1`] = `[Function]`;
+exports[`Errors Authentication Error 1`] = `[Function]`;
 
-exports[`Errors Test Generic Error 1`] = `[Function]`;
+exports[`Errors Generic Error 1`] = `[Function]`;
 
-exports[`Errors Test Network Error 1`] = `[Function]`;
+exports[`Errors Network Error 1`] = `[Function]`;

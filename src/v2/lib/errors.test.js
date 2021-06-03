@@ -12,13 +12,13 @@
 import { AuthenticationError, GenericError, NetworkError } from './errors';
 
 describe('Errors', () => {
-  test('Test Authentication Error', async () => {
+  test('Authentication Error', async () => {
     expect(AuthenticationError).toMatchSnapshot();
   });
-  test('Test Generic Error', async () => {
+  test('Generic Error', async () => {
     expect(GenericError).toMatchSnapshot();
   });
-  test('Test Network Error', async () => {
+  test('Network Error', async () => {
     expect(NetworkError).toMatchSnapshot();
   });
 });
