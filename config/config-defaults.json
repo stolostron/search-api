@@ -1,13 +1,13 @@
 {
-  "API_SERVER_URL": "https://api.aws-480-l2bk7.dev07.red-chesterfield.com:6443",
+  "API_SERVER_URL": "",
   "contextPath": "/searchapi",
   "defaultQueryLimit": 10000,
   "defaultQueryLoopLimit": 5000,
   "httpPort": 4010,
   "RBAC_POLL_INTERVAL": 60000,
   "RBAC_INACTIVITY_TIMEOUT": 600000,
-  "SERVICEACCT_TOKEN": "sha256~3Nbm1lyEP0vbUx6nxrYiP21czRRdsDYoO9WVRyn0Jq0",
+  "SERVICEACCT_TOKEN": "",
   "redisEndpoint": "//localhost:6379",
-  "redisSSLEndpoint": "redisgraph-open-cluster-management.apps.aws-480-l2bk7.dev07.red-chesterfield.com:443",
-  "redisPassword": "yQwaTn7MHQhcx5h5"
+  "redisSSLEndpoint": "",
+  "redisPassword": ""
 }
