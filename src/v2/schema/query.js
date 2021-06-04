@@ -22,6 +22,7 @@ type Query {
 
   # Search for resources.
   search(input: [SearchInput]): [SearchResult]
+  messages: [Message]
 
   # Get all values for the given property.
   # If a query is passed, then results will be filtered to only those matching the query.
