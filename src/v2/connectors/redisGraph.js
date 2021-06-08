@@ -23,7 +23,7 @@ import { isRequired } from '../lib/utils';
 import pollRbacCache, { getUserRbacFilter } from '../lib/rbacCaching';
 
 export function getPropertiesWithList() {
-  return ['label', 'role', 'port', 'container', 'category', 'policyViolations', 'addon'];
+  return ['label', 'role', 'port', 'container', 'category', 'rules', 'addon'];
 }
 
 // Is there a more efficient way?
