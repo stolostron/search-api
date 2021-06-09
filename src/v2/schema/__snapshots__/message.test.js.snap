@@ -6,7 +6,7 @@ Object {
     "messages": Array [
       Object {
         "description": "Search is disabled on some of your managed clusters.",
-        "id": "S01",
+        "id": "S20",
         "kind": "information",
       },
     ],

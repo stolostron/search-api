@@ -2,8 +2,11 @@ import { gql } from 'apollo-server-express';
 
 export const typeDef = gql`
   type Message {
+    # Unique identifier for each message.
     id: String
+    # Describes the type of message. Expected values are: information, warning, error.
     kind: String
+    # Message text.
     description: String
   }
 `;
@@ -21,7 +24,7 @@ export const resolver = {
       });
       if (disabledClusters > 0) {
         messages.push({
-          id: 'S01',
+          id: 'S20',
           kind: 'information',
           description: 'Search is disabled on some of your managed clusters.',
         });
