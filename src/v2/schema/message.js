@@ -21,11 +21,10 @@ export const resolver = {
       });
       if (disabledClusters > 0) {
         messages.push({
-          id: 'S01',
-          kind: 'information',
-          description: 'Search is disabled on some of your managed clusters.',
-        })
-;
+          id: "S01",
+          kind: "information",
+          description: "Search is disabled on some of your managed clusters.",
+        });
       }
       return messages;
     },

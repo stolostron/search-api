@@ -8,43 +8,43 @@
  * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
 // Copyright Contributors to the Open Cluster Management project
-import { gql } from 'apollo-server-express';
+import { gql } from "apollo-server-express";
 
 export const typeDef = gql`
-# Search API - Queries
-type Query {
-  # Special query to search for applications and their related resources efficiently.
-  # Optionally, pass name and namespace to filter the results.
-  applications(name:String namespace: String): [Application]
-  subscriptions(name:String namespace: String): [Subscription]
-  placementRules(name:String namespace: String): [PlacementRule]
-  channels(name: String namespace: String): [Channel]
+  # Search API - Queries
+  type Query {
+    # Special query to search for applications and their related resources efficiently.
+    # Optionally, pass name and namespace to filter the results.
+    applications(name: String, namespace: String): [Application]
+    subscriptions(name: String, namespace: String): [Subscription]
+    placementRules(name: String, namespace: String): [PlacementRule]
+    channels(name: String, namespace: String): [Channel]
 
-  # Search for resources.
-  search(input: [SearchInput]): [SearchResult]
-  
-  # Additional information about the search service status. This is similar to errors, but without implying that there was a problem.
-  messages: [Message]
+    # Search for resources.
+    search(input: [SearchInput]): [SearchResult]
 
-  # Get all values for the given property.
-  # If a query is passed, then results will be filtered to only those matching the query.
-  searchComplete(property: String!, query: SearchInput, limit: Int): [String]
+    # Additional information about the search service status. This is similar to errors, but without implying that there was a problem.
+    messages: [Message]
 
-  # Get all Properties available for search.
-  searchSchema: JSON
+    # Get all values for the given property.
+    # If a query is passed, then results will be filtered to only those matching the query.
+    searchComplete(property: String!, query: SearchInput, limit: Int): [String]
 
-  # Get saved search queries for the current user.
-  savedSearches: [userSearch]
-}
+    # Get all Properties available for search.
+    searchSchema: JSON
 
-# Search API - Mutations
-type Mutation {
-  # Delete search query for the current user.
-  deleteSearch(resource: JSON): JSON
+    # Get saved search queries for the current user.
+    savedSearches: [userSearch]
+  }
 
-  # Save a search query for the current user.
-  saveSearch(resource: JSON): JSON
-}
+  # Search API - Mutations
+  type Mutation {
+    # Delete search query for the current user.
+    deleteSearch(resource: JSON): JSON
+
+    # Save a search query for the current user.
+    saveSearch(resource: JSON): JSON
+  }
 `;
 
 export const resolver = {};

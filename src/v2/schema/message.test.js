@@ -1,7 +1,6 @@
 import supertest from "supertest";
 import server, { GRAPHQL_PATH } from "../index";
 
-
 describe("Message Resolver", () => {
   test("Correctly Resolves Message Query", () =>
     new Promise((done) => {
