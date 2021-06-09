@@ -1,5 +1,5 @@
-import { gql } from "apollo-server-express";
-import logger from "../lib/logger";
+import { gql } from 'apollo-server-express';
+
 export const typeDef = gql`
   type Message {
     id: String
@@ -10,20 +10,20 @@ export const typeDef = gql`
 
 export const resolver = {
   Query: {
-    messages: async (parent, args, { searchModel, req }) => {
+    messages: async (parent, args, { searchModel }) => {
       const messages = [];
       const disabledClusters = await searchModel.resolveSearchCount({
         filters: [
-          { property: "kind", values: ["cluster"] },
-          { property: "addon", values: ["search-collector=false"] },
-          { property: "name", values: ["!local-cluster"] },
+          { property: 'kind', values: ['cluster'] },
+          { property: 'addon', values: ['search-collector=false'] },
+          { property: 'name', values: ['!local-cluster'] },
         ],
       });
       if (disabledClusters > 0) {
         messages.push({
-          id: "S01",
-          kind: "information",
-          description: "Search is disabled on some of your managed clusters.",
+          id: 'S01',
+          kind: 'information',
+          description: 'Search is disabled on some of your managed clusters.',
         });
       }
       return messages;

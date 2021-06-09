@@ -8,7 +8,7 @@
  * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
 // Copyright Contributors to the Open Cluster Management project
-import { gql } from "apollo-server-express";
+import { gql } from 'apollo-server-express';
 
 export const typeDef = gql`
   # Search API - Queries
