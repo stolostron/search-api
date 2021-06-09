@@ -12,9 +12,6 @@ const nconf = require('nconf');
 const log4js = require('log4js');
 const path = require('path');
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
-
 
 const logger = log4js.getLogger('server');
 

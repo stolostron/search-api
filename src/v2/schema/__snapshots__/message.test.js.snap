@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Message Resolver Correctly Resolves Message Query 1`] = `
+Object {
+  "data": Object {
+    "messages": Array [
+      Object {
+        "description": "Currently, search is disabled on some of your managed clusters. Some data might be missing from the console view. See _____ to enable search.",
+        "id": "S01",
+        "kind": "information",
+      },
+    ],
+  },
+}
+`;
