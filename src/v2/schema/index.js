@@ -17,6 +17,7 @@ import * as json from './json';
 import * as query from './query';
 import * as search from './search';
 import * as userSearch from './user-search';
+import * as message from './message';
 
 const modules = [
   application,
@@ -24,6 +25,7 @@ const modules = [
   query,
   search,
   userSearch,
+  message,
 ];
 
 const mainDefs = [gql`
