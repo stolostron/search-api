@@ -22,6 +22,8 @@ type Query {
 
   # Search for resources.
   search(input: [SearchInput]): [SearchResult]
+  
+  # Additional information about the search service status. This is similar to errors, but without implying that there was a problem.
   messages: [Message]
 
   # Get all values for the given property.

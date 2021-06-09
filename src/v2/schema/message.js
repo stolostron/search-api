@@ -20,15 +20,12 @@ export const resolver = {
         ],
       });
       if (disabledClusters > 0) {
-        const id = "S01";
-        const kind = "information";
-        const description =
-          "Currently, search is disabled on some of your managed clusters. Some data might be missing from the console view. See _____ to enable search.";
         messages.push({
-          id: id,
-          kind: kind,
-          description: description,
-        });
+          id: 'S01',
+          kind: 'information',
+          description: 'Search is disabled on some of your managed clusters.',
+        })
+;
       }
       return messages;
     },

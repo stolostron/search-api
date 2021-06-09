@@ -1,7 +1,7 @@
 import supertest from "supertest";
 import server, { GRAPHQL_PATH } from "../index";
 
-// eslint-disable-next-line jest/no-disabled-tests
+
 describe("Message Resolver", () => {
   test("Correctly Resolves Message Query", () =>
     new Promise((done) => {

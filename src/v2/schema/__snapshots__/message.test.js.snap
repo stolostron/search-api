@@ -5,7 +5,7 @@ Object {
   "data": Object {
     "messages": Array [
       Object {
-        "description": "Currently, search is disabled on some of your managed clusters. Some data might be missing from the console view. See _____ to enable search.",
+        "description": "Search is disabled on some of your managed clusters.",
         "id": "S01",
         "kind": "information",
       },
