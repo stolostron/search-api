@@ -3,7 +3,11 @@ import { gql } from 'apollo-server-express';
 export const typeDef = gql`
   type Message {
     # Unique identifier for each message.
+<<<<<<< HEAD
     id: String
+=======
+    id: String!
+>>>>>>> main
     # Describes the type of message. Expected values are: information, warning, error.
     kind: String
     # Message text.
