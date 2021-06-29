@@ -92,6 +92,7 @@ graphQLServer.use('*', helmet({
   frameguard: false,
   noSniff: false,
   xssFilter: false,
+  contentSecurityPolicy: process.env.NODE_ENV === 'development',
 }), noCache(), requestLogger, cookieParser());
 
 graphQLServer.get('/livenessProbe', (req, res) => {
