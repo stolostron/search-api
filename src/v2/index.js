@@ -88,20 +88,12 @@ const requestLogger = isProd
   })
   : morgan('dev');
 
-if (process.env.NODE_ENV === 'development') {
-  graphQLServer.use('*', helmet({
-    frameguard: false,
-    noSniff: false,
-    xssFilter: false,
-    contentSecurityPolicy: false, // adding this for graphQL api
-  }), noCache(), requestLogger, cookieParser());
-} else {
-  graphQLServer.use('*', helmet({
-    frameguard: false,
-    noSniff: false,
-    xssFilter: false,
-  }), noCache(), requestLogger, cookieParser());
-}
+graphQLServer.use('*', helmet({
+  frameguard: false,
+  noSniff: false,
+  xssFilter: false,
+  contentSecurityPolicy: process.env.NODE_ENV === 'development',
+}), noCache(), requestLogger, cookieParser());
 
 graphQLServer.get('/livenessProbe', (req, res) => {
   res.send(`Testing livenessProbe --> ${new Date().toLocaleString()}`);
