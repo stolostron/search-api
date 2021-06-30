@@ -9,6 +9,7 @@
  ****************************************************************************** */
 // Copyright Contributors to the Open Cluster Management project
 
+import _ from 'lodash';
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import { isInstance as isApolloErrorInstance, formatError as formatApolloError } from 'apollo-errors';
@@ -25,6 +26,9 @@ import { getServiceAccountToken } from './lib/utils';
 import RedisGraphConnector from './connectors/redisGraph';
 
 import AppModel from './models/application';
+import ClusterModel, { CLUSTER_NAMESPACE_LABEL } from './models/cluster';
+import ComplianceModel from './models/compliance';
+import GenericModel from './models/generic';
 import SearchModel from './models/search';
 import QueryModel from './models/userSearch';
 
@@ -60,6 +64,13 @@ const apolloServer = new ApolloServer({
     let searchConnector;
     let kubeConnector;
 
+    const namespaceList = _.get(req, 'user.namespaces', []);
+    const rawNamespaces = Array.isArray(namespaceList.items) ? namespaceList.items : [];
+    const namespaces = rawNamespaces.map((ns) => ns.metadata.name);
+    const clusterNamespaces = rawNamespaces.filter((ns) => _.has(ns, `metadata.labels["${CLUSTER_NAMESPACE_LABEL}"]`))
+      .map((ns) => ns.metadata.name);
+    const { updateUserNamespaces } = req;
+
     if (isTest) {
       searchConnector = new MockSearchConnector({ rbac: req.user.namespaces, req });
       kubeConnector = new MockKubeConnector();
@@ -67,12 +78,15 @@ const apolloServer = new ApolloServer({
       searchConnector = new RedisGraphConnector({ rbac: req.user.namespaces, req });
       // KubeConnector uses admin token.
       // This allows non-admin users have access to the userpreference resource for saved searches
-      kubeConnector = new KubeConnector({ token: serviceaccountToken });
+      kubeConnector = new KubeConnector({ token: serviceaccountToken, namespaces });
     }
 
     return {
       req,
       appModel: new AppModel({ searchConnector, kubeConnector }),
+      clusterModel: new ClusterModel({ kubeConnector, clusterNamespaces, updateUserNamespaces }),
+      complianceModel: new ComplianceModel({ kubeConnector }),
+      genericModel: new GenericModel({ kubeConnector }),
       searchModel: new SearchModel({ searchConnector, kubeConnector }),
       queryModel: new QueryModel({ kubeConnector }),
     };

@@ -1,4 +1,6 @@
 {
+  "acmPollInterval": 100,
+  "acmPollTimeout": 15000,
   "API_SERVER_URL": "https://kubernetes.default.svc",
   "contextPath": "/searchapi",
   "defaultQueryLimit": 10000,

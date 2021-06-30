@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`User Access Resolver Correctly Resolves User Access Query 1`] = `
+Object {
+  "data": Object {
+    "userAccess": Object {
+      "allowed": true,
+      "reason": "RBAC: allowed by ClusterRoleBinding \\"oidc-admin-binding\\" of ClusterRole \\"cluster-admin\\" to User \\"admin\\"",
+      "resource": "selfsubjectrulesreviews",
+      "verb": "get",
+    },
+  },
+}
+`;

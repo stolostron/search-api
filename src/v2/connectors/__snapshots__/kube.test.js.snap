@@ -1,5 +1,70 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`KubeConnector CreateManagedClusterView creates and polls ManagedClusterView api 1`] = `
+Object {
+  "status": Object {
+    "conditions": Array [
+      Object {
+        "lastUpdateTime": "2018-08-15T18:44:41Z",
+        "type": "Processing",
+      },
+    ],
+    "result": Object {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": Object {
+        "creationTimestamp": "2020-05-13T20:24:01Z",
+        "generateName": "search-prod-28a0e-search-api-66cf776db5-",
+        "labels": Object {
+          "app": "search",
+          "chart": "search-prod-3.5.0",
+          "component": "search-api",
+          "heritage": "Helm",
+          "pod-template-hash": "66cf776db5",
+          "release": "search-prod-28a0e",
+        },
+        "name": "search-prod-28a0e-search-api-66cf776db5-7bzfh",
+        "namespace": "open-cluster-management",
+        "resourceVersion": "45078202",
+        "selfLink": "/api/v1/namespaces/open-cluster-management/pods/search-prod-28a0e-search-api-66cf776db5-7bzfh",
+        "uid": "7ecc7859-5ce4-4e34-8834-bd687c0fe43d",
+      },
+      "status": Object {
+        "conditions": Array [
+          Object {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2020-05-13T20:24:02Z",
+            "status": "True",
+            "type": "Initialized",
+          },
+          Object {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2020-05-13T20:24:33Z",
+            "status": "True",
+            "type": "Ready",
+          },
+          Object {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2020-05-13T20:24:33Z",
+            "status": "True",
+            "type": "ContainersReady",
+          },
+          Object {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2020-05-13T20:24:02Z",
+            "status": "True",
+            "type": "PodScheduled",
+          },
+        ],
+        "phase": "Running",
+        "qosClass": "Burstable",
+        "startTime": "2020-05-13T20:24:02Z",
+      },
+    },
+  },
+}
+`;
+
 exports[`KubeConnector Get calls default connector 1`] = `
 Array [
   Object {

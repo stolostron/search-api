@@ -35,6 +35,18 @@ export const typeDef = gql`
 
     # Get saved search queries for the current user.
     savedSearches: [userSearch]
+
+    # Resolves if the current user is authorized to access a given resource.
+    userAccess(resource: String, kind: String, action: String!, namespace: String, apiGroup: String, name: String, version: String): JSON
+    
+    # Get any kubernetes resource from any managed cluster.
+    getResource(apiVersion: String, kind: String, name: String, namespace: String, cluster: String, selfLink: String, updateInterval: Int, deleteAfterUse: Boolean): JSON
+
+    # Retrieves logs for the given container.
+    logs(containerName: String!, podName: String!, podNamespace: String!, clusterName: String!): String
+
+    # Resolves the data needed to render the overview page.
+    overview(demoMode: Boolean): Overview
   }
 
   # Search API - Mutations
@@ -44,7 +56,39 @@ export const typeDef = gql`
 
     # Save a search query for the current user.
     saveSearch(resource: JSON): JSON
+
+    # Update any Kubernetes resources on both local and managed clusters.
+    updateResource(selfLink: String, namespace: String, kind: String, name: String, body: JSON, cluster: String): JSON
+  
+    # Delete any Kubernetes resource via selfLink
+    deleteResource(selfLink: String, apiVersion: String, name: String, namespace: String, cluster: String, kind: String, childResources: JSON): JSON  
+  }
+
+  # Common fields for all Kubernetes objects
+  interface K8sObject {
+    metadata: Metadata
+  }
+
+  # Common fields in all Kubernetes metadata objects.
+  type Metadata {
+    annotations: JSON
+    creationTimestamp: String
+    labels: JSON
+    name: String
+    namespace: String
+    resourceVersion: String
+    selfLink: String
+    status: String
+    uid: String
   }
 `;
 
-export const resolver = {};
+// export const resolver = {};
+export const resolver = {
+  K8sObject: {
+    // eslint-disable-next-line no-underscore-dangle
+    __resolveType() {
+      return null;
+    },
+  },
+};

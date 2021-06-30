@@ -16,16 +16,22 @@ import * as application from './application';
 import * as json from './json';
 import * as query from './query';
 import * as search from './search';
+import * as userAccess from './user-access';
 import * as userSearch from './user-search';
 import * as message from './message';
+import * as genericResources from './generic-resources';
+import * as overview from './overview';
 
 const modules = [
   application,
   json,
   query,
   search,
+  userAccess,
   userSearch,
   message,
+  genericResources,
+  overview,
 ];
 
 const mainDefs = [gql`
@@ -35,7 +41,7 @@ schema {
 }
 `];
 
-export const typeDefs = mainDefs.concat(modules.map((m) => m.typeDef));
+export const typeDefs = mainDefs.concat(modules.filter((m) => m.typeDef).map((m) => m.typeDef));
 export const resolvers = _.merge(...modules.map((m) => m.resolver));
 
 export default { typeDefs, resolvers };

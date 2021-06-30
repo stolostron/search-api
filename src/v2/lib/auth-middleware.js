@@ -5,8 +5,8 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
- * Copyright (c) 2020 Red Hat, Inc.
  ****************************************************************************** */
+// Copyright (c) 2020 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
 import _ from 'lodash';
@@ -60,8 +60,7 @@ async function getNamespaces(usertoken) {
     const mockReq = createMockIAMHTTP();
     return mockReq(options);
   }
-  const nsResponse = await request(options);
-  return Array.isArray(nsResponse.items) ? nsResponse.items.map((ns) => ns.metadata.name) : [];
+  return request(options);
 }
 
 async function getUsername(usertoken) {
@@ -123,6 +122,14 @@ export default function createAuthMiddleWare({
       userNamePromise = getUsername(idToken);
       cache.set(`userName_${idToken}`, userNamePromise);
     }
+
+    req.updateUserNamespaces = async (project) => {
+      const projectPromise = await cache.get(`namespaces_${idToken}`);
+      if (projectPromise && project) {
+        projectPromise.items.push(project);
+        cache.set(`namespaces_${idToken}`, projectPromise);
+      }
+    };
 
     req.user = {
       name: await userNamePromise,

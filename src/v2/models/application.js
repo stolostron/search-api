@@ -257,4 +257,27 @@ export default class AppModel {
     const clusters = await this.runQueryOnlyOnce('runChannelClustersQuery');
     return getLocalRemoteClusterCounts(chUid, 'ch', clusters);
   }
+
+  // for overview page
+  async getApplicationOverview(name, namespace = 'default') {
+    let apps;
+    try {
+      if (name) {
+        apps = await this.kubeConnector.getResources(
+          (ns) => `/apis/app.k8s.io/v1beta1/namespaces/${ns}/applications/${name}`,
+          { namespaces: [namespace] },
+        );
+      } else {
+        apps = await this.kubeConnector.getResources((ns) => `/apis/app.k8s.io/v1beta1/namespaces/${ns}/applications`);
+      }
+      apps = await Promise.all(apps);
+    } catch (err) {
+      logger.error(err);
+      throw err;
+    }
+    return apps.filter((app) => app.metadata)
+      .map((app) => ({
+        metadata: app.metadata,
+      }));
+  }
 }
