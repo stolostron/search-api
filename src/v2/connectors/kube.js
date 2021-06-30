@@ -64,7 +64,7 @@ export default class KubeConnector {
     return this.http(_.merge(defaults, opts)).then((res) => res.body);
   }
 
-  post(path = '', jsonBody, opts = {}) {
+  post(path = '', jsonBody = {}, opts = {}) {
     const defaults = {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'POST',
@@ -76,7 +76,7 @@ export default class KubeConnector {
     return this.http(_.merge(defaults, opts)).then((res) => res.body);
   }
 
-  patch(path = '', jsonBody, opts = {}) {
+  patch(path = '', jsonBody = {}, opts = {}) {
     const defaults = {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'PATCH',
@@ -89,7 +89,7 @@ export default class KubeConnector {
     return this.http(_.merge(defaults, opts)).then((res) => res.body);
   }
 
-  delete(path = '', jsonBody, opts = {}) {
+  delete(path = '', jsonBody = {}, opts = {}) {
     const defaults = {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'DELETE',
@@ -135,9 +135,10 @@ export default class KubeConnector {
               clearInterval(intervalID);
               return reject(response);
             }
-            // We are looking for the type to be Processing for ManagedClusterView resources
-            // TODO remove the 'Completed' logic when resource view is removed
-            const isComplete = _.get(response, 'items[0].status.conditions[0].type') || _.get(response, 'items[0].status.status') || _.get(response, 'items[0].status.type') || _.get(response, 'items[0].status.conditions[0].type', 'NO');
+            const isComplete = _.get(response, 'items[0].status.conditions[0].type')
+              || _.get(response, 'items[0].status.status')
+              || _.get(response, 'items[0].status.type')
+              || _.get(response, 'items[0].status.conditions[0].type', 'NO');
             if (isComplete === 'Processing' || isComplete === 'Completed') {
               clearInterval(intervalID);
               logger.debug('start to get resource: ', new Date(), viewLink);
@@ -168,7 +169,7 @@ export default class KubeConnector {
   // eslint-disable-next-line max-len
   async managedClusterViewQuery(managedClusterNamespace, apiGroup, version, kind, resourceName, namespace, updateInterval, deleteAfterUse) {
     // name cannot be long than 63 chars in length
-    const name = crypto.createHash('sha1').update(`${managedClusterNamespace}-${resourceName}-${kind}`).digest('hex').substr(0, 63);
+    const name = crypto.createHash('sha512').update(`${managedClusterNamespace}-${resourceName}-${kind}`).digest('hex').substr(0, 63);
 
     // scope.name is required, and either GKV (scope.apiGroup+kind+version) or scope.resource
     const body = {

@@ -10,6 +10,8 @@ const routePrefix = '/apis/action.open-cluster-management.io/v1beta1/namespaces'
 const clusterActionApiVersion = 'action.open-cluster-management.io/v1beta1';
 const authApiVersion = 'authorization.k8s.io/v1';
 const selfSubjectAccessReviewLink = '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews';
+const resultStatus = 'status.result'
+const localClustername = 'local-cluster'
 
 function getGroupFromApiVersion(apiVersion) {
   if (apiVersion.indexOf('/') >= 0) {
@@ -22,7 +24,6 @@ function getApiGroupFromApiVersionOrPath(apiVersion, path, kind) {
   if (apiVersion) {
     return getGroupFromApiVersion(apiVersion);
   }
-  // TODO - need to pass apigroup from backend to this function so we dont need this hack
   let apiGroup = ''; // api group to differentiate between duplicate resources (ie. endpoints & subscriptions)
   let version = '';
   const pathData = path.split('/');
@@ -77,7 +78,7 @@ export default class GenericModel extends KubeModel {
   }
 
   async getLogs(containerName, podName, podNamespace, clusterName) {
-    if (clusterName === 'local-cluster') { // TODO: Use flag _hubClusterResource instead of cluster name
+    if (clusterName === localClustername) {
       return this.kubeConnector.get(`/api/v1/namespaces/${podNamespace}/pods/${podName}/log?container=${containerName}&tailLines=1000`).catch((err) => {
         logger.error(err);
         throw err;
@@ -104,14 +105,14 @@ export default class GenericModel extends KubeModel {
       deleteAfterUse = true,
     } = args;
     const path = selfLink || `${await this.getResourceEndPoint({ apiVersion, kind, metadata: { namespace } })}/${name}`;
-    if (cluster === 'local-cluster') {
+    if (cluster === localClustername) {
       return this.kubeConnector.get(path).catch((err) => {
         logger.error(err);
         throw err;
       });
     }
 
-    if (cluster !== 'local-cluster' && kind === 'secret') {
+    if (cluster !== localClustername && kind === 'secret') {
       // We do not allow users to view secrets as this could allow lesser permissioned users to get around RBAC.
       return [{
         message: 'Viewing managed cluster secrets is not allowed for security reasons. To view this secret, you must access it from the specific managed cluster.',
@@ -119,7 +120,7 @@ export default class GenericModel extends KubeModel {
     }
 
     // Check if the ManagedClusterView already exists if not create it
-    const managedClusterViewName = crypto.createHash('sha1').update(`${cluster}-${name}-${kind}`).digest('hex').substr(0, 63);
+    const managedClusterViewName = crypto.createHash('sha512').update(`${cluster}-${name}-${kind}`).digest('hex').substr(0, 63);
 
     const resourceResponse = await this.kubeConnector.get(
       `/apis/view.open-cluster-management.io/v1beta1/namespaces/${cluster}/managedclusterviews/${managedClusterViewName}`,
@@ -143,14 +144,14 @@ export default class GenericModel extends KubeModel {
         throw err;
       });
 
-      const resourceResult = _.get(response, 'status.result');
+      const resourceResult = _.get(response, resultStatus);
       if (resourceResult) {
         return resourceResult;
       }
 
       return [{ message: 'Unable to load resource data. Verify that the resource you are looking for exists, and check if the cluster that hosts the resource is online.' }];
     }
-    return _.get(resourceResponse, 'status.result');
+    return _.get(resourceResponse, resultStatus);
   }
 
   async updateResource(args) {
@@ -164,7 +165,7 @@ export default class GenericModel extends KubeModel {
     } = body;
     const path = `${await this.getResourceEndPoint({ apiVersion, kind, metadata: { namespace } })}/${name}`;
 
-    if (cluster === 'local-cluster') {
+    if (cluster === localClustername) {
       const localResponse = await this.kubeConnector.put(path, requestBody);
       if (localResponse.message) {
         throw new Error(`${localResponse.code} - ${localResponse.message}`);
@@ -223,7 +224,7 @@ export default class GenericModel extends KubeModel {
         const message = _.get(result, 'status.conditions[0].message');
         throw new Error(`Failed to Update ${name}. ${reason}. ${message}.`);
       } else {
-        return _.get(result, 'status.result');
+        return _.get(result, resultStatus);
       }
     } catch (e) {
       logger.error('Resource Action Error:', e.message);
@@ -245,7 +246,7 @@ export default class GenericModel extends KubeModel {
 
     const path = selfLink || `${await this.getResourceEndPoint({ apiVersion, kind, metadata: { namespace } })}/${name}`;
     // Local cluster case
-    if ((cluster === '' || cluster === 'local-cluster' || cluster === undefined)) {
+    if ((cluster === '' || cluster === localClustername || cluster === undefined)) {
       const localResponse = await this.kubeConnector.delete(path, {});
       if (localResponse.status === 'Failure' || localResponse.code >= 400) {
         throw new Error(`Failed to delete the requested resource [${localResponse.code}] - ${localResponse.message}`);

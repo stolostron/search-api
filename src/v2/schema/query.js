@@ -83,7 +83,6 @@ export const typeDef = gql`
   }
 `;
 
-// export const resolver = {};
 export const resolver = {
   K8sObject: {
     // eslint-disable-next-line no-underscore-dangle

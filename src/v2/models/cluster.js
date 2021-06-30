@@ -21,6 +21,8 @@ export const CSR_LABEL = 'open-cluster-management.io/cluster-name';
 export const CSR_LABEL_SELECTOR = (cluster) => `labelSelector=${CSR_LABEL}%3D${cluster}`;
 export const CSR_LABEL_SELECTOR_ALL = `labelSelector=${CSR_LABEL}`;
 
+const metaTimestamp = 'metadata.creationTimestamp';
+
 function getLatest(items, key) {
   if (items.length === 0) {
     return undefined;
@@ -36,8 +38,8 @@ function getLatest(items, key) {
 }
 
 function getClusterDeploymentStatus(clusterDeployment, uninstall, install) {
-  const latestJobActive = (jobs) => (jobs && _.get(getLatest(jobs, 'metadata.creationTimestamp'), 'status.active', 0) > 0);
-  const latestJobFailed = (jobs) => (jobs && _.get(getLatest(jobs, 'metadata.creationTimestamp'), 'status.failed', 0) > 0);
+  const latestJobActive = (jobs) => (jobs && _.get(getLatest(jobs, metaTimestamp), 'status.active', 0) > 0);
+  const latestJobFailed = (jobs) => (jobs && _.get(getLatest(jobs, metaTimestamp), 'status.failed', 0) > 0);
 
   let status = 'pending';
   if (latestJobActive(uninstall)) {
@@ -74,7 +76,7 @@ export function getStatus(cluster, csrs, clusterDeployment, uninstall, install) 
     } else if (!clusterJoined) {
       status = 'pendingimport';
       if (csrs && csrs.length) {
-        status = !_.get(getLatest(csrs, 'metadata.creationTimestamp'), 'status.certificate')
+        status = !_.get(getLatest(csrs, metaTimestamp), 'status.certificate')
           ? 'needsapproval' : 'pending';
       }
     } else {
