@@ -10,8 +10,8 @@ const routePrefix = '/apis/action.open-cluster-management.io/v1beta1/namespaces'
 const clusterActionApiVersion = 'action.open-cluster-management.io/v1beta1';
 const authApiVersion = 'authorization.k8s.io/v1';
 const selfSubjectAccessReviewLink = '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews';
-const resultStatus = 'status.result'
-const localClustername = 'local-cluster'
+const resultStatus = 'status.result';
+const localClustername = 'local-cluster';
 
 function getGroupFromApiVersion(apiVersion) {
   if (apiVersion.indexOf('/') >= 0) {
