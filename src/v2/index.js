@@ -72,10 +72,10 @@ const apolloServer = new ApolloServer({
     const { updateUserNamespaces } = req;
 
     if (isTest) {
-      searchConnector = new MockSearchConnector({ rbac: req.user.namespaces, req });
+      searchConnector = new MockSearchConnector({ rbac: namespaces, req });
       kubeConnector = new MockKubeConnector();
     } else {
-      searchConnector = new RedisGraphConnector({ rbac: req.user.namespaces, req });
+      searchConnector = new RedisGraphConnector({ rbac: namespaces, req });
       // KubeConnector uses admin token.
       // This allows non-admin users have access to the userpreference resource for saved searches
       kubeConnector = new KubeConnector({ token: serviceaccountToken, namespaces });
