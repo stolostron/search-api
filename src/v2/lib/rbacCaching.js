@@ -193,12 +193,14 @@ async function getUserAccess(kubeToken, namespace) {
 
 async function buildRbacString(req) {
   const { user: { namespaces, idToken } } = req;
+  const rawNamespaces = Array.isArray(namespaces.items) ? namespaces.items : [];
+  const namespaceList = rawNamespaces.map((ns) => ns.metadata.name);
   const startTime = Date.now();
   if (isOpenshift === null) await checkIfOpenShiftPlatform(idToken);
   const userCache = cache.get(idToken);
   let data = [];
   if (!userCache || !userCache.userAccessPromise || !userCache.userNonNamespacedAccessPromise) {
-    const userAccessPromise = Promise.all(namespaces.map((namespace) => getUserAccess(idToken, namespace)));
+    const userAccessPromise = Promise.all(namespaceList.map((namespace) => getUserAccess(idToken, namespace)));
     const userNonNamespacedAccessPromise = getNonNamespacedAccess(idToken);
     cache.set(idToken, { ...userCache, userAccessPromise, userNonNamespacedAccessPromise });
     logger.info('Saved userAccess and nonNamespacesAccess promises to user cache.');
@@ -211,7 +213,7 @@ async function buildRbacString(req) {
   const allowedNS = [...rbacData].filter((value) => !value.includes('_'));
   const allowedResources = [...rbacData].filter((value) => value.includes('_'));
 
-  logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaces && namespaces.length} )`);
+  logger.perfLog(startTime, 1000, `buildRbacString(namespaces count:${namespaceList && namespaceList.length} )`);
   return { allowedResources, allowedNS };
 }
 
