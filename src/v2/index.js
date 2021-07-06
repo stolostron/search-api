@@ -89,7 +89,7 @@ const requestLogger = isProd
   : morgan('dev');
 
 graphQLServer.use('*', helmet({
-  hsts: true,
+  // hsts: true,
   frameguard: false,
   noSniff: false,
   xssFilter: false,
