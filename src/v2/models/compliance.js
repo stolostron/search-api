@@ -18,7 +18,7 @@ export default class ComplianceModel {
 
     if (!name) {
       // for getting policy list
-      const policyResponse = await this.kubeConnector.getResources((ns) => `/apis/policy.open-cluster-management.io/v1/namespaces/${ns}/policies`).catch((err) => {
+      const policyResponse = await this.kubeConnector.getResources((ns) => `/apis/policy.open-cluster-management.io/v1/namespaces/${ns}/policies`, {}, true).catch((err) => {
         logger.error(err);
         throw err;
       });
@@ -28,7 +28,7 @@ export default class ComplianceModel {
       policies = policyResponse || [];
     } else {
       // get single policy with a specific name - walkaround of no type field
-      const policyResponse = await this.kubeConnector.get(`/apis/policy.open-cluster-management.io/v1/namespaces/${namespace}/policies/${name}`).catch((err) => {
+      const policyResponse = await this.kubeConnector.get(`/apis/policy.open-cluster-management.io/v1/namespaces/${namespace}/policies/${name}`, {}, true).catch((err) => {
         logger.error(err);
         throw err;
       });

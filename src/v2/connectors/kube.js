@@ -18,6 +18,7 @@ import logger from '../lib/logger';
 
 export default class KubeConnector {
   constructor({
+    req,
     token = 'localdev',
     kubeApiEndpoint = `${config.get('API_SERVER_URL')}` || 'https://kubernetes.default.svc',
     httpLib = request,
@@ -26,6 +27,7 @@ export default class KubeConnector {
     pollInterval = config.get('acmPollInterval'),
     uid = uuidv4,
   } = {}) {
+    this.req = req;
     this.kubeApiEndpoint = kubeApiEndpoint;
     this.token = token;
     this.http = httpLib;
@@ -41,47 +43,47 @@ export default class KubeConnector {
    * @param {*} path - API path
    * @param {*} opts - HTTP request options
    */
-  get(path = '', opts = {}) {
+  get(path = '', opts = {}, userToken = false) {
     const defaults = {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: userToken ? `Bearer ${this.req.user.idToken}` : `Bearer ${this.token}`,
       },
     };
     return this.http(_.merge(defaults, opts)).then((res) => res.body);
   }
 
-  put(path = '', opts = {}) {
+  put(path = '', opts = {}, userToken = false) {
     const defaults = {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: userToken ? `Bearer ${this.req.user.idToken}` : `Bearer ${this.token}`,
         'Content-Type': 'application/json',
       },
     };
     return this.http(_.merge(defaults, opts)).then((res) => res.body);
   }
 
-  post(path = '', jsonBody = {}, opts = {}) {
+  post(path = '', jsonBody = {}, opts = {}, userToken = false) {
     const defaults = {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: userToken ? `Bearer ${this.req.user.idToken}` : `Bearer ${this.token}`,
       },
       json: jsonBody,
     };
     return this.http(_.merge(defaults, opts)).then((res) => res.body);
   }
 
-  patch(path = '', jsonBody = {}, opts = {}) {
+  patch(path = '', jsonBody = {}, opts = {}, userToken = false) {
     const defaults = {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'PATCH',
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: userToken ? `Bearer ${this.req.user.idToken}` : `Bearer ${this.token}`,
         'Content-Type': 'application/json-patch+json',
       },
       json: jsonBody,
@@ -89,12 +91,12 @@ export default class KubeConnector {
     return this.http(_.merge(defaults, opts)).then((res) => res.body);
   }
 
-  delete(path = '', jsonBody = {}, opts = {}) {
+  delete(path = '', jsonBody = {}, opts = {}, userToken = false) {
     const defaults = {
       url: `${this.kubeApiEndpoint}${path}`,
       method: 'DELETE',
       headers: {
-        Authorization: `Bearer ${this.token}`,
+        Authorization: userToken ? `Bearer ${this.req.user.idToken}` : `Bearer ${this.token}`,
       },
       json: jsonBody,
     };
@@ -198,7 +200,7 @@ export default class KubeConnector {
     }
     // Create ManagedClusterView
     const apiPath = `/apis/view.open-cluster-management.io/v1beta1/namespaces/${managedClusterNamespace}/managedclusterviews`;
-    const managedClusterViewResponse = await this.post(apiPath, body);
+    const managedClusterViewResponse = await this.post(apiPath, body, {}, true);
     if (_.get(managedClusterViewResponse, 'status.conditions[0].status') === 'False' || managedClusterViewResponse.code >= 400) {
       throw new Error(`Create ManagedClusterView Failed [${managedClusterViewResponse.code}] - ${managedClusterViewResponse.message}`);
     }
@@ -219,7 +221,7 @@ export default class KubeConnector {
   }
 
   async deleteManagedClusterView(managedClusterNamespace, managedClusterViewName) {
-    this.delete(`/apis/view.open-cluster-management.io/v1beta1/namespaces/${managedClusterNamespace}/managedclusterviews/${managedClusterViewName}`)
+    this.delete(`/apis/view.open-cluster-management.io/v1beta1/namespaces/${managedClusterNamespace}/managedclusterviews/${managedClusterViewName}`, {}, {}, true)
       .catch((e) => logger.error(`Error deleting managed cluster view ${managedClusterViewName}`, e.message));
   }
 
@@ -230,13 +232,13 @@ export default class KubeConnector {
    * @param {*} opts - default namespace list override
    * @param {*} opts - kind of returned items--used to create valid k8s yaml
    */
-  async getResources(urlTemplate, { namespaces, kind } = {}) {
+  async getResources(urlTemplate, { namespaces, kind } = {}, userToken) {
     const namespaceList = (namespaces || this.namespaces);
 
     const requests = namespaceList.map(async (ns) => {
       let response;
       try {
-        response = await this.get(urlTemplate(ns));
+        response = await this.get(urlTemplate(ns), {}, userToken);
       } catch (err) {
         logger.error(`OCM REQUEST ERROR  for ${urlTemplate(ns)} - ${err.message}`);
         return [];

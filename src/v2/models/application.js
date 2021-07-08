@@ -266,9 +266,10 @@ export default class AppModel {
         apps = await this.kubeConnector.getResources(
           (ns) => `/apis/app.k8s.io/v1beta1/namespaces/${ns}/applications/${name}`,
           { namespaces: [namespace] },
+          true,
         );
       } else {
-        apps = await this.kubeConnector.getResources((ns) => `/apis/app.k8s.io/v1beta1/namespaces/${ns}/applications`);
+        apps = await this.kubeConnector.getResources((ns) => `/apis/app.k8s.io/v1beta1/namespaces/${ns}/applications`, {}, true);
       }
       apps = await Promise.all(apps);
     } catch (err) {

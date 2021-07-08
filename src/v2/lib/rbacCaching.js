@@ -29,10 +29,10 @@ const cache = new LRU({
   maxAge: config.get('RBAC_INACTIVITY_TIMEOUT'), // default is 10 mins
 });
 
-export async function getClusterRbacConfig(kubeToken) {
-  if (kubeToken !== undefined) {
+export async function getClusterRbacConfig(srvcAcctToken) {
+  if (srvcAcctToken !== undefined) {
     const kubeConnector = !isTest
-      ? new KubeConnector({ token: kubeToken })
+      ? new KubeConnector({ token: srvcAcctToken })
       : new MockKubeConnector();
     const [roles, roleBindings, clusterRoles, clusterRoleBindings, namespaces] = await Promise.all([
       kubeConnector.get('/apis/rbac.authorization.k8s.io/v1/roles'),

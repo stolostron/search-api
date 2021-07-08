@@ -70,7 +70,7 @@ export default class GenericModel extends KubeModel {
         },
       },
     };
-    const response = await this.kubeConnector.post(selfSubjectAccessReviewLink, body);
+    const response = await this.kubeConnector.post(selfSubjectAccessReviewLink, body, {}, true);
     if (response.status === 'Failure' || response.code >= 400) {
       throw new Error(`Get User Access Failed [${response.code}] - ${response.message}`);
     }
@@ -79,7 +79,7 @@ export default class GenericModel extends KubeModel {
 
   async getLogs(containerName, podName, podNamespace, clusterName) {
     if (clusterName === localClustername) {
-      return this.kubeConnector.get(`/api/v1/namespaces/${podNamespace}/pods/${podName}/log?container=${containerName}&tailLines=1000`).catch((err) => {
+      return this.kubeConnector.get(`/api/v1/namespaces/${podNamespace}/pods/${podName}/log?container=${containerName}&tailLines=1000`, {}, true).catch((err) => {
         logger.error(err);
         throw err;
       });
@@ -106,7 +106,7 @@ export default class GenericModel extends KubeModel {
     } = args;
     const path = selfLink || `${await this.getResourceEndPoint({ apiVersion, kind, metadata: { namespace } })}/${name}`;
     if (cluster === localClustername) {
-      return this.kubeConnector.get(path).catch((err) => {
+      return this.kubeConnector.get(path, {}, true).catch((err) => {
         logger.error(err);
         throw err;
       });
@@ -124,6 +124,8 @@ export default class GenericModel extends KubeModel {
 
     const resourceResponse = await this.kubeConnector.get(
       `/apis/view.open-cluster-management.io/v1beta1/namespaces/${cluster}/managedclusterviews/${managedClusterViewName}`,
+      {},
+      true,
     ).catch((err) => {
       logger.error(err);
       throw err;
@@ -166,7 +168,7 @@ export default class GenericModel extends KubeModel {
     const path = `${await this.getResourceEndPoint({ apiVersion, kind, metadata: { namespace } })}/${name}`;
 
     if (cluster === localClustername) {
-      const localResponse = await this.kubeConnector.put(path, requestBody);
+      const localResponse = await this.kubeConnector.put(path, requestBody, true);
       if (localResponse.message) {
         throw new Error(`${localResponse.code} - ${localResponse.message}`);
       }
@@ -203,7 +205,7 @@ export default class GenericModel extends KubeModel {
       },
     };
     const actionPath = `${routePrefix}/${cluster}/managedclusteractions`;
-    const response = await this.kubeConnector.post(actionPath, jsonBody);
+    const response = await this.kubeConnector.post(actionPath, jsonBody, {}, true);
     if (response.code || response.message) {
       logger.error(`OCM ERROR ${response.code} - ${response.message}`);
       return [{
@@ -216,7 +218,7 @@ export default class GenericModel extends KubeModel {
     try {
       const result = await Promise.race([pollPromise, this.kubeConnector.timeout()]);
       if (result) {
-        this.kubeConnector.delete(`${routePrefix}/${cluster}/managedclusteractions/${response.metadata.name}`)
+        this.kubeConnector.delete(`${routePrefix}/${cluster}/managedclusteractions/${response.metadata.name}`, {}, {}, true)
           .catch((e) => logger.error(`Error deleting work ${response.metadata.name}`, e.message));
       }
       const reason = _.get(result, 'status.conditions[0].reason');
@@ -247,7 +249,7 @@ export default class GenericModel extends KubeModel {
     const path = selfLink || `${await this.getResourceEndPoint({ apiVersion, kind, metadata: { namespace } })}/${name}`;
     // Local cluster case
     if ((cluster === '' || cluster === localClustername || cluster === undefined)) {
-      const localResponse = await this.kubeConnector.delete(path, {});
+      const localResponse = await this.kubeConnector.delete(path, {}, {}, true);
       if (localResponse.status === 'Failure' || localResponse.code >= 400) {
         throw new Error(`Failed to delete the requested resource [${localResponse.code}] - ${localResponse.message}`);
       }
@@ -286,7 +288,7 @@ export default class GenericModel extends KubeModel {
     };
 
     const apiPath = `${routePrefix}/${cluster}/managedclusteractions`;
-    const response = await this.kubeConnector.post(apiPath, jsonBody);
+    const response = await this.kubeConnector.post(apiPath, jsonBody, {}, true);
     if (response.code || response.message) {
       logger.error(`OCM ERROR ${response.code} - ${response.message}`);
       return [{
@@ -299,7 +301,7 @@ export default class GenericModel extends KubeModel {
     try {
       const result = await Promise.race([pollPromise, this.kubeConnector.timeout()]);
       if (result) {
-        this.kubeConnector.delete(`${routePrefix}/${cluster}/managedclusteractions/${response.metadata.name}`)
+        this.kubeConnector.delete(`${routePrefix}/${cluster}/managedclusteractions/${response.metadata.name}`, {}, {}, true)
           .catch((e) => logger.error(`Error deleting work ${response.metadata.name}`, e.message));
       }
       const reason = _.get(result, 'status.conditions[0].reason');

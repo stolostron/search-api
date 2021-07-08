@@ -78,7 +78,7 @@ const apolloServer = new ApolloServer({
       searchConnector = new RedisGraphConnector({ rbac: namespaces, req });
       // KubeConnector uses admin token.
       // This allows non-admin users have access to the userpreference resource for saved searches
-      kubeConnector = new KubeConnector({ token: serviceaccountToken, namespaces });
+      kubeConnector = new KubeConnector({ req, token: serviceaccountToken, namespaces });
     }
 
     return {
@@ -106,6 +106,7 @@ graphQLServer.use('*', helmet({
   frameguard: false,
   noSniff: false,
   xssFilter: false,
+  contentSecurityPolicy: false,
 }), noCache(), requestLogger, cookieParser());
 
 graphQLServer.get('/livenessProbe', (req, res) => {

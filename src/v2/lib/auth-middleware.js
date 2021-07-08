@@ -33,7 +33,7 @@ async function getKubeToken({
   if ((_.isEmpty(authorization) && shouldLocalAuth) || process.env.MOCK === 'true') {
     // special case for graphiql to work locally
     // do not exchange for idtoken since authorization header is empty
-    return process.env.SERVICEACCT_TOKEN || 'localdev';
+    return process.env.USER_TOKEN || 'localdev';
   }
   const idToken = authorization.replace('Bearer ', '');
   if (!idToken) {

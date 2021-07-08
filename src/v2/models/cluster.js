@@ -229,11 +229,12 @@ export default class ClusterModel extends KubeModel {
   async getClusterResources() {
     // Try cluster scope queries, falling back to per-cluster-namespace
     const rbacFallbackQuery = (clusterQuery, namespaceQueryFunction) => (
-      this.kubeConnector.get(clusterQuery).then((allItems) => (allItems.items
+      this.kubeConnector.get(clusterQuery, {}, true).then((allItems) => (allItems.items
         ? allItems.items
         : this.kubeConnector.getResources(
           namespaceQueryFunction,
           { namespaces: this.clusterNamespaces },
+          true,
         ))).catch((err) => {
         logger.error(err);
         throw err;
@@ -260,7 +261,7 @@ export default class ClusterModel extends KubeModel {
         '/apis/hive.openshift.io/v1/clusterdeployments',
         (ns) => `/apis/hive.openshift.io/v1/namespaces/${ns}/clusterdeployments`,
       ),
-      this.kubeConnector.get(`/apis/certificates.k8s.io/v1beta1/certificatesigningrequests?${CSR_LABEL_SELECTOR_ALL}`)
+      this.kubeConnector.get(`/apis/certificates.k8s.io/v1beta1/certificatesigningrequests?${CSR_LABEL_SELECTOR_ALL}`, {}, true)
         .then((allItems) => (allItems.items
           ? allItems.items
           : [])).catch((err) => {
