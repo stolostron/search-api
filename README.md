@@ -61,7 +61,7 @@ RBAC_INACTIVITY_TIMEOUT | 600000  | Stop revalidating RBAC cache after user is i
     ```
 4. Copy the redis certificate to the local machine.
     ```
-    oc get secrets search-redisgraph-secrets -n open-cluster-management -o json |jq -r '.data["ca.crt"]' | base64 -d > ./rediscert/redis.crt
+    oc get secrets search-redisgraph-certs -n open-cluster-management -o json |jq -r '.data["ca.crt"]' | base64 -d > ./rediscert/redis.crt
     ```
 5. Allow unsecured TLS connection.
     ```

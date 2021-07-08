@@ -9,7 +9,7 @@ cd ..
 RG_SERVICE_NAME=$(oc get service -n open-cluster-management |grep search-redisgraph | awk '{print $1;}')
 oc create route passthrough redisgraph --service=$RG_SERVICE_NAME --insecure-policy='Redirect' --port='redisgraph' -n open-cluster-management
 
-oc get secrets search-redisgraph-secrets -n open-cluster-management -o json |jq -r '.data["tls.crt"]' | base64 -d > ./rediscert/redis.crt
+oc get secrets search-redisgraph-certs -n open-cluster-management -o json |jq -r '.data["tls.crt"]' | base64 -d > ./rediscert/redis.crt
 
 
 echo ""
