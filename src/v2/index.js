@@ -103,10 +103,11 @@ const requestLogger = isProd
   : morgan('dev');
 
 graphQLServer.use('*', helmet({
+  hsts: true,
   frameguard: false,
   noSniff: false,
   xssFilter: false,
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: process.env.NODE_ENV === 'development',
 }), noCache(), requestLogger, cookieParser());
 
 graphQLServer.get('/livenessProbe', (req, res) => {
