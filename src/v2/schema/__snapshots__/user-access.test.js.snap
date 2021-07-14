@@ -6,8 +6,8 @@ Object {
     "userAccess": Object {
       "allowed": true,
       "reason": "RBAC: allowed by ClusterRoleBinding \\"oidc-admin-binding\\" of ClusterRole \\"cluster-admin\\" to User \\"admin\\"",
-      "resource": "selfsubjectrulesreviews",
-      "verb": "get",
+      "resource": "pods",
+      "verb": "delete",
     },
   },
 }

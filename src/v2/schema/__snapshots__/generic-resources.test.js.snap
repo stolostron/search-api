@@ -1,0 +1,489 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Generic Resources Correctly Resolves Delete Local Resource 1`] = `
+Object {
+  "data": Object {
+    "deleteResource": Object {
+      "data": Object {
+        "deleteResource": Object {
+          "apiVersion": "v1",
+          "kind": "Pod",
+          "metadata": Object {
+            "name": "test-delete-pod",
+            "namespace": "kube-system",
+          },
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`Generic Resources Correctly Resolves Delete Remote Resource 1`] = `
+Object {
+  "data": Object {
+    "updateResource": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "code": "INTERNAL_SERVER_ERROR",
+      },
+      "locations": Array [
+        Object {
+          "column": 11,
+          "line": 3,
+        },
+      ],
+      "message": "this.kubeConnector.uid is not a function",
+      "path": Array [
+        "updateResource",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`Generic Resources Correctly Resolves Get Managed Secret Message 1`] = `
+Object {
+  "data": Object {
+    "getResource": Array [
+      Object {
+        "message": "Viewing managed cluster secrets is not allowed for security reasons. To view this secret, you must access it from the specific managed cluster.",
+      },
+    ],
+  },
+}
+`;
+
+exports[`Generic Resources Correctly Resolves Get Resource Locally 1`] = `
+Object {
+  "data": Object {
+    "getResource": Object {
+      "getResource": Object {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": Object {
+          "annotations": Object {
+            "kubernetes.io/psp": "ibm-privileged-psp",
+            "productID": "none",
+            "productName": "node-exporter",
+            "productVersion": "v0.16.0",
+            "scheduler.alpha.kubernetes.io/critical-pod": "",
+          },
+          "creationTimestamp": "2019-05-07T15:35:04Z",
+          "generateName": "monitoring-prometheus-nodeexporter-",
+          "labels": Object {
+            "app": "monitoring-prometheus",
+            "chart": "ibm-icpmonitoring",
+            "component": "nodeexporter",
+            "controller-revision-hash": "79d7d4c8fc",
+            "heritage": "Tiller",
+            "pod-template-generation": "1",
+            "release": "monitoring",
+            "role": "nodeexporter",
+          },
+          "name": "monitoring-prometheus-nodeexporter-n6h9b",
+          "namespace": "kube-system",
+          "ownerReferences": Array [
+            Object {
+              "apiVersion": "apps/v1",
+              "blockOwnerDeletion": true,
+              "controller": true,
+              "kind": "DaemonSet",
+              "name": "monitoring-prometheus-nodeexporter",
+              "uid": "afa50102-70dd-11e9-865a-00000a15079c",
+            },
+          ],
+          "resourceVersion": "3839",
+          "selfLink": "/api/v1/namespaces/kube-system/pods/monitoring-prometheus-nodeexporter-n6h9b",
+          "uid": "afaa79bb-70dd-11e9-865a-00000a15079c",
+        },
+        "spec": Object {
+          "affinity": Object {
+            "nodeAffinity": Object {
+              "requiredDuringSchedulingIgnoredDuringExecution": Object {
+                "nodeSelectorTerms": Array [
+                  Object {
+                    "matchFields": Array [
+                      Object {
+                        "key": "metadata.name",
+                        "operator": "In",
+                        "values": Array [
+                          "10.21.7.156",
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+          "containers": Array [
+            Object {
+              "args": Array [
+                "--path.procfs=/host/proc",
+                "--path.sysfs=/host/sys",
+                "--web.listen-address=0.0.0.0:9100",
+              ],
+              "image": "some-server.com/node-exporter:v0.16.0-f3",
+              "imagePullPolicy": "IfNotPresent",
+              "livenessProbe": Object {
+                "failureThreshold": 3,
+                "httpGet": Object {
+                  "path": "/metrics",
+                  "port": 9100,
+                  "scheme": "HTTP",
+                },
+                "initialDelaySeconds": 30,
+                "periodSeconds": 10,
+                "successThreshold": 1,
+                "timeoutSeconds": 30,
+              },
+              "name": "nodeexporter",
+              "readinessProbe": Object {
+                "failureThreshold": 3,
+                "httpGet": Object {
+                  "path": "/metrics",
+                  "port": 9100,
+                  "scheme": "HTTP",
+                },
+                "initialDelaySeconds": 30,
+                "periodSeconds": 10,
+                "successThreshold": 1,
+                "timeoutSeconds": 30,
+              },
+              "resources": Object {
+                "limits": Object {
+                  "memory": "256Mi",
+                },
+                "requests": Object {
+                  "memory": "64Mi",
+                },
+              },
+              "securityContext": Object {
+                "procMount": "Default",
+                "runAsUser": 65534,
+              },
+              "terminationMessagePath": "/dev/termination-log",
+              "terminationMessagePolicy": "File",
+              "volumeMounts": Array [
+                Object {
+                  "mountPath": "/host/proc",
+                  "name": "proc",
+                  "readOnly": true,
+                },
+                Object {
+                  "mountPath": "/host/sys",
+                  "name": "sys",
+                  "readOnly": true,
+                },
+                Object {
+                  "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                  "name": "default-token-vk7mp",
+                  "readOnly": true,
+                },
+              ],
+            },
+            Object {
+              "command": Array [
+                "/opt/ibm/router/entry/entrypoint.sh",
+              ],
+              "env": Array [
+                Object {
+                  "name": "NODE_NAME",
+                  "valueFrom": Object {
+                    "fieldRef": Object {
+                      "apiVersion": "v1",
+                      "fieldPath": "spec.nodeName",
+                    },
+                  },
+                },
+              ],
+              "image": "some-server.com/icp-management-ingress:latest",
+              "imagePullPolicy": "IfNotPresent",
+              "name": "router",
+              "resources": Object {
+                "limits": Object {
+                  "memory": "256Mi",
+                },
+                "requests": Object {
+                  "memory": "64Mi",
+                },
+              },
+              "terminationMessagePath": "/dev/termination-log",
+              "terminationMessagePolicy": "File",
+              "volumeMounts": Array [
+                Object {
+                  "mountPath": "/opt/ibm/router/conf",
+                  "name": "router-config",
+                },
+                Object {
+                  "mountPath": "/opt/ibm/router/entry",
+                  "name": "router-entry",
+                },
+                Object {
+                  "mountPath": "/opt/ibm/router/caCerts",
+                  "name": "monitoring-ca-certs",
+                },
+                Object {
+                  "mountPath": "/opt/ibm/router/certs",
+                  "name": "monitoring-certs",
+                },
+                Object {
+                  "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                  "name": "default-token-vk7mp",
+                  "readOnly": true,
+                },
+              ],
+            },
+          ],
+          "dnsPolicy": "ClusterFirst",
+          "enableServiceLinks": true,
+          "hostNetwork": true,
+          "hostPID": true,
+          "imagePullSecrets": Array [
+            Object {
+              "name": "infra-registry-key",
+            },
+          ],
+          "nodeName": "10.21.7.156",
+          "priority": 2000000000,
+          "priorityClassName": "system-cluster-critical",
+          "restartPolicy": "Always",
+          "schedulerName": "default-scheduler",
+          "securityContext": Object {},
+          "serviceAccount": "default",
+          "serviceAccountName": "default",
+          "terminationGracePeriodSeconds": 30,
+          "tolerations": Array [
+            Object {
+              "effect": "NoSchedule",
+              "key": "node.kubernetes.io/memory-pressure",
+              "operator": "Exists",
+            },
+            Object {
+              "effect": "NoSchedule",
+              "key": "node.kubernetes.io/unschedulable",
+              "operator": "Exists",
+            },
+            Object {
+              "effect": "NoSchedule",
+              "key": "node.kubernetes.io/network-unavailable",
+              "operator": "Exists",
+            },
+            Object {
+              "effect": "NoSchedule",
+              "key": "dedicated",
+              "operator": "Exists",
+            },
+            Object {
+              "effect": "NoExecute",
+              "key": "node.kubernetes.io/not-ready",
+              "operator": "Exists",
+            },
+            Object {
+              "effect": "NoExecute",
+              "key": "node.kubernetes.io/unreachable",
+              "operator": "Exists",
+            },
+            Object {
+              "effect": "NoSchedule",
+              "key": "node.kubernetes.io/disk-pressure",
+              "operator": "Exists",
+            },
+          ],
+          "volumes": Array [
+            Object {
+              "hostPath": Object {
+                "path": "/proc",
+                "type": "",
+              },
+              "name": "proc",
+            },
+            Object {
+              "hostPath": Object {
+                "path": "/sys",
+                "type": "",
+              },
+              "name": "sys",
+            },
+            Object {
+              "configMap": Object {
+                "defaultMode": 420,
+                "items": Array [
+                  Object {
+                    "key": "nodeexporter.nginx.conf",
+                    "path": "nginx.conf",
+                  },
+                ],
+                "name": "monitoring-prometheus-exporter-router-nginx-config",
+              },
+              "name": "router-config",
+            },
+            Object {
+              "configMap": Object {
+                "defaultMode": 484,
+                "name": "monitoring-monitoring-router-entry-config",
+              },
+              "name": "router-entry",
+            },
+            Object {
+              "name": "monitoring-ca-certs",
+              "secret": Object {
+                "defaultMode": 420,
+                "secretName": "cluster-ca-cert",
+              },
+            },
+            Object {
+              "name": "monitoring-certs",
+              "secret": Object {
+                "defaultMode": 420,
+                "secretName": "monitoring-monitoring-exporter-certs",
+              },
+            },
+            Object {
+              "name": "default-token-vk7mp",
+              "secret": Object {
+                "defaultMode": 420,
+                "secretName": "default-token-vk7mp",
+              },
+            },
+          ],
+        },
+        "status": Object {
+          "conditions": Array [
+            Object {
+              "lastProbeTime": null,
+              "lastTransitionTime": "2019-05-07T15:35:04Z",
+              "status": "True",
+              "type": "Initialized",
+            },
+            Object {
+              "lastProbeTime": null,
+              "lastTransitionTime": "2019-05-07T15:36:04Z",
+              "status": "True",
+              "type": "Ready",
+            },
+            Object {
+              "lastProbeTime": null,
+              "lastTransitionTime": "2019-05-07T15:36:04Z",
+              "status": "True",
+              "type": "ContainersReady",
+            },
+            Object {
+              "lastProbeTime": null,
+              "lastTransitionTime": "2019-05-07T15:35:04Z",
+              "status": "True",
+              "type": "PodScheduled",
+            },
+          ],
+          "containerStatuses": Array [
+            Object {
+              "containerID": "docker://abc123",
+              "image": "some-server.com/node-exporter:v0.16.0-f3",
+              "imageID": "docker-pullable://some-server.com/node-exporter@sha256:abc123",
+              "lastState": Object {},
+              "name": "nodeexporter",
+              "ready": true,
+              "restartCount": 0,
+              "state": Object {
+                "running": Object {
+                  "startedAt": "2019-05-07T15:35:33Z",
+                },
+              },
+            },
+            Object {
+              "containerID": "docker://abc123",
+              "image": "some-server.com/icp-management-ingress:latest",
+              "imageID": "docker-pullable://some-server.com/icp-management-ingress@sha256:abc123",
+              "lastState": Object {},
+              "name": "router",
+              "ready": true,
+              "restartCount": 0,
+              "state": Object {
+                "running": Object {
+                  "startedAt": "2019-05-07T15:35:34Z",
+                },
+              },
+            },
+          ],
+          "hostIP": "10.21.7.156",
+          "phase": "Running",
+          "podIP": "10.21.7.156",
+          "qosClass": "Burstable",
+          "startTime": "2019-05-07T15:35:04Z",
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`Generic Resources Correctly Resolves Pod log query 1`] = `
+Object {
+  "data": Object {
+    "logs": "[2020-05-13T20:24:23.321] [INFO] [search-api] [server] Built from git commit:  0.0.0-sha.f31e583
+[2020-05-13T20:24:23.674] [INFO] [search-api] [server] Initializing new Redis client.
+[2020-05-13T20:24:23.674] [INFO] [search-api] [server] Starting Redis client using SSL endpoint:  search-prod-28a0e-search-redisgraph:6380
+[2020-05-13T20:24:23.725] [INFO] [search-api] [server] Authentication enabled
+[2020-05-13T20:24:23.725] [INFO] [search-api] [server] Using RedisGraph search connector.
+[2020-05-13T20:24:23.740] [INFO] [search-api] [server] [pid 1] [env production] [version V2] started.
+[2020-05-13T20:24:23.740] [INFO] [search-api] [server] Search API is now running on https://localhost:4010/searchapi/graphql
+[2020-05-13T20:24:23.740] [INFO] [search-api] [server] RedisGraph address: \\"172.30.110.50\\" family: IPv4",
+  },
+}
+`;
+
+exports[`Generic Resources Correctly Resolves Update Local Resource 1`] = `
+Object {
+  "data": Object {
+    "updateResource": Object {
+      "data": Object {
+        "updateResource": Object {
+          "apiVersion": "v1",
+          "kind": "Namespace",
+          "metadata": Object {
+            "creationTimestamp": "2019-05-07T15:24:29Z",
+            "labels": Object {
+              "icp": "system",
+              "test": "test",
+            },
+            "name": "klusterlet",
+            "resourceVersion": "2120711",
+            "selfLink": "/api/v1/namespaces/klusterlet",
+            "uid": "34ddc94d-70dc-11e9-865a-00000a15079c",
+          },
+          "spec": Object {
+            "finalizers": Array [
+              "kubernetes",
+            ],
+          },
+          "status": Object {
+            "phase": "Active",
+          },
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`Generic Resources Correctly Resolves Update Remote Resource 1`] = `
+Object {
+  "data": Object {
+    "updateResource": Object {
+      "apiVersion": "v1",
+      "kind": "Secret",
+      "metadata": Object {
+        "creationTimestamp": "2019-04-16T01:40:57Z",
+        "name": "platform-auth-service",
+        "namespace": "kube-system",
+        "resourceVersion": "6278503",
+        "selfLink": "/api/v1/namespaces/kube-system/secret/platform-auth-service",
+        "uid": "ae97cf94-5fe8-11e9-bfe4-00000a150993",
+      },
+    },
+  },
+}
+`;

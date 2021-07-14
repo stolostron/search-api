@@ -18,7 +18,23 @@ describe('RBAC Caching', () => {
       user: {
         name: 'kube:admin',
         idToken: 'Bearer localdev',
-        namespaces: ['default', 'kube-public', 'kube-system'],
+        namespaces: {
+          items: [
+            {
+              metadata: {
+                name: 'default',
+              },
+            }, {
+              metadata: {
+                name: 'kube-public',
+              },
+            }, {
+              metadata: {
+                name: 'kube-system',
+              },
+            },
+          ],
+        },
       },
     };
     const objAliases = ['n'];

@@ -12,7 +12,7 @@
 import supertest from 'supertest';
 import server, { GRAPHQL_PATH } from '../index';
 
-describe.skip('Generic Resources', () => {
+describe('Generic Resources', () => {
   test('Correctly Resolves Get Resource Locally', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
@@ -20,6 +20,46 @@ describe.skip('Generic Resources', () => {
         query: `
         {
           getResource(selfLink:"/api/v1/namespaces/kube-system/pods/monitoring-prometheus-nodeexporter-n6h9b", namespace:null, kind:null, name:null, cluster:"local-cluster")
+        }`,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+
+  test.skip('Correctly Resolves Get Managed Resource', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          getResource(
+            namespace: "kube-system",
+            kind: "pod",
+            name: "test-pod",
+            cluster: "cluster1"
+          )
+        }`,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+
+  test('Correctly Resolves Get Managed Secret Message', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        {
+          getResource(
+            namespace: "kube-system",
+            kind: "secret",
+            name: "test-secret",
+            cluster: "cluster1"
+          )
         }`,
       })
       .end((err, res) => {
@@ -51,6 +91,49 @@ describe.skip('Generic Resources', () => {
         query: `
         mutation {
           updateResource(selfLink: "/api/v1/namespaces/kube-system/secrets/platform-auth-service", namespace: "kube-system", kind: "Secret", name: "platform-auto-service", cluster: "layne-remote", body: {apiVersion: "v1", kind: "Secret", metadata: {creationTimestamp: "2019-04-16T01:40:57Z", name: "platform-auth-service", namespace: "kube-system", resourceVersion: "6278503", selfLink: "/api/v1/namespaces/kube-system/secret/platform-auth-service", uid: "ae97cf94-5fe8-11e9-bfe4-00000a150993"}, })
+        }
+        `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+
+  test('Correctly Resolves Delete Local Resource', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        mutation {
+          deleteResource(
+            namespace: "kube-system",
+            kind: "pod",
+            name: "test-delete-pod",
+            cluster: "local-cluster"
+          )
+        }
+        `,
+      })
+      .end((err, res) => {
+        expect(JSON.parse(res.text)).toMatchSnapshot();
+        done();
+      });
+  }));
+
+  test.skip('Correctly Resolves Delete Remote Resource', () => new Promise((done) => {
+    supertest(server)
+      .post(GRAPHQL_PATH)
+      .send({
+        query: `
+        mutation {
+          deleteResource(
+            apiVersion: "v1",
+            namespace: "kube-system",
+            kind: "Secret",
+            name: "platform-auto-service",
+            cluster: "remote-test-delete",
+          )
         }
         `,
       })

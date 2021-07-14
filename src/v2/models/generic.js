@@ -296,8 +296,8 @@ export default class GenericModel extends KubeModel {
         message: response.message,
       }];
     }
-    const managedClusterViewName = _.get(response, 'metadata.name');
-    const { cancel, promise: pollPromise } = this.kubeConnector.pollView(`${apiPath}/${managedClusterViewName}`);
+    const managedClusterActionName = _.get(response, 'metadata.name');
+    const { cancel, promise: pollPromise } = this.kubeConnector.pollView(`${apiPath}/${managedClusterActionName}`);
     try {
       const result = await Promise.race([pollPromise, this.kubeConnector.timeout()]);
       if (result) {

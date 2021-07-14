@@ -36,7 +36,7 @@ import MockSearchConnector from './mocks/search';
 import schema from './schema';
 import config from '../../config';
 import authMiddleware from './lib/auth-middleware';
-import MockKubeConnector from './mocks/kube';
+import mockedKubeHTTP from './mocks/kube-http';
 import KubeConnector from './connectors/kube';
 
 export const GRAPHQL_PATH = `${config.get('contextPath')}/graphql`;
@@ -73,7 +73,13 @@ const apolloServer = new ApolloServer({
 
     if (isTest) {
       searchConnector = new MockSearchConnector({ rbac: namespaces, req });
-      kubeConnector = new MockKubeConnector();
+      kubeConnector = new KubeConnector({
+        req,
+        token: serviceaccountToken,
+        namespaces: ['default', 'kube-public', 'kube-system'],
+        httpLib: mockedKubeHTTP(),
+        uid: () => '1234',
+      });
     } else {
       searchConnector = new RedisGraphConnector({ rbac: namespaces, req });
       // KubeConnector uses admin token.

@@ -18,7 +18,7 @@ import { getServiceAccountToken } from './utils';
 import logger from './logger';
 import KubeConnector from '../connectors/kube';
 // Mocked connectors for testing
-import MockKubeConnector from '../mocks/kube';
+import MockKubeConnector from '../mocks/redisRBAC';
 
 let isOpenshift = null;
 const isTest = config.get('NODE_ENV') === 'test';

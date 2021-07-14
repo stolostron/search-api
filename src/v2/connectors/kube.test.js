@@ -185,6 +185,11 @@ describe('KubeConnector', () => {
         .mockImplementation(() => asyncReturn(mockManagedClusterViewResults));
 
       const connector = new KubeConnector({
+        req: {
+          user: {
+            idToken: 'test-user-token-1234',
+          },
+        },
         cache: mockCache,
         kubeApiEndpoint: 'kubernetes',
         httpLib: mockHttp,
