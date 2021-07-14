@@ -26,6 +26,7 @@ export default function createMockHttp() {
     logs: require('./Logs'),
     genericResourceList: require('./GenericResourceList'),
     project: require('./ProjectList').default,
+    userSearches: require('./userSearch'),
   };
 
   return async function MockLib(params) {
@@ -51,6 +52,10 @@ export default function createMockHttp() {
           return state.genericResourceList.mockedUpdateWorkResponse;
         case params.url.includes('namespaces/remote-test-delete/managedclusteractions'):
           return state.genericResourceList.deleteRemoteResourceAction;
+        case _.includes(_.get(params.json, '[0].op'), 'remove'):
+          return state.userSearches.deleteSavedSearchResponse;
+        case params.url.includes('userpreferences'):
+          return state.userSearches.updateSavedSearchResponse;
         default:
           return [];
       }
@@ -138,6 +143,8 @@ export default function createMockHttp() {
         return state.genericResourceList.deleteRemoteResourcePollResult;
       case params.url.includes('fieldSelector=metadata.name=delete-resource-1234'):
         return state.genericResourceList.deleteRemoteResourceActionResult;
+      case params.url.includes('userpreferences'):
+        return state.userSearches.getSavedSearchesResponse;
       default:
         return state.apiList.mockResponse;
     }

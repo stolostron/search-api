@@ -73,6 +73,7 @@ const apolloServer = new ApolloServer({
 
     if (isTest) {
       searchConnector = new MockSearchConnector({ rbac: namespaces, req });
+      req.user.name = 'test-user';
       kubeConnector = new KubeConnector({
         req,
         token: serviceaccountToken,

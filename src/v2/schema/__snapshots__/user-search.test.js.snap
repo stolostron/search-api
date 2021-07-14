@@ -25,7 +25,7 @@ exports[`UserSearch Resolver Correctly Resolves Saved Search Query Deletion 1`] 
 Object {
   "data": Object {
     "deleteSearch": Object {
-      "userQueries": Array [
+      "savedSearches": Array [
         Object {
           "description": "Query for all pods",
           "id": "1570469623824",
@@ -42,7 +42,7 @@ exports[`UserSearch Resolver Correctly Resolves Saved Search Query Edit 1`] = `
 Object {
   "data": Object {
     "saveSearch": Object {
-      "userQueries": Array [
+      "savedSearches": Array [
         Object {
           "description": "Query for all pods",
           "id": "1570469623824",

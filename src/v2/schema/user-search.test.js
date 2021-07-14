@@ -13,7 +13,7 @@ import supertest from 'supertest';
 import server, { GRAPHQL_PATH } from '../index';
 
 // eslint-disable-next-line jest/no-disabled-tests
-describe.skip('UserSearch Resolver', () => {
+describe('UserSearch Resolver', () => {
   test('Correctly Resolves Saved Search Query', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
