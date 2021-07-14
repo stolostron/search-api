@@ -43,6 +43,37 @@ function getApiGroupFromApiVersionOrPath(apiVersion, path, kind) {
   return { apiGroup, version };
 }
 
+function createManagedClusterAction(actionName, actionType, cluster, kind, namespace, name, apiGroup, version, body) {
+  const jsonBody = {
+    apiVersion: clusterActionApiVersion,
+    kind: 'ManagedClusterAction',
+    metadata: {
+      name: actionName,
+      namespace: cluster,
+    },
+    spec: {
+      cluster: {
+        name: cluster,
+      },
+      type: 'Action',
+      scope: {
+        resourceType: apiGroup ? `${kind.toLowerCase()}.${version}.${apiGroup}` : `${kind.toLowerCase()}`,
+        namespace,
+      },
+      actionType,
+      kube: {
+        resource: apiGroup ? `${kind.toLowerCase()}.${version}.${apiGroup}` : `${kind.toLowerCase()}`,
+        name,
+        namespace,
+      },
+    },
+  };
+  if (body !== undefined) {
+    jsonBody.spec.kube.template = body;
+  }
+  return jsonBody;
+}
+
 export default class GenericModel extends KubeModel {
   async userAccess({
     resource, kind, action, namespace = '', apiGroup = '*', name = '', version = '*',
@@ -179,31 +210,7 @@ export default class GenericModel extends KubeModel {
     // Limit workName to 63 characters
     let workName = `update-resource-${this.kubeConnector.uid()}`;
     workName = workName.substring(0, 63);
-    const jsonBody = {
-      apiVersion: clusterActionApiVersion,
-      kind: 'ManagedClusterAction',
-      metadata: {
-        name: workName,
-        namespace: cluster,
-      },
-      spec: {
-        cluster: {
-          name: cluster,
-        },
-        type: 'Action',
-        scope: {
-          resourceType: apiGroup ? `${kind.toLowerCase()}.${version}.${apiGroup}` : `${kind.toLowerCase()}`,
-          namespace,
-        },
-        actionType: 'Update',
-        kube: {
-          resource: apiGroup ? `${kind.toLowerCase()}.${version}.${apiGroup}` : `${kind.toLowerCase()}`,
-          name,
-          namespace,
-          template: body,
-        },
-      },
-    };
+    const jsonBody = createManagedClusterAction(workName, 'Update', cluster, kind, namespace, name, apiGroup, version, body);
     const actionPath = `${routePrefix}/${cluster}/managedclusteractions`;
     const response = await this.kubeConnector.post(actionPath, jsonBody, {}, true);
     if (response.code || response.message) {
@@ -262,30 +269,7 @@ export default class GenericModel extends KubeModel {
     // Limit workName to 63 characters
     let workName = `delete-resource-${this.kubeConnector.uid()}`;
     workName = workName.substring(0, 63);
-    const jsonBody = {
-      apiVersion: clusterActionApiVersion,
-      kind: 'ManagedClusterAction',
-      metadata: {
-        name: workName,
-        namespace: cluster,
-      },
-      spec: {
-        cluster: {
-          name: cluster,
-        },
-        type: 'Action',
-        scope: {
-          resourceType: apiGroup ? `${kind.toLowerCase()}.${version}.${apiGroup}` : `${kind.toLowerCase()}`,
-          namespace,
-        },
-        actionType: 'Delete',
-        kube: {
-          resource: apiGroup ? `${kind.toLowerCase()}.${version}.${apiGroup}` : `${kind.toLowerCase()}`,
-          name,
-          namespace,
-        },
-      },
-    };
+    const jsonBody = createManagedClusterAction(workName, 'Delete', cluster, kind, namespace, name, apiGroup, version);
 
     const apiPath = `${routePrefix}/${cluster}/managedclusteractions`;
     const response = await this.kubeConnector.post(apiPath, jsonBody, {}, true);
