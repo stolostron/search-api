@@ -12,7 +12,7 @@
 import supertest from 'supertest';
 import server, { GRAPHQL_PATH } from '../index';
 
-describe.skip('Overview Resolver', () => {
+describe('Overview Resolver', () => {
   test('Correctly Resolves Overview Query', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
@@ -53,7 +53,6 @@ describe.skip('Overview Resolver', () => {
             }
             raw
           }
-          timestamp
         }
         }
       `,

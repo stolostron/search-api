@@ -1,0 +1,121 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Overview Resolver Correctly Resolves Overview Query 1`] = `
+Object {
+  "data": Object {
+    "overview": Object {
+      "applications": Array [
+        Object {
+          "metadata": Object {
+            "name": "gbapp-gbapp",
+            "namespace": null,
+          },
+          "raw": null,
+          "selector": null,
+        },
+      ],
+      "clusters": Array [
+        Object {
+          "allocatable": Object {
+            "cpu": "6598m",
+            "memory": "6728Mi",
+          },
+          "capacity": Object {
+            "cpu": "18",
+            "memory": "32013Mi",
+          },
+          "consoleURL": null,
+          "metadata": Object {
+            "labels": Object {
+              "cloud": "IBM",
+              "datacenter": "toronto",
+              "environment": "Dev",
+              "name": "managed-cluster",
+              "owner": "marketing",
+              "region": "US",
+              "vendor": "ICP",
+            },
+            "name": "managed-cluster",
+            "namespace": "managed-cluster",
+            "uid": null,
+          },
+          "status": "pendingimport",
+        },
+        Object {
+          "allocatable": Object {
+            "cpu": "6598m",
+            "memory": "6728Mi",
+          },
+          "capacity": Object {
+            "cpu": "16",
+            "memory": "32013Mi",
+          },
+          "consoleURL": null,
+          "metadata": Object {
+            "labels": Object {
+              "cloud": "IBM",
+              "datacenter": "raleigh",
+              "environment": "Dev",
+              "name": "hub-cluster",
+              "owner": "development",
+              "region": "US",
+              "vendor": "ICP",
+            },
+            "name": "hub-cluster",
+            "namespace": "hub-cluster",
+            "uid": null,
+          },
+          "status": "ok",
+        },
+        Object {
+          "allocatable": Object {
+            "cpu": "7483m",
+            "memory": "5390Mi",
+          },
+          "capacity": Object {
+            "cpu": "16",
+            "memory": "32013Mi",
+          },
+          "consoleURL": null,
+          "metadata": Object {
+            "labels": Object {
+              "cloud": "IBM",
+              "datacenter": "raleigh",
+              "environment": "Dev",
+              "name": "new-cluster",
+              "owner": "development",
+              "region": "US",
+              "vendor": "ICP",
+            },
+            "name": "new-cluster",
+            "namespace": "new-cluster",
+            "uid": null,
+          },
+          "status": "offline",
+        },
+      ],
+      "compliances": Array [
+        Object {
+          "metadata": null,
+          "raw": Object {
+            "status": Object {},
+          },
+        },
+        Object {
+          "metadata": null,
+          "raw": Object {
+            "status": Object {},
+          },
+        },
+        Object {
+          "metadata": null,
+          "raw": Object {
+            "status": Object {},
+          },
+        },
+      ],
+      "timestamp": "Wed Jul 14 2021 15:53:30 GMT-0400 (Eastern Daylight Time)",
+    },
+  },
+}
+`;
