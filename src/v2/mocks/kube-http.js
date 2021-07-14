@@ -140,7 +140,7 @@ export default function createMockHttp() {
       case params.url.includes('layne-remote/managedclusteractions'):
         return state.genericResourceList.mockedUpdatePollResponse;
       case params.url.includes('remote-test-delete/managedclusteractions/delete-resource-1234'):
-        return state.genericResourceList.deleteRemoteResourcePollResult;
+        return state.genericResourceList.deleteRemoteResourceAction;
       case params.url.includes('fieldSelector=metadata.name=delete-resource-1234'):
         return state.genericResourceList.deleteRemoteResourceActionResult;
       case params.url.includes('userpreferences'):

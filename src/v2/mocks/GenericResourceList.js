@@ -443,31 +443,22 @@ export const deleteLocalResource = {
 };
 
 export const deleteRemoteResourceAction = {
-  apiVersion: 'action.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterAction',
-  metadata: {
-    name: 'delete-resource-1234',
-    namespace: 'remote-test-delete',
+  body: {
+    apiVersion: 'action.open-cluster-management.io/v1beta1',
+    kind: 'ManagedClusterAction',
+    metadata: {
+      name: 'delete-resource-1234',
+      namespace: 'remote-test-delete',
+    },
   },
 };
 
 export const deleteRemoteResourceActionResult = {
-  items: [{
-    status: {
-      status: 'Completed',
-    },
-  }],
-};
-
-export const deleteRemoteResourcePollResult = {
-  apiVersion: 'v1',
-  kind: 'Secret',
-  metadata: {
-    creationTimestamp: '2019-04-16T01:40:57Z',
-    name: 'platform-auth-service',
-    namespace: 'kube-system',
-    resourceVersion: '6278503',
-    selfLink: '/api/v1/namespaces/kube-system/secret/platform-auth-service',
-    uid: 'ae97cf94-5fe8-11e9-bfe4-00000a150993',
+  body: {
+    items: [{
+      status: {
+        status: 'Completed',
+      },
+    }],
   },
 };

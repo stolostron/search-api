@@ -28,26 +28,6 @@ describe('Generic Resources', () => {
       });
   }));
 
-  test.skip('Correctly Resolves Get Managed Resource', () => new Promise((done) => {
-    supertest(server)
-      .post(GRAPHQL_PATH)
-      .send({
-        query: `
-        {
-          getResource(
-            namespace: "kube-system",
-            kind: "pod",
-            name: "test-pod",
-            cluster: "cluster1"
-          )
-        }`,
-      })
-      .end((err, res) => {
-        expect(JSON.parse(res.text)).toMatchSnapshot();
-        done();
-      });
-  }));
-
   test('Correctly Resolves Get Managed Secret Message', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
@@ -121,7 +101,7 @@ describe('Generic Resources', () => {
       });
   }));
 
-  test.skip('Correctly Resolves Delete Remote Resource', () => new Promise((done) => {
+  test('Correctly Resolves Delete Remote Resource', () => new Promise((done) => {
     supertest(server)
       .post(GRAPHQL_PATH)
       .send({

@@ -22,25 +22,8 @@ Object {
 exports[`Generic Resources Correctly Resolves Delete Remote Resource 1`] = `
 Object {
   "data": Object {
-    "updateResource": null,
+    "deleteResource": "delete-resource-1234",
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "code": "INTERNAL_SERVER_ERROR",
-      },
-      "locations": Array [
-        Object {
-          "column": 11,
-          "line": 3,
-        },
-      ],
-      "message": "this.kubeConnector.uid is not a function",
-      "path": Array [
-        "updateResource",
-      ],
-    },
-  ],
 }
 `;
 
