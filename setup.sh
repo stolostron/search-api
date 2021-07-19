@@ -17,7 +17,7 @@ echo "export API_SERVER_URL=$(oc status | awk 'NR==1' | awk '{print $6;}')"
 export API_SERVER_URL=$(oc status | awk 'NR==1' | awk '{print $6;}')
 echo "export USER_TOKEN=$(oc whoami -t)"
 export USER_TOKEN=$(oc whoami -t)
-serviceAcctSecret=$(oc get serviceaccount search-api -n open-cluster-management -o json | jq -r '.secrets[1].name')
+serviceAcctSecret=$(oc get pods -n open-cluster-management --selector=app=search,component=search-api -o json | jq -r '.items[0].spec.volumes[] | select(.name | test("-token-")).secret.secretName')
 echo "export SERVICEACCT_TOKEN=$(oc get secret $serviceAcctSecret -n open-cluster-management -o json | jq -r '.data.token' | base64 -D)"
 export SERVICEACCT_TOKEN=$(oc get secret $serviceAcctSecret -n open-cluster-management -o json | jq -r '.data.token' | base64 -D)
 echo "export redisSSLEndpoint=$(oc get route redisgraph -n open-cluster-management | awk 'NR==2' | awk '{print $2;}'):443"
