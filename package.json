@@ -43,7 +43,7 @@
     "cross-env": "^7.0.3",
     "express": "^4.17.1",
     "graphql": "^15.5.1",
-    "graphql-tools": "^7.0.5",
+    "graphql-tools": "^8.0.0",
     "graphql-type-json": "^0.3.2",
     "helmet": "^4.6.0",
     "lodash": "^4.17.21",
