@@ -9,7 +9,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { mockServer } from 'graphql-tools';
+import { mockServer } from '@graphql-tools/mock';
 import { typeDefs } from './index';
 
 describe('Schema', () => {
