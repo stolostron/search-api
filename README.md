@@ -10,7 +10,7 @@ https://github.com/open-cluster-management/search/wiki/Using-the-Search-API
 
 TL;TR: Run `source ./setup.sh`
 
-1. Configure the folloing environment variables.
+1. Configure the following environment variables.
     Name              | Default                        | Description
     ---               | ---                            | ---
     API_SERVER_URL    | https://kubernetes.default.svc | Kubernetes API server. `oc cluster-info`
