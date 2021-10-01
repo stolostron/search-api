@@ -28,7 +28,7 @@ const resourceTemplate = {
     kind: 'node',
     name: `mock-1.1.1.${id}`,
     cpus: 10,
-    role: ['master'],
+    role: ['main'],
   }),
   pod: (id) => ({
     kind: 'pod',
@@ -183,7 +183,7 @@ const MOCK_QUERIES = {
       'sub._uid': 'local-cluster/bdced01f-3bd4-11ea-a488-00000a100f99',
       'sub.name': 'sub1',
       'sub.namespace': 'default',
-      'sub._gitbranch': 'master',
+      'sub._gitbranch': 'main',
       'sub._gitpath': 'helloworld',
       'sub._gitcommit': 'd67d8e10dcfa41dddcac14952e9872e1dfece06f',
       'ch._uid': 'local-cluster/233dfffd-f421-44ee-811b-7f3352b2d728',

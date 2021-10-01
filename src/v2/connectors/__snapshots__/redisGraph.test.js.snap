@@ -8,7 +8,7 @@ Array [
       "kind": "node",
       "name": "mock-1.1.1.0",
       "role": Array [
-        "master",
+        "main",
       ],
     },
   ],
@@ -24,7 +24,7 @@ Array [
         "kind": "node",
         "name": "mock-1.1.1.0",
         "role": Array [
-          "master",
+          "main",
         ],
       },
       Object {
@@ -32,7 +32,7 @@ Array [
         "kind": "node",
         "name": "mock-1.1.1.1",
         "role": Array [
-          "master",
+          "main",
         ],
       },
       Object {
@@ -40,7 +40,7 @@ Array [
         "kind": "node",
         "name": "mock-1.1.1.2",
         "role": Array [
-          "master",
+          "main",
         ],
       },
       Object {
@@ -48,7 +48,7 @@ Array [
         "kind": "node",
         "name": "mock-1.1.1.3",
         "role": Array [
-          "master",
+          "main",
         ],
       },
       Object {
@@ -56,7 +56,7 @@ Array [
         "kind": "node",
         "name": "mock-1.1.1.4",
         "role": Array [
-          "master",
+          "main",
         ],
       },
     ],
