@@ -29,7 +29,7 @@ describe('redisGraph', () => {
     test('getFilterString', async () => {
       Date.now = jest.fn(() => 1548076708000);
       expect(getFilterString([{ property: 'kind', values: ['cluster'] }])).toEqual('(n.kind = \'cluster\')');
-      expect(getFilterString([{ property: 'role', values: ['master'] }])).toEqual('((\'master\' IN n.role))');
+      expect(getFilterString([{ property: 'role', values: ['main'] }])).toEqual('((\'main\' IN n.role))');
       expect(getFilterString([{ property: 'cpu', values: ['<16'] }])).toEqual('(n.cpu < 16)');
       expect(getFilterString([{ property: 'created', values: ['month'] }])).toEqual('(n.created > \'2018-12-22T02:49:25.000Z\')');
     });
@@ -55,7 +55,7 @@ describe('redisGraph', () => {
 
       results.next().get(' n ').properties = [{
         kind: 'node',
-        role: ['master'],
+        role: ['main'],
         name: 'mock-1.1.1.0',
         cpus: 10,
       }];
@@ -92,12 +92,12 @@ describe('redisGraph', () => {
     test('getAllValues', async () => {
       expect(searchConnector.getAllValues('', [])).toEqual(_);
       // With mock data, we won't be able to test it without the proper (withclause and whereclause)
-      expect(searchConnector.getAllValues('role', [{ property: 'role', values: ['master'] }])).toEqual(_);
+      expect(searchConnector.getAllValues('role', [{ property: 'role', values: ['main'] }])).toEqual(_);
     });
 
     test('getDataFromValueList', async () => {
-      const valueList = ['master', ['master', 'proxy', 'worker']];
-      expect(getDataFromValueList(valueList)).toEqual(['master', 'proxy', 'worker']);
+      const valueList = ['main', ['main', 'proxy', 'worker']];
+      expect(getDataFromValueList(valueList)).toEqual(['main', 'proxy', 'worker']);
     });
 
     // Test disabled: for the tests below, we need to find a way to start up the server and
