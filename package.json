@@ -44,7 +44,7 @@
     "cross-env": "^7.0.3",
     "express": "^4.17.1",
     "graphql": "^15.6.1",
-    "graphql-tools": "^8.0.2",
+    "@graphql-tools/mock": "^8.2.1",
     "graphql-type-json": "^0.3.2",
     "helmet": "^3.23.3",
     "lodash": "^4.17.21",
