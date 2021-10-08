@@ -7,7 +7,7 @@
  * Contract with IBM Corp.
  ****************************************************************************** */
 
-import { mockServer } from 'graphql-tools';
+import { mockServer } from '@graphql-tools/mock';
 import { typeDefs } from './index';
 
 describe('Schema', () => {
