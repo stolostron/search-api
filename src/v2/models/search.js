@@ -43,15 +43,16 @@ function sanitizeInputs({
   };
 }
 
-// TODO: Keyword filtering currently requires that we transfer a large number of records from
-// RedisGraph to filter locally. We need to investigate alternatives to improve performance.
+// NOTE: Keyword filtering currently requires that we transfer a large number of records from
+// RedisGraph to filter locally. We need a better alternative to improve performance.
 function filterByKeywords(resultSet, keywords) {
   /* Regular expression resolves to a string like:
    *     /(?=.*keyword1)(?=.*keyword2)(?=.*keyword3)/gi
    * which matches if the string contains all keywords and is case insensitive. */
   const regex = new RegExp(keywords.reduce((prev, curr) => `${prev}(?=.*${curr})`, ''), 'gi');
 
-  return resultSet.filter((r) => Object.values(r).toString().match(regex));
+  // Match the resource values, excluding internal properties starting with _
+  return resultSet.filter((r) => Object.entries(r).find(([k, v]) => k.charAt(0) !== '_' && v.toString().match(regex)));
 }
 
 export default class SearchModel {
