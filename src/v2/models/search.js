@@ -51,7 +51,12 @@ function filterByKeywords(resultSet, keywords) {
    * which matches if the string contains all keywords and is case insensitive. */
   const regex = new RegExp(keywords.reduce((prev, curr) => `${prev}(?=.*${curr})`, ''), 'gi');
 
-  return resultSet.filter((r) => Object.values(r).toString().match(regex));
+  return resultSet.filter((r) => {
+    delete r._rbac;
+    delete r._uid;
+    delete r._hubClusterResource;
+    Object.values(r).toString().match(regex);
+  });
 }
 
 export default class SearchModel {
