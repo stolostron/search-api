@@ -52,7 +52,7 @@ function filterByKeywords(resultSet, keywords) {
   const regex = new RegExp(keywords.reduce((prev, curr) => `${prev}(?=.*${curr})`, ''), 'gi');
 
   // Excludes properties starting with _
-  return resultSet.filter((r) => Object.entries(r).find(([k, v]) => k.charAt(0) !== '_' && v.match(regex)));
+  return resultSet.filter((r) => Object.entries(r).find(([k, v]) => k.charAt(0) !== '_' && v.toString().match(regex)));
 }
 
 export default class SearchModel {
