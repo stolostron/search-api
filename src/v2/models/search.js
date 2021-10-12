@@ -51,7 +51,7 @@ function filterByKeywords(resultSet, keywords) {
    * which matches if the string contains all keywords and is case insensitive. */
   const regex = new RegExp(keywords.reduce((prev, curr) => `${prev}(?=.*${curr})`, ''), 'gi');
 
-  // Excludes properties starting with _
+  // Match the resource values, excluding internal properties starting with _
   return resultSet.filter((r) => Object.entries(r).find(([k, v]) => k.charAt(0) !== '_' && v.toString().match(regex)));
 }
 
