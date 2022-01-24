@@ -1,4 +1,4 @@
-FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux
+FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux
 USER root
 RUN yum -y remove nodejs-nodemon
 RUN yum -y update
