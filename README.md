@@ -2,7 +2,7 @@
 
 ## Using the Search API
 
-<https://github.com/open-cluster-management/search/wiki/Using-the-Search-API>
+<https://github.com/stolostron/search/wiki/Using-the-Search-API>
 
 ## Setup for development
 
