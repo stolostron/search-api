@@ -1,6 +1,6 @@
 {
-  "name": "@open-cluster-management/search-api",
-  "version": "2.4.0",
+  "name": "@stolostron/search-api",
+  "version": "2.5.0",
   "description": "API server for search.",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:open-cluster-management/search-api.git"
+    "url": "git@github.com:stolostron/search-api.git"
   },
   "author": "",
   "license": "SEE LICENSE IN LICENSE",
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@graphql-tools/mock": "^8.5.1",
-    "@open-cluster-management/security-middleware": "^1.0.5",
+    "@stolostron/security-middleware": "^1.0.5",
     "agentkeepalive": "^4.2.0",
     "ansi-regex": "^6.0.1",
     "apollo-errors": "^1.9.0",
@@ -48,7 +48,7 @@
     "graphql-type-json": "^0.3.2",
     "helmet": "^4.6.0",
     "lodash": "^4.17.21",
-    "log4js": "^6.3.0",
+    "log4js": "^6.4.1",
     "lru-cache": "^6.0.0",
     "moment": "^2.29.1",
     "morgan": "^1.10.0",
@@ -59,10 +59,10 @@
     "requestretry": "^6.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.16.7",
-    "@babel/core": "^7.16.7",
-    "@babel/node": "^7.16.7",
-    "@babel/preset-env": "^7.16.7",
+    "@babel/cli": "^7.16.8",
+    "@babel/core": "^7.16.12",
+    "@babel/node": "^7.16.8",
+    "@babel/preset-env": "^7.16.11",
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.25.4",
@@ -72,6 +72,6 @@
     "jest-sonar-reporter": "^2.0.0",
     "jest-tap-reporter": "^1.9.0",
     "nodemon": "^2.0.15",
-    "supertest": "^6.1.6"
+    "supertest": "^6.2.2"
   }
 }
