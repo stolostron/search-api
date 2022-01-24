@@ -1,9 +1,9 @@
 # search-api
-[![Build Status](https://travis-ci.com/open-cluster-management/search-api.svg?token=ft4iXTJ1omTSQEbPMykc&branch=master)](https://travis-ci.com/open-cluster-management/search-api)
+[![Build Status](https://travis-ci.com/stolostron/search-api.svg?token=ft4iXTJ1omTSQEbPMykc&branch=master)](https://travis-ci.com/stolostron/search-api)
  
 
 ## Using the Search API
-https://github.com/open-cluster-management/search/wiki/Using-the-Search-API
+https://github.com/stolostron/search/wiki/Using-the-Search-API
 
 
 ## Setup for development
