@@ -1,5 +1,5 @@
 {
-  "name": "@open-cluster-management/search-api",
+  "name": "@stolostron/search-api",
   "version": "2.3.0",
   "description": "API server for search.",
   "main": "index.js",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:open-cluster-management/search-api.git"
+    "url": "git@github.com:stolostron/search-api.git"
   },
   "author": "",
   "license": "SEE LICENSE IN LICENSE",
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@graphql-tools/mock": "^8.2.1",
-    "@open-cluster-management/security-middleware": "^1.0.4",
+    "@stolostron/security-middleware": "^1.0.4",
     "agentkeepalive": "^4.1.4",
     "apollo-errors": "^1.9.0",
     "apollo-server-express": "^2.25.2",
