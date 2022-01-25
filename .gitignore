@@ -10,3 +10,4 @@ test-report.xml
 !vbh/.build-harness-bootstrap
 !vbh/build-harness
 !vbh/build-harness-extensions
+.DS_Store
