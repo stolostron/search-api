@@ -2,7 +2,7 @@
 
 ## Using the Search API
 
-If you want to access the Search API [see this topic](./DOCUMENTATION.md).
+If you want to access the Search API [see this topic](./docs/API_ACCESS.md).
 
 ## Setup for development
 

@@ -1,4 +1,4 @@
-The Search API is implemented with GraphQL. This document explains how to expose the service and send requests.
+The Search API is implemented with GraphQL. This document explains how to access the service to send requests.
 
 ## Pre-requisite
 - Red Hat Advanced Cluster Management installed on your OpenShift cluster.
@@ -56,3 +56,7 @@ curl --insecure --location \
 --data-raw '{"query":"query searchResultItems($input: [SearchInput]) {\n    searchResult: search(input: $input) {\n        related {\n            kind\n            items\n        }\n    }\n}\n","variables":{"input":[{"keywords":[],"filters":[{"property":"kind","values":["deployment"]},{"property":"name","values":["search-ui"]}],"relatedKinds":["pod"],"limit":100}]}}'
 ```
 
+## Performance Notes
+- Throttle your requests to prevent addding a high load.
+- The first request from each user will take longer because the service needs to build the RBAC filters. These are cached for 10 minutes or (RBAC_INACTIVITY_TIMEOUT)
+- Add the more specific filters first. For example searching for `name:abc cluster:xyz` is more efficient than `cluster:xyz name:abc`
