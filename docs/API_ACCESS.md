@@ -1,7 +1,7 @@
 The Search API is implemented with GraphQL. This document explains how to access the service to send requests.
 
 ## Pre-requisite
-- Red Hat Advanced Cluster Management installed on your OpenShift cluster.
+Red Hat Advanced Cluster Management installed on your OpenShift cluster.
 
 ## Locate the Search API endpoint
 ### From within the cluster
@@ -19,7 +19,7 @@ The route should look like this:  `https://search-api-open-cluster-management.ap
 
 ## Authenticating the requests
 
-The Search API needs to impersonate a user (or ServiceAccount) to ensure that results only contain resources for the authorized user.
+The Search API needs the user (or ServiceAccount) token to ensure that results only contain resources for the authorized user.
 
 - A user can obtain their token with `oc whoami -t`
 - For a service account the token is in a secret. [This article](https://www.ibm.com/docs/en/cloud-paks/cp-management/2.0.0?topic=kubectl-using-service-account-tokens-connect-api-server) explains how to get the token.
@@ -59,4 +59,4 @@ curl --insecure --location \
 ## Performance Notes
 - Throttle your requests to prevent addding a high load.
 - The first request from each user will take longer because the service needs to build the RBAC filters. These are cached for 10 minutes or (RBAC_INACTIVITY_TIMEOUT)
-- Add the more specific filters first. For example searching for `name:abc cluster:xyz` is more efficient than `cluster:xyz name:abc`
+- Use the more specific filters first. For example searching for `name:abc cluster:xyz` is more efficient than `cluster:xyz name:abc`
