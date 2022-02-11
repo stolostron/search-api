@@ -2,7 +2,7 @@
 
 ## Using the Search API
 
-<https://github.com/stolostron/search/wiki/Using-the-Search-API>
+If you want to access the Search API [see this topic](./DOCUMENTATION.md).
 
 ## Setup for development
 
@@ -15,7 +15,7 @@ TL;TR: Run `source ./setup.sh`
     SERVICEACCT_TOKEN | ""                               | Get this token with `oc whoami -t`
     redisEndpoint     | //localhost:6379                 | RedisGraph server. Use only whith RedisGraph on local machine.
     redisSSLEndpoint  | redisgraph-route:443             | RedisGraph server with SSL.
-    redisPassword     | ""                               | RedisGraph password. `oc get secret redisgraph-user-secret -o json \| jq -r '.data.redispwd' \| base64 -D`
+    redisPassword     | ""                               | RedisGraph password. `oc get secret redisgraph-user-secret -n open-cluster-management -o=jsonpath='{.data.redispwd}' | base64 -D' \| base64 -D`
 
 2. Generate self-signed certificates for development.
 
