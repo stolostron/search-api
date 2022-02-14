@@ -15,14 +15,15 @@ By default, the Search API is not exposed. Follow [this topic](https://docs.open
 oc create route passthrough search-api --service=search-search-api -n open-cluster-management
 ```
 
-The route should look like this:  `https://search-api-open-cluster-management.apps.[your-ocp-hostname]/searchapi/graphql`
+The URL for your API requests should look like this:  `https://search-api-open-cluster-management.apps.[your-ocp-hostname]/searchapi/graphql`
 
 ## Authenticating the requests
 
 The Search API needs the user (or ServiceAccount) token to ensure that results only contain resources for the authorized user.
 
 - A user can obtain their token with `oc whoami -t`
-- For a service account the token is in a secret. [This article](https://www.ibm.com/docs/en/cloud-paks/cp-management/2.0.0?topic=kubectl-using-service-account-tokens-connect-api-server) explains how to get the token.
+- For a service account the token is in a secret [as explained here](https://docs.openshift.com/container-platform/4.9/authentication/understanding-and-creating-service-accounts.html).
+**IMPORTANT:** The service account must be granted access to the managed clusters and resources that you want to see in the search results.
 
 Use the token your requests `Authorization` header as `Bearer ${TOKEN}`.
 
