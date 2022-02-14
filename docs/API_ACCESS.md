@@ -23,7 +23,8 @@ The Search API needs the user (or ServiceAccount) token to ensure that results o
 
 - A user can obtain their token with `oc whoami -t`
 - For a service account the token is in a secret [as explained here](https://docs.openshift.com/container-platform/4.9/authentication/understanding-and-creating-service-accounts.html).
-**IMPORTANT:** The service account must be granted access to the managed clusters and resources that you want to see in the search results.
+
+**IMPORTANT:** The user or service account must be granted access to the resources and managed clusters that you want to see in the search results.
 
 Use the token your requests `Authorization` header as `Bearer ${TOKEN}`.
 
@@ -60,4 +61,4 @@ curl --insecure --location \
 ## Performance Notes
 - Throttle your requests to prevent addding a high load.
 - The first request from each user will take longer because the service needs to build the RBAC filters. These are cached for 10 minutes or (RBAC_INACTIVITY_TIMEOUT)
-- Use the more specific filters first. For example searching for `name:abc cluster:xyz` is more efficient than `cluster:xyz name:abc`
+- Use the more specific filters first. For example searching for `name:abc cluster:xyz` is more efficient than `cluster:xyz name:abc` because there are less resources with the name `abc`.
