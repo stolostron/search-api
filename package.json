@@ -56,7 +56,7 @@
     "nocache": "^3.0.1",
     "redis": "^3.1.2",
     "redisgraph.js": "^2.3.0",
-    "requestretry": "^6.0.0"
+    "requestretry": "^7.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.16.8",
