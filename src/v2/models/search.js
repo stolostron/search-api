@@ -86,9 +86,9 @@ export default class SearchModel {
 
   async resolveSearch(input) {
     const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-    console.log("Waiting 30 seconds.")
-    await delay(30000) /// waiting 30 seconds.
-    console.log("Done waiting.")
+    console.log(`Addind a response delay of ${process.env.RESPONSE_DELAY || 0} milliseconds.`)
+    await delay(process.env.RESPONSE_DELAY || 0) // Adding response delay.
+    console.log("Done with response delay.")
     const {
       keywords,
       filters,
