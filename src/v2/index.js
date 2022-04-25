@@ -80,6 +80,8 @@ const apolloServer = new ApolloServer({
 });
 
 const graphQLServer = express();
+console.log(`Setting express timeout to: ${process.env.EXPRESS_TIMEOUT || 2 * 60 * 1000}`)
+graphQLServer.setTimeout(process.env.EXPRESS_TIMEOUT || 2 * 60 * 1000) // default to 2 minutes
 graphQLServer.use(compression());
 
 const requestLogger = isProd
