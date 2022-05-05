@@ -135,7 +135,8 @@ export default class AppModel {
         .find((s) => (app['app.destinationName'] && s['s.label'].includes(`${ARGO_LABEL_PREFIX}cluster-name=${app['app.destinationName']}`))
           // cluster-server label will only contain hostname, limited to 63 chars
           || (app['app.destinationServer'] && s['s.label'].find((l) => l.startsWith(`${ARGO_LABEL_PREFIX}cluster-server=`)
-                && app['app.destinationServer'].includes(labelValue(l)))));
+              && labelValue(l)
+              && app['app.destinationServer'].includes(labelValue(l)))));
       const label = secret && secret['s.label'].find((l) => l.startsWith(`${ARGO_LABEL_PREFIX}cluster-name=`));
       if (label) {
         return labelValue(label);
