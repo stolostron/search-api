@@ -3,6 +3,8 @@ approvers:
   - zlayne
   - RobDolares
   - SherinV
+  - atifshafi
+
 reviewers:
   - jlpadilla
   - dislbenn
@@ -11,4 +13,3 @@ reviewers:
   - mark-nc
   - xrajesh
   - SherinV
-  - mqhackett
