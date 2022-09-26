@@ -17,8 +17,8 @@ import { checkSearchServiceStatus } from './searchServiceStatus';
 // Remove single and double quotes because these can be used to inject malicious
 // code in the RedisGraph query. (SQL injection).
 function sanitizeString(s) {
-  if (s.replace(/[^a-zA-Z0-9\-_!<>=./]/g, '') == '') {
-    throw Error('Received invalid input.')
+  if (s.replace(/[^a-zA-Z0-9\-_!<>=./]/g, '') !== s) {
+    throw Error('Input contains invalid characters.')
   }
   return s.replace(/[^a-zA-Z0-9\-_!<>=.:/]/g, ''); // Less risk of injection, but could be missing valid chars.
 }
