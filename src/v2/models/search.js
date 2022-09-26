@@ -20,7 +20,7 @@ function sanitizeString(s) {
   if (s.replace(/[^a-zA-Z0-9\-_!<>=./]/g, '') == '') {
     throw Error('Received invalid input.')
   }
-  return s.replace(/[^a-zA-Z0-9\-_!<>=./]/g, ''); // Less risk of injection, but could be missing valid chars.
+  return s.replace(/[^a-zA-Z0-9\-_!<>=.:/]/g, ''); // Less risk of injection, but could be missing valid chars.
 }
 
 // Sanitize all inputs to prevent "sql injection" attacks.
