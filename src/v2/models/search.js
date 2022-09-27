@@ -18,7 +18,7 @@ import { checkSearchServiceStatus } from './searchServiceStatus';
 // code in the RedisGraph query. (SQL injection).
 function sanitizeString(s) {
   if (s.replace(/[^a-zA-Z0-9\-_!<>=./]/g, '') !== s) {
-    throw Error('Input contains invalid characters.')
+    throw Error('Input contains invalid characters.');
   }
   return s.replace(/[^a-zA-Z0-9\-_!<>=.:/]/g, ''); // Less risk of injection, but could be missing valid chars.
 }
