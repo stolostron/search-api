@@ -14,10 +14,14 @@ import config from '../../../config';
 import { isRequired } from '../lib/utils';
 import { checkSearchServiceStatus } from './searchServiceStatus';
 
-// Remove single and double quotes because these can be used to inject malicious
-// code in the RedisGraph query. (SQL injection).
+// Validate that input only contains valid characters that won't allow injection
+// of malicious code in the query. (SQL injection)
+// Valid characters are a-z A-Z 0-9 - _ ! < > = . : /
 function sanitizeString(s) {
-  return s.replace(/[^a-zA-Z0-9\-_!<>=.:/]/g, '');
+  if (s.match(/[^a-zA-Z0-9\-_!<>=.:/]/g)) {
+    throw Error('Input contains invalid characters. Valid characters are a-z A-Z 0-9 - _ ! < > = . : /');
+  }
+  return s;
 }
 
 // Sanitize all inputs to prevent "sql injection" attacks.
