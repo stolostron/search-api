@@ -73,6 +73,6 @@
     "jest-sonar-reporter": "^2.0.0",
     "jest-tap-reporter": "^1.9.0",
     "nodemon": "^2.0.20",
-    "supertest": "^6.3.1"
+    "supertest": "^6.3.3"
   }
 }
