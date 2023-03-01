@@ -44,10 +44,10 @@ export const typeDef = gql`
 export const resolver = {
   Query: {
     search: (parent, { input }) => input,
-    searchComplete: (parent, { property, query = {}, limit }, { searchModel }) => searchModel.resolveSearchComplete({
+    searchComplete: (parent, { property, query = {} }, { searchModel }) => searchModel.resolveSearchComplete({
       property,
       filters: lodash.get(query, 'filters', []),
-    }, limit),
+    }, lodash.get(query, 'limit', 0)),
     searchSchema: (parent, args, { searchModel }) => searchModel.searchSchema(),
   },
   SearchResult: {
