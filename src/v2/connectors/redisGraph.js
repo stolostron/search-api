@@ -11,16 +11,16 @@
 // Copyright Contributors to the Open Cluster Management project
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
-import _ from 'lodash';
-import fs from 'fs';
-import redis from 'redis';
 import dns from 'dns';
-import { Graph } from 'redisgraph.js';
+import fs from 'fs';
+import _ from 'lodash';
 import moment from 'moment';
+import redis from 'redis';
+import { Graph } from 'redisgraph.js';
 import config from '../../../config';
 import logger from '../lib/logger';
-import { isRequired } from '../lib/utils';
 import pollRbacCache, { getUserRbacFilter } from '../lib/rbacCaching';
+import { isRequired } from '../lib/utils';
 
 export function getPropertiesWithList() {
   return ['label', 'role', 'port', 'container', 'category', 'rules', 'addon', 'image'];
@@ -593,9 +593,7 @@ export default class RedisGraphConnector {
     let valuesList = [];
     if (this.rbac.length > 0) {
       const startTime = Date.now();
-      const limitClause = limit <= 0 || property === 'label'
-        ? ''
-        : `LIMIT ${limit}`;
+      const limitClause = limit <= 0 ? '' : `LIMIT ${limit}`;
       let f = filters.length > 0 ? filters : [];
       f = filters.filter((filter) => filter.property);
       const { withClause, whereClause } = await this.createWhereClause(f, ['n']);
