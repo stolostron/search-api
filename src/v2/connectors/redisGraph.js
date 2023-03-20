@@ -598,7 +598,7 @@ export default class RedisGraphConnector {
         : `LIMIT ${limit}`;
       if (property === 'image') {
         // Max image limit of 2500 items, to many returned images causes UI to freeze.
-        limitClause = 'LIMIT 2500';
+        limitClause = `LIMIT ${config.get('defaultImageQueryLimit')}`;
       }
       let f = filters.length > 0 ? filters : [];
       f = filters.filter((filter) => filter.property);
