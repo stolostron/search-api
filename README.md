@@ -42,6 +42,7 @@ npm run start:production
 
 Name                    | Default | Description
 ---                     | ---     | ---
+defaultImageQueryLimit  | 2500    | Limits the images returned by the searchComplete query.
 defaultQueryLimit       | 10000   | Limits the resources returned by a search query.
 defaultQueryLoopLimit   | 5000    | Chunk size used by the keyword search logic.
 RBAC_POLL_INTERVAL      | 60000   | Interval at which we revalidate the RBAC cache.

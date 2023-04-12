@@ -1,6 +1,7 @@
 {
   "API_SERVER_URL": "https://kubernetes.default.svc",
   "contextPath": "/searchapi",
+  "defaultImageQueryLimit": 2500,
   "defaultQueryLimit": 10000,
   "defaultQueryLoopLimit": 5000,
   "httpPort": 4010,
